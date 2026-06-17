@@ -114,6 +114,7 @@ class GPT4VTeacher(TeacherModel):
         video_path: Optional[Path] = None,
         frames: Optional[List[np.ndarray]] = None,
         prompt: Optional[str] = None,
+        task: str = "fine_grained",
         temperature: float = 0.2,
         **kwargs
     ) -> GenerationResult:
@@ -128,8 +129,8 @@ class GPT4VTeacher(TeacherModel):
         start_time = time.perf_counter()
 
         try:
-            # Use provided prompt or default
-            system_prompt = prompt or self._get_default_prompt("fine_grained")
+            # Use provided prompt or default based on task
+            system_prompt = prompt or self._get_default_prompt(task)
 
             # Prepare image content
             if frames is not None:
@@ -251,6 +252,7 @@ class GPT4VTeacher(TeacherModel):
             video_path=video_path,
             frames=frames,
             prompt=prompt,
+            task=task,
             **kwargs
         )
 

@@ -126,6 +126,7 @@ class TogetherTeacher(TeacherModel):
         video_path: Optional[Path] = None,
         frames: Optional[List[np.ndarray]] = None,
         prompt: Optional[str] = None,
+        task: str = "fine_grained",
         temperature: float = 0.2,
         **kwargs
     ) -> GenerationResult:
@@ -140,7 +141,7 @@ class TogetherTeacher(TeacherModel):
         start_time = time.perf_counter()
 
         try:
-            system_prompt = prompt or self._get_default_prompt("fine_grained")
+            system_prompt = prompt or self._get_default_prompt(task)
 
             # Sample frames if too many
             if len(frames) > self.max_frames:
@@ -235,6 +236,7 @@ class TogetherTeacher(TeacherModel):
             video_path=video_path,
             frames=frames,
             prompt=prompt,
+            task=task,
             **kwargs
         )
 
