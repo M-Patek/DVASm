@@ -1,10 +1,8 @@
 """Explainability and visualization for annotations."""
 
-import base64
-import io
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import cv2
 import numpy as np

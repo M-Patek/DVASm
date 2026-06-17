@@ -1,6 +1,5 @@
 """CLI export tool for DVAS."""
 
-import json
 from pathlib import Path
 from typing import List, Optional
 
@@ -8,7 +7,6 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from dvas.data.schemas import Annotation
 from dvas.data.storage import AnnotationStore
 from dvas.export.adapters import ADAPTERS, export_annotations
 

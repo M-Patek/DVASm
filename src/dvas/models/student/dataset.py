@@ -3,10 +3,9 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, List, Union
 
-from datasets import Dataset, load_dataset
-from PIL import Image
+from datasets import Dataset
 
 logger = logging.getLogger(__name__)
 

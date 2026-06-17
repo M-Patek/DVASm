@@ -1,13 +1,11 @@
 """Edge deployment utilities - ONNX export and quantization."""
 
-import logging
 from pathlib import Path
 from typing import Dict, Optional
 
 import torch
 from torch.onnx import export as onnx_export
 
-from dvas.models.student.inference import StudentInferenceEngine
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)

@@ -1,7 +1,7 @@
 """Adaptive prompt engineering based on video characteristics."""
 
 import random
-from dataclasses import dataclass
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional

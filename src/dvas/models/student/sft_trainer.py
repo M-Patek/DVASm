@@ -1,6 +1,5 @@
 """SFT (Supervised Fine-Tuning) training for Qwen2-VL."""
 
-import logging
 from pathlib import Path
 
 import torch
@@ -8,7 +7,6 @@ from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from transformers import (
     AutoModelForVision2Seq,
     AutoProcessor,
-    AutoTokenizer,
     BitsAndBytesConfig,
     TrainingArguments,
 )

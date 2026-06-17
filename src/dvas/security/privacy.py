@@ -2,12 +2,11 @@
 
 import hashlib
 import hmac
-import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 
 from dvas.data.schemas import Annotation
 from dvas.utils.logging import get_logger
@@ -15,7 +14,7 @@ from dvas.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-class PII detector:
+class PIIDetector:
     """Detect and redact personally identifiable information."""
 
     # Patterns for PII detection

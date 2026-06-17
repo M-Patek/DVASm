@@ -1,7 +1,7 @@
 """Data quality analysis and monitoring platform."""
 
 import json
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path

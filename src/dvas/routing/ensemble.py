@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
-from scipy import stats
 
 from dvas.models.teacher.base import TeacherModel
 from dvas.models.teacher.claude import ClaudeTeacher

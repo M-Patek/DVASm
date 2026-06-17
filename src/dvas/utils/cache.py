@@ -4,7 +4,7 @@ import hashlib
 import json
 import threading
 from functools import wraps
-from typing import Any, Callable, Optional, TypeVar, Union
+from typing import Any, Callable, Optional, TypeVar
 
 from aiocache import Cache
 from aiocache.serializers import JsonSerializer
@@ -55,7 +55,6 @@ def cached(
     """
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
-        import asyncio
         import inspect
 
         if inspect.iscoroutinefunction(func):

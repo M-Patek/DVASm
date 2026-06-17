@@ -1,7 +1,5 @@
 """Inference engine for student model with vLLM support."""
 
-import json
-import logging
 from pathlib import Path
 from typing import AsyncIterator, Dict, List, Optional, Union
 
@@ -9,7 +7,6 @@ import numpy as np
 from PIL import Image
 from transformers import AutoModelForVision2Seq, AutoProcessor
 
-from dvas.data.schemas import Annotation, Segment
 from dvas.models.teacher.base import TeacherModel
 from dvas.utils.logging import get_logger
 

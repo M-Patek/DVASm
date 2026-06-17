@@ -8,12 +8,11 @@ from pathlib import Path
 from typing import AsyncGenerator, Dict, List, Optional
 
 import aiofiles
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile, status
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import FastAPI, File, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from dvas.config import settings
-from dvas.data.schemas import Annotation
 from dvas.data.storage import AnnotationStore
 from dvas.models.teacher.gpt4v import GPT4VTeacher
 from dvas.pipeline.core import AnnotationPipeline
@@ -160,7 +159,7 @@ async def upload_video(
             video_id=video_id,
             filename=file.filename,
             status="success",
-            message=f"Video uploaded successfully",
+            message="Video uploaded successfully",
         )
 
     except Exception as e:

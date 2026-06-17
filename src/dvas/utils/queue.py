@@ -1,11 +1,10 @@
 """Redis-based task queue and state management."""
 
 import json
-import logging
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 from dvas.utils.logging import get_logger
 
@@ -198,7 +197,6 @@ class CeleryTaskQueue:
         @app.task(bind=True, max_retries=3)
         def annotate_video_task(self, video_id: str, video_path: str, **kwargs):
             """Celery task for video annotation."""
-            from dvas.data.video_loader import VideoLoader
             from dvas.models.teacher.gpt4v import GPT4VTeacher
             from dvas.pipeline.core import AnnotationPipeline
 
@@ -242,7 +240,7 @@ class CeleryTaskQueue:
 
         result = task_def.delay(
             video_id=task.video_id,
-            video_path=kwargs.get("video_path", ""),
+            video_path=task.video_path,
             teacher_model=task.teacher_model,
             num_frames=task.num_frames,
         )

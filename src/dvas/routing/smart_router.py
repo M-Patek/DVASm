@@ -10,7 +10,6 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 from dvas.data.video_loader import VideoLoader
-from dvas.models.teacher.base import TeacherModel
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -425,7 +424,6 @@ async def route_and_annotate(
                         teacher = teacher_pool.get(ModelType.TEACHER_GPT4V)
                         if teacher:
                             # Import here to avoid circular dependency
-                            import asyncio
 
                             result = await teacher.annotate(
                                 frames=[],  # Would need to load frames
