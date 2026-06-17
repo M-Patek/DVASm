@@ -180,7 +180,7 @@ class BatchProcessor:
         batch_size: int = 10,
         save_interval: int = 5,
     ):
-        self.checkpoint_path = checkpoint_path
+        self.checkpoint_path = Path(checkpoint_path) if checkpoint_path else None
         self.batch_size = batch_size
         self.save_interval = save_interval
         self.checkpoint = BatchCheckpoint()

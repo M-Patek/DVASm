@@ -38,3 +38,5 @@ htmlcov/
 
 # Documentation build
 docs/_build/
+.tmp/
+tmp/

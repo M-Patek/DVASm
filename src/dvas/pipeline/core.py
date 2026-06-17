@@ -113,7 +113,7 @@ class AnnotationPipeline:
         max_attempts=3,
         base_delay=1.0,
         max_delay=30.0,
-        exceptions=(ConnectionError, TimeoutError, Exception),
+        exceptions=(ConnectionError, TimeoutError, OSError),
     )
     async def annotate_video(
         self,
@@ -228,7 +228,7 @@ class AnnotationPipeline:
             max_attempts=3,
             base_delay=2.0,
             max_delay=60.0,
-            exceptions=(ConnectionError, TimeoutError, Exception),
+            exceptions=(ConnectionError, TimeoutError, OSError),
         )
         async def _call_teacher():
             return await self.teacher.annotate(
@@ -324,13 +324,25 @@ class AnnotationPipeline:
     ) -> Tuple[List[Annotation], List[Dict]]:
         """Process multiple videos with concurrency control and checkpointing.
 
+        Uses BatchProcessor for automatic checkpoint persistence and retry.
+
         Returns:
             Tuple of (successful annotations, failed items)
         """
+        from dvas.utils.retry import BatchProcessor
+
         semaphore = asyncio.Semaphore(max_concurrent)
         successful: List[Annotation] = []
         failed: List[Dict] = []
         processed_count = 0
+
+        # Initialize BatchProcessor for checkpoint persistence
+        batch_processor = None
+        if self.checkpoint:
+            batch_processor = BatchProcessor(
+                checkpoint_path=self.checkpoint.checkpoint_path.parent / "batch_checkpoint.json",
+                batch_size=checkpoint_every,
+            )
 
         async def process_one(item: Dict) -> Optional[Annotation]:
             async with semaphore:
@@ -340,7 +352,7 @@ class AnnotationPipeline:
                         video_id=item["video_id"],
                     )
                     return result
-                except Exception as e:
+                except (ConnectionError, TimeoutError, OSError) as e:
                     logger.error(
                         "batch_processing_failed",
                         video_id=item.get("video_id"),
@@ -362,12 +374,20 @@ class AnnotationPipeline:
                 processed_count += 1
                 if isinstance(result, Exception):
                     failed.append({"error": str(result)})
+                    if batch_processor:
+                        batch_processor.mark_failed(
+                            f"item_{processed_count}", str(result)
+                        )
                 elif result is not None:
                     successful.append(result)
+                    if batch_processor:
+                        batch_processor.mark_processed(f"item_{processed_count}")
 
             # Save checkpoint after each chunk
             if self.checkpoint:
                 self.checkpoint.save()
+                if batch_processor:
+                    batch_processor._save_checkpoint()
                 logger.info(
                     "batch_checkpoint_saved",
                     processed=processed_count,

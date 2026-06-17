@@ -62,17 +62,15 @@ class TestBatchProcessor:
         checkpoint_path = tmp_path / "checkpoint.json"
         processor = BatchProcessor(checkpoint_path=str(checkpoint_path))
 
-        # Simulate processing
-        processor.processed_count = 10
-        processor.failed_items = [{"id": "1", "error": "test"}]
+        # Simulate processing via checkpoint attribute
+        processor.checkpoint.processed_count = 10
+        processor.checkpoint.failed_items = [{"id": "1", "error": "test"}]
         processor._save_checkpoint()
 
         # Load in new processor
         new_processor = BatchProcessor(checkpoint_path=str(checkpoint_path))
-        loaded = new_processor.load_checkpoint()
-
-        assert loaded is True
-        assert new_processor.processed_count == 10
+        # Checkpoint is auto-loaded in __init__ via _load_checkpoint
+        assert new_processor.checkpoint.processed_count == 10
 
 
 class TestExceptions:
