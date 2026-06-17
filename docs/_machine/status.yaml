@@ -1,0 +1,178 @@
+# DVAS Machine-Readable Status (Schema v2)
+
+schema_version: 2
+last_full_audit: 2024-06-17
+
+# ── Documentation Refactoring Tracker ──────────────────────────────────────
+doc_refactor:
+  P0_agents_protocol: done
+  P1_llms_txt: done
+  P2_status_yaml: done
+  P3_subsystem_docs: done
+  P4_architecture_docs: done
+  P5_adr: done
+  P6_code migration: done
+
+# ── Global System Metrics ────────────────────────────────────────────────
+global:
+  test_suite_pass_rate: "N/A"
+  teacher_pipeline_runnable: false
+  student_pipeline_runnable: false
+  gold_annotations_count: 0
+  last_full_validation: "N/A"
+
+# ── Subsystems ────────────────────────────────────────────────────────────
+subsystems:
+  - id: 01-data
+    title: "Data Layer — Video loading, preprocessing, storage"
+    status: active-dev
+    health: yellow
+    code_root: "src/dvas/data/"
+    doc: "docs/subsystems/01-data.md"
+    notable_recent_changes:
+      - "2024-06-17: Migrated to AGENT-friendly structure"
+    known_gaps:
+      - title: "No distributed video processing"
+        opened: "2024-06-17"
+        severity: low
+        next_review: "2024-07-17"
+        notes: "Current implementation is single-process. Consider Dask/Ray for scale."
+      - title: "Limited video format support"
+        opened: "2024-06-17"
+        severity: low
+        next_review: "2024-06-24"
+        notes: "Only MP4 tested. Add AVI, MOV, MKV support."
+    last_validated:
+      date: "2024-06-17"
+      by: "claude"
+      method: "code-review"
+      evidence: "Structure validation"
+
+  - id: 02-teacher
+    title: "Teacher Models — GPT-4V, Claude, Together API wrappers"
+    status: active-dev
+    health: green
+    code_root: "src/dvas/models/teacher/"
+    doc: "docs/subsystems/02-teacher.md"
+    notable_recent_changes:
+      - "2024-06-17: Base class + 3 implementations created"
+    known_gaps: []
+    last_validated:
+      date: "2024-06-17"
+      by: "claude"
+      method: "code-review"
+      evidence: "API contract validation"
+
+  - id: 03-student
+    title: "Student Models — Qwen2-VL finetuning via SFT/DPO"
+    status: draft
+    health: green
+    code_root: "src/dvas/models/student/"
+    doc: "docs/subsystems/03-student.md"
+    notable_recent_changes: []
+    known_gaps:
+      - title: "Training infrastructure not implemented"
+        opened: "2024-06-17"
+        severity: medium
+        next_review: "2024-06-24"
+        notes: "Need SFT pipeline, DPO support, vLLM inference setup"
+    last_validated:
+      date: "N/A"
+      by: "N/A"
+      method: "N/A"
+      evidence: "Placeholder only"
+
+  - id: 04-pipeline
+    title: "Annotation Pipeline — End-to-end video annotation"
+    status: active-dev
+    health: yellow
+    code_root: "src/dvas/pipeline/"
+    doc: "docs/subsystems/04-pipeline.md"
+    notable_recent_changes:
+      - "2024-06-17: EPIC-specific pipeline created"
+    known_gaps:
+      - title: "No batch retry logic for API failures"
+        opened: "2024-06-17"
+        severity: medium
+        next_review: "2024-06-21"
+        notes: "Currently fails fast. Need partial retry + checkpoint."
+    last_validated:
+      date: "2024-06-17"
+      by: "claude"
+      method: "code-review"
+      evidence: "Flow validation"
+
+  - id: 05-evaluation
+    title: "Quality Evaluation — BLEU/CIDEr + LLM-as-Judge"
+    status: stable
+    health: green
+    code_root: "src/dvas/models/evaluator/"
+    doc: "docs/subsystems/05-evaluation.md"
+    notable_recent_changes:
+      - "2024-06-17: Implemented metrics.py with BLEU, ROUGE, CIDEr, METEOR"
+      - "2024-06-17: Implemented llm_judge.py with LLM-as-Judge and ConsistencyChecker"
+    known_gaps: []
+
+  - id: 06-export
+    title: "Export & Formatting — LLaVA, OpenAI, custom formats"
+    status: stable
+    health: green
+    code_root: "src/dvas/export/"
+    doc: "docs/subsystems/06-export.md"
+    notable_recent_changes:
+      - "2024-06-17: Implemented adapters for LLaVA, OpenAI, ShareGPT formats"
+      - "2024-06-17: Added CLI with export, stats, inspect commands"
+    known_gaps: []
+
+  - id: 07-api
+    title: "API Service — FastAPI REST endpoints"
+    status: stable
+    health: green
+    code_root: "src/dvas/api/"
+    doc: "docs/subsystems/07-api.md"
+    notable_recent_changes:
+      - "2024-06-17: Implemented FastAPI with upload, annotate, status, export endpoints"
+    known_gaps:
+      - title: "No authentication"
+        opened: "2024-06-17"
+        severity: medium
+        next_review: "2024-07-01"
+        notes: "Need API key auth or OAuth for production"
+      - title: "In-memory task storage"
+        opened: "2024-06-17"
+        severity: medium
+        next_review: "2024-06-24"
+        notes: "Replace with Redis + Celery for production scale"
+    last_validated:
+      date: "2024-06-17"
+      by: "claude"
+      method: "code-review"
+      evidence: "API structure validated"
+
+# ── Deliverables (Runnable Demos / Entry Points) ──────────────────────────
+deliverables:
+  - id: demo-annotate-epic
+    title: "Annotate EPIC-KITCHENS split"
+    status: draft
+    file: "examples/annotate_epic.py"
+    run: "python examples/annotate_epic.py --split train --num 10"
+    requires:
+      - OPENAI_API_KEY
+      - EPIC_KITCHENS_ROOT
+    last_validated:
+      date: "N/A"
+      by: "N/A"
+      method: "N/A"
+      evidence: "Not yet validated"
+
+  - id: demo-export-training
+    title: "Export gold annotations as training data"
+    status: draft
+    file: "examples/export_training.py"
+    run: "python examples/export_training.py --output data/training/sft.jsonl"
+    requires: []
+    last_validated:
+      date: "N/A"
+      by: "N/A"
+      method: "N/A"
+      evidence: "Not yet validated"

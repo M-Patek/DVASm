@@ -1,0 +1,63 @@
+# DVAS Tech Debt (Machine-Readable)
+
+schema_version: 1
+last_updated: 2024-06-17
+
+# ── Tech Debt Items ─────────────────────────────────────────────────────────
+items:
+  - id: TD-001
+    title: "No type stubs for third-party video libraries"
+    opened: "2024-06-17"
+    severity: low
+    component: "01-data"
+    impact: "mypy suppressions needed for cv2, decord imports"
+    resolution_plan: "Add types-opencv-python or create stub files"
+    target_date: "2024-07-01"
+
+  - id: TD-002
+    title: "Hardcoded prompt templates in base.py"
+    opened: "2024-06-17"
+    severity: medium
+    component: "02-teacher"
+    impact: "Cannot change prompts without code change"
+    resolution_plan: "Move to Jinja2 templates in config/prompts/"
+    target_date: "2024-06-24"
+
+  - id: TD-003
+    title: "No async database layer"
+    opened: "2024-06-17"
+    severity: low
+    component: "01-data"
+    impact: "Storage operations are blocking"
+    resolution_plan: "Add asyncpg + SQLAlchemy async support"
+    target_date: "2024-07-15"
+
+  - id: TD-004
+    title: "Missing comprehensive test suite"
+    opened: "2024-06-17"
+    severity: high
+    component: "global"
+    impact: "No automated validation of changes"
+    resolution_plan: "Add pytest suite with fixtures, mocks for API calls"
+    target_date: "2024-06-30"
+
+  - id: TD-005
+    title: "No CI/CD pipeline"
+    opened: "2024-06-17"
+    severity: medium
+    component: "global"
+    impact: "Manual validation only"
+    resolution_plan: "GitHub Actions for lint, test, type-check"
+    target_date: "2024-07-01"
+
+# ── Metrics ────────────────────────────────────────────────────────────────
+metrics:
+  total_items: 5
+  by_severity:
+    high: 1
+    medium: 2
+    low: 2
+  by_component:
+    "01-data": 2
+    "02-teacher": 1
+    "global": 2

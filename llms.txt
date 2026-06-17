@@ -1,0 +1,136 @@
+# llms.txt — DVAS Machine-Readable Index
+
+project: DVAS
+version: 0.1.0
+full_name: Distilled Video Annotation Specialist
+description: AI-powered video annotation platform generating gold-standard training data for VLM training via teacher-student distillation
+language: python
+architecture_style: layered
+python_version: "3.10+"
+
+# Key documents
+boot_protocol: AGENTS.md
+navigation_hub: docs/INDEX.md
+constitution: docs/architecture/constitution.md
+top_level_design: docs/architecture/top-level-design.md
+changelog: docs/changelog/CHANGELOG.md
+
+# Subsystems (by ID order)
+subsystems:
+  - id: "01-data"
+    name: "Data Layer"
+    doc: "docs/subsystems/01-data.md"
+    status: active-dev
+    health: yellow
+    code_root: "src/dvas/data/"
+
+  - id: "02-teacher"
+    name: "Teacher Models"
+    doc: "docs/subsystems/02-teacher.md"
+    status: active-dev
+    health: green
+    code_root: "src/dvas/models/teacher/"
+
+  - id: "03-student"
+    name: "Student Models"
+    doc: "docs/subsystems/03-student.md"
+    status: draft
+    health: green
+    code_root: "src/dvas/models/student/"
+
+  - id: "04-pipeline"
+    name: "Annotation Pipeline"
+    doc: "docs/subsystems/04-pipeline.md"
+    status: active-dev
+    health: yellow
+    code_root: "src/dvas/pipeline/"
+
+  - id: "05-evaluation"
+    name: "Quality Evaluation"
+    doc: "docs/subsystems/05-evaluation.md"
+    status: stable
+    health: green
+    code_root: "src/dvas/models/evaluator/"
+
+  - id: "06-export"
+    name: "Export & Formatting"
+    doc: "docs/subsystems/06-export.md"
+    status: stable
+    health: green
+    code_root: "src/dvas/export/"
+
+  - id: "07-api"
+    name: "API Service"
+    doc: "docs/subsystems/07-api.md"
+    status: stable
+    health: green
+    code_root: "src/dvas/api/"
+
+  - id: "08-routing"
+    name: "Smart Routing"
+    doc: "docs/subsystems/08-routing.md"
+    status: stable
+    health: green
+    code_root: "src/dvas/routing/"
+
+  - id: "09-quality"
+    name: "Data Quality"
+    doc: "docs/subsystems/09-quality.md"
+    status: stable
+    health: green
+    code_root: "src/dvas/quality/"
+
+  - id: "10-explainability"
+    name: "Explainability"
+    doc: "docs/subsystems/10-explainability.md"
+    status: stable
+    health: green
+    code_root: "src/dvas/explainability/"
+
+  - id: "11-monitoring"
+    name: "Monitoring"
+    doc: "docs/subsystems/11-monitoring.md"
+    status: stable
+    health: green
+    code_root: "src/dvas/monitoring/"
+
+  - id: "12-security"
+    name: "Security"
+    doc: "docs/subsystems/12-security.md"
+    status: stable
+    health: green
+    code_root: "src/dvas/security/"
+
+  - id: "13-prompts"
+    name: "Prompts"
+    doc: "docs/subsystems/13-prompts.md"
+    status: stable
+    health: green
+    code_root: "src/dvas/prompts/"
+
+  - id: "14-deployment"
+    name: "Deployment"
+    doc: "docs/subsystems/14-deployment.md"
+    status: draft
+    health: green
+    code_root: "src/dvas/deployment/"
+
+# Scripts
+scripts:
+  - init_project.py
+  - check_doc_anchors.py
+  - check_known_gaps.py
+  - get_subsystem_status.py
+
+# Entry Points
+cli_entry: "python -m dvas"
+annotate_epic: "python -m dvas annotate epic --split train"
+export_llava: "python -m dvas export --format llava"
+
+# External Dependencies
+data_source: EPIC-KITCHENS
+teacher_models:
+  - gpt-4o
+  - claude-3-sonnet
+  - qwen2-vl-7b (via Together)
+student_base: Qwen2-VL-7B-Instruct

@@ -1,0 +1,16 @@
+# DVAS Bug Index (Machine-Readable)
+
+last_updated: 2024-06-17
+next_id: 1
+
+bugs: []
+  # Template entry:
+  # - id: 1
+  #   session_date: "2024-06-17"
+  #   file: "src/dvas/data/video_loader.py"
+  #   one_liner: "VideoLoader fails on videos with variable frame rate"
+  #   subsystem: "01-data"
+  #   root_cause: "api_contract"
+  #   status: "fixed"
+
+bonus_bugs: []
