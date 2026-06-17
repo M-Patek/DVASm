@@ -391,7 +391,7 @@ class DynamicPromptOptimizer:
     ) -> None:
         """Record prompt performance."""
         self.performance_log.append({
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "prompt_hash": hash(prompt) % 10000,
             "category": video_category.value,
             "metrics": metrics,

@@ -3,7 +3,7 @@
 import json
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -346,7 +346,7 @@ class DataQualityAnalyzer:
         duplicates = self.anomaly_detector.detect_duplicates(annotations)
 
         report = {
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "source": source,
             "metrics": asdict(metrics),
             "distribution": asdict(distribution),

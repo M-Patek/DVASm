@@ -3,7 +3,7 @@
 import hashlib
 import json
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -72,7 +72,7 @@ class ABTestManager:
     def create_test(self, config: ABTestConfig) -> str:
         """Create a new A/B test."""
         test_id = hashlib.md5(
-            f"{config.test_name}_{datetime.utcnow().isoformat()}".encode()
+            f"{config.test_name}_{datetime.now(timezone.utc).isoformat()}".encode()
         ).hexdigest()[:12]
 
         self.active_tests[test_id] = config
@@ -111,7 +111,7 @@ class ABTestManager:
         outcome_path = self.storage_path / f"{test_id}_outcomes.jsonl"
 
         record = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "variant": variant,
             "metrics": metrics,
         }
@@ -270,7 +270,7 @@ class ABTestManager:
             raise ValueError(f"Cannot analyze test {test_id}")
 
         result.status = TestStatus.COMPLETED
-        result.completed_at = datetime.utcnow().isoformat()
+        result.completed_at = datetime.now(timezone.utc).isoformat()
 
         # Save final results
         result_path = self.storage_path / f"{test_id}_result.json"
@@ -405,7 +405,7 @@ class PerformanceMonitor:
                 if len(self.metrics[key]) > self.window_size:
                     self.metrics[key].pop(0)
 
-        self.timestamps.append(datetime.utcnow())
+        self.timestamps.append(datetime.now(timezone.utc))
 
     def get_statistics(self) -> Dict:
         """Get rolling window statistics."""

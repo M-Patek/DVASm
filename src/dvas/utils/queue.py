@@ -3,7 +3,7 @@
 import json
 import logging
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Optional
 
@@ -33,7 +33,7 @@ class AnnotationTask:
     teacher_model: str = "gpt-4o"
     num_frames: int = 16
     priority: int = 5
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
     result: Optional[Dict] = None
@@ -111,7 +111,7 @@ class TaskQueue:
 
             # Update status
             task.status = TaskStatus.PROCESSING
-            task.started_at = datetime.utcnow().isoformat()
+            task.started_at = datetime.now(timezone.utc).isoformat()
             await client.set(f"task:{task.task_id}", json.dumps(task.to_dict()))
 
             return task

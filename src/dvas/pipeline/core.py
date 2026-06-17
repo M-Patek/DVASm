@@ -2,14 +2,10 @@
 
 import asyncio
 import json
-import logging
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-import numpy as np
-
-from dvas.config import settings
 from dvas.data.schemas import (
     Action,
     Annotation,
@@ -22,7 +18,7 @@ from dvas.data.schemas import (
 from dvas.data.storage import AnnotationStore
 from dvas.data.video_loader import Frame, VideoLoader
 from dvas.utils.logging import get_logger
-from dvas.utils.retry import BatchProcessor, with_retry
+from dvas.utils.retry import with_retry
 
 if TYPE_CHECKING:
     from dvas.models.teacher.base import TeacherModel

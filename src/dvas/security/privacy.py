@@ -5,7 +5,7 @@ import hmac
 import logging
 import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 
@@ -136,7 +136,7 @@ class SecurityAuditor:
     ) -> None:
         """Log an access event."""
         log_entry = SecurityAuditLog(
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             event_type=event_type,
             user_id=user_id,
             resource_id=resource_id,

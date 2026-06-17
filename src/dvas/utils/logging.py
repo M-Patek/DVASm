@@ -3,7 +3,7 @@
 import json
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -13,7 +13,7 @@ from structlog.types import EventDict, Processor
 
 def add_timestamp(logger: Any, method_name: str, event_dict: EventDict) -> EventDict:
     """Add ISO timestamp to event."""
-    event_dict["timestamp"] = datetime.utcnow().isoformat()
+    event_dict["timestamp"] = datetime.now(timezone.utc).isoformat()
     return event_dict
 
 
