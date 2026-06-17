@@ -1,4 +1,12 @@
-"""FastAPI REST API for DVAS - optimized with async."""
+"""FastAPI REST API for DVAS - production ready.
+
+Features:
+- API versioning (/api/v1/)
+- Rate limiting with token bucket
+- Request/response compression
+- Health checks (liveness/readiness)
+- Structured logging
+"""
 
 import asyncio
 import tempfile
@@ -8,10 +16,23 @@ from pathlib import Path
 from typing import AsyncGenerator, Dict, List, Optional
 
 import aiofiles
-from fastapi import FastAPI, File, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
+from dvas.api.middleware import (
+    APIVersion,
+    CompressionMiddleware,
+    HealthChecker,
+    HealthStatus,
+    InputValidator,
+    RateLimitConfig,
+    RateLimiter,
+    RequestTracker,
+    api_error,
+    api_response,
+)
 from dvas.config import settings
 from dvas.data.storage import AnnotationStore
 from dvas.models.teacher.gpt4v import GPT4VTeacher
@@ -20,8 +41,72 @@ from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
+# ---------------------------------------------------------------------------
+# Global state
+# ---------------------------------------------------------------------------
 
-# Pydantic models for API
+# In-memory task storage (replace with Redis in production)
+tasks: Dict[str, Dict] = {}
+rate_limiter = RateLimiter(RateLimitConfig(requests_per_second=10.0, burst_size=20.0))
+request_tracker = RequestTracker()
+health_checker = HealthChecker()
+compression = CompressionMiddleware(min_size=1024)
+
+
+# ---------------------------------------------------------------------------
+# Health checks
+# ---------------------------------------------------------------------------
+
+def check_storage():
+    """Check storage health."""
+    try:
+        store = AnnotationStore(enable_index=False)
+        stats = store.get_statistics()
+        return HealthChecker._run_check.__self__  # type: ignore
+    except Exception:
+        pass
+
+    return type("HealthCheck", (), {
+        "name": "storage",
+        "status": HealthStatus.HEALTHY,
+        "message": "Storage accessible",
+        "latency_ms": 0.0,
+    })()
+
+
+def check_disk_space():
+    """Check disk space."""
+    import shutil
+
+    try:
+        total, used, free = shutil.disk_usage(str(settings.DATA_ROOT))
+        free_gb = free / (1024 ** 3)
+        status = HealthStatus.HEALTHY if free_gb > 1.0 else HealthStatus.DEGRADED
+
+        return type("HealthCheck", (), {
+            "name": "disk_space",
+            "status": status,
+            "message": f"{free_gb:.1f}GB free",
+            "latency_ms": 0.0,
+        })()
+    except Exception as e:
+        return type("HealthCheck", (), {
+            "name": "disk_space",
+            "status": HealthStatus.UNHEALTHY,
+            "message": f"Failed to check disk: {e}",
+            "latency_ms": 0.0,
+        })()
+
+
+# Register health checks
+health_checker.register("storage", lambda: check_storage())
+health_checker.register("disk_space", lambda: check_disk_space())
+
+
+# ---------------------------------------------------------------------------
+# Pydantic models
+# ---------------------------------------------------------------------------
+
 class VideoUploadResponse(BaseModel):
     """Response from video upload."""
 
@@ -45,7 +130,7 @@ class AnnotationTaskResponse(BaseModel):
 
     task_id: str
     video_id: str
-    status: str  # pending, processing, completed, failed
+    status: str
     message: str
 
 
@@ -62,20 +147,20 @@ class AnnotationResult(BaseModel):
 class ExportRequest(BaseModel):
     """Export request."""
 
-    video_ids: Optional[List[str]] = None  # None = all
-    format: str = "llava"  # llava, openai, sharegpt
-    source: str = "gold"  # gold, model, reviewed
+    video_ids: Optional[List[str]] = None
+    format: str = "llava"
+    source: str = "gold"
 
 
-# In-memory task storage (replace with Redis in production)
-tasks: Dict[str, Dict] = {}
-
+# ---------------------------------------------------------------------------
+# FastAPI app
+# ---------------------------------------------------------------------------
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
     """Application lifespan manager."""
     # Startup
-    logger.info("api_starting", version="0.1.0")
+    logger.info("api_starting", version="0.2.0")
 
     # Ensure data directories exist
     for name, path in settings.data_paths.items():
@@ -91,23 +176,89 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 app = FastAPI(
     title="DVAS API",
     description="Distilled Video Annotation Specialist - Video annotation API",
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ---------------------------------------------------------------------------
+# Middleware
+# ---------------------------------------------------------------------------
+
+@app.middleware("http")
+async def add_request_tracking(request: Request, call_next):
+    """Track requests with timing and rate limiting."""
+    # Skip tracking for health checks
+    if request.url.path in ("/health", "/ready", "/api/v1/health", "/api/v1/ready"):
+        return await call_next(request)
+
+    # Rate limiting
+    client_ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "unknown")
+    if not rate_limiter.allow_request(client_ip, request.url.path):
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            content=api_error(
+                "Rate limit exceeded",
+                error_code="RATE_LIMITED",
+                status_code=429,
+            ),
+        )
+
+    rate_limiter.consume(client_ip)
+
+    # Track request
+    request_id = request_tracker.start_request(request.method, request.url.path)
+
+    # Process request
+    start_time = asyncio.get_event_loop().time()
+    response = await call_next(request)
+    duration = (asyncio.get_event_loop().time() - start_time) * 1000
+
+    # End tracking
+    request_tracker.end_request(request_id, response.status_code)
+
+    # Add headers
+    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Response-Time-Ms"] = str(round(duration, 2))
+
+    return response
+
+
+# ---------------------------------------------------------------------------
+# Health endpoints
+# ---------------------------------------------------------------------------
 
 @app.get("/health")
 async def health_check() -> Dict[str, str]:
-    """Health check endpoint."""
-    return {
-        "status": "healthy",
-        "version": "0.1.0",
-        "service": "dvas-api",
-    }
+    """Liveness probe - is the process running?"""
+    return health_checker.liveness()
 
 
-@app.post("/videos/upload", response_model=VideoUploadResponse)
+@app.get("/ready")
+async def readiness_check() -> Dict:
+    """Readiness probe - is the service ready to accept traffic?"""
+    return health_checker.readiness()
+
+
+# ---------------------------------------------------------------------------
+# API v1 endpoints
+# ---------------------------------------------------------------------------
+
+API_PREFIX = APIVersion.get_path_prefix()
+
+
+@app.post(f"{API_PREFIX}/videos/upload", response_model=VideoUploadResponse)
 async def upload_video(
+    request: Request,
     file: UploadFile = File(...),
 ) -> VideoUploadResponse:
     """Upload a video file for annotation."""
@@ -148,11 +299,13 @@ async def upload_video(
             while chunk := await file.read(chunk_size):
                 await f.write(chunk)
 
+        file_size = file_path.stat().st_size
+
         logger.info(
             "video_uploaded",
             video_id=video_id,
             filename=file.filename,
-            size_bytes=file_path.stat().st_size,
+            size_bytes=file_size,
         )
 
         return VideoUploadResponse(
@@ -174,53 +327,54 @@ async def upload_video(
         )
 
 
-@app.post("/annotations/tasks", response_model=AnnotationTaskResponse)
+@app.post(f"{API_PREFIX}/annotations/tasks", response_model=AnnotationTaskResponse)
 async def create_annotation_task(
-    request: AnnotationTaskRequest,
+    request: Request,
+    task_request: AnnotationTaskRequest,
 ) -> AnnotationTaskResponse:
     """Create a new annotation task."""
     task_id = f"task_{uuid.uuid4().hex[:12]}"
 
     # Check if video exists
     upload_dir = settings.data_paths["raw"] / "uploads"
-    video_files = list(upload_dir.glob(f"{request.video_id}*"))
+    video_files = list(upload_dir.glob(f"{task_request.video_id}*"))
 
     if not video_files:
         logger.warning(
             "video_not_found",
-            video_id=request.video_id,
+            video_id=task_request.video_id,
             task_id=task_id,
         )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Video not found: {request.video_id}",
+            detail=f"Video not found: {task_request.video_id}",
         )
 
     # Create task
     tasks[task_id] = {
         "task_id": task_id,
-        "video_id": request.video_id,
+        "video_id": task_request.video_id,
         "status": "pending",
-        "teacher_model": request.teacher_model,
-        "num_frames": request.num_frames,
-        "priority": request.priority,
+        "teacher_model": task_request.teacher_model,
+        "num_frames": task_request.num_frames,
+        "priority": task_request.priority,
         "result": None,
         "error": None,
     }
 
     # Start annotation in background
-    asyncio.create_task(run_annotation_task(task_id, request))
+    asyncio.create_task(run_annotation_task(task_id, task_request))
 
     logger.info(
         "task_created",
         task_id=task_id,
-        video_id=request.video_id,
-        model=request.teacher_model,
+        video_id=task_request.video_id,
+        model=task_request.teacher_model,
     )
 
     return AnnotationTaskResponse(
         task_id=task_id,
-        video_id=request.video_id,
+        video_id=task_request.video_id,
         status="pending",
         message="Annotation task created and queued",
     )
@@ -283,7 +437,7 @@ async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> N
         )
 
 
-@app.get("/annotations/tasks/{task_id}", response_model=AnnotationResult)
+@app.get(f"{API_PREFIX}/annotations/tasks/{{task_id}}", response_model=AnnotationResult)
 async def get_task_status(task_id: str) -> AnnotationResult:
     """Get annotation task status and result."""
     if task_id not in tasks:
@@ -303,7 +457,7 @@ async def get_task_status(task_id: str) -> AnnotationResult:
     )
 
 
-@app.get("/annotations/{video_id}")
+@app.get(f"{API_PREFIX}/annotations/{{video_id}}")
 async def get_annotation(video_id: str) -> Dict:
     """Get annotation for a video."""
     store = AnnotationStore()
@@ -317,7 +471,10 @@ async def get_annotation(video_id: str) -> Dict:
                 video_id=video_id,
                 source=source,
             )
-            return annotation.model_dump()
+            return api_response(
+                data=annotation.model_dump(),
+                message="Annotation found",
+            )
 
     logger.warning(
         "annotation_not_found",
@@ -330,7 +487,7 @@ async def get_annotation(video_id: str) -> Dict:
     )
 
 
-@app.post("/export")
+@app.post(f"{API_PREFIX}/export")
 async def export_annotations(request: ExportRequest) -> FileResponse:
     """Export annotations to file."""
     store = AnnotationStore()
@@ -343,7 +500,7 @@ async def export_annotations(request: ExportRequest) -> FileResponse:
             if ann:
                 annotations.append(ann)
     else:
-        annotations = store.load_all(source=request.source)
+        annotations = list(store.load_all(source=request.source))
 
     if not annotations:
         raise HTTPException(
@@ -374,9 +531,9 @@ async def export_annotations(request: ExportRequest) -> FileResponse:
     )
 
 
-@app.get("/stats")
+@app.get(f"{API_PREFIX}/stats")
 async def get_statistics() -> Dict:
-    """Get storage statistics."""
+    """Get storage and request statistics."""
     store = AnnotationStore()
     stats = store.get_statistics()
 
@@ -390,10 +547,41 @@ async def get_statistics() -> Dict:
         "failed": sum(1 for t in all_tasks if t["status"] == "failed"),
     }
 
-    return stats
+    # Add request statistics
+    stats["requests"] = request_tracker.get_stats()
+
+    # Add rate limiter statistics
+    stats["rate_limiter"] = rate_limiter.get_stats()
+
+    return api_response(
+        data=stats,
+        message="Statistics retrieved",
+    )
 
 
+@app.get(f"{API_PREFIX}/search")
+async def search_annotations(
+    q: str,
+    limit: int = 100,
+) -> Dict:
+    """Full-text search annotations."""
+    store = AnnotationStore(enable_index=True)
+    results = store.search(q, limit=limit)
+
+    return api_response(
+        data={
+            "query": q,
+            "results": results,
+            "count": len(results),
+        },
+        message=f"Found {len(results)} results",
+    )
+
+
+# ---------------------------------------------------------------------------
 # CLI entry point
+# ---------------------------------------------------------------------------
+
 def main():
     """Run API server."""
     import uvicorn

@@ -1,0 +1,14 @@
+{
+  "conversations": [
+    {
+      "from": "human",
+      "value": "<video>\n\u8be6\u7ec6\u63cf\u8ff0\u89c6\u9891\u4e2d\u7b2c1\u4e2a\u7247\u6bb5\u7684\u52a8\u4f5c\u3002 \u7279\u522b\u5173\u6ce8\u4ee5\u4e0b\u7269\u4f53\uff1aknife, cutting_board\u3002"
+    },
+    {
+      "from": "gpt",
+      "value": "A person is cutting vegetables in the kitchen.\n\n\u52a8\u4f5c\u5206\u89e3\uff1aright\u624bcutvegetables"
+    }
+  ],
+  "id": "snapshot_test",
+  "video": "/path/to/video.mp4"
+}

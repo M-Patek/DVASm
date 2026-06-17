@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 from PIL import Image
 
+from dvas.core.concurrency import FrameEncoderPool
 from dvas.models.base import GenerationResult, ModelType, UnifiedModel
 
 
@@ -28,42 +29,15 @@ class TeacherModel(UnifiedModel):
         """
         self.model_name = model_name
         self.config = kwargs
+        self._encoder_pool: Optional[FrameEncoderPool] = None
 
     @property
-    def model_version(self) -> str:
-        """Return the model version string."""
-        return self.model_name
-
-    @abstractmethod
-    async def annotate(
-        self,
-        video_path: Optional[Path] = None,
-        frames: Optional[List[np.ndarray]] = None,
-        prompt: Optional[str] = None,
-        **kwargs
-    ) -> GenerationResult:
-        """
-        Generate annotation for a video or frames.
-
-        Args:
-            video_path: Path to video file
-            frames: List of numpy arrays (BGR images)
-            prompt: Custom prompt for annotation
-            **kwargs: Additional model-specific parameters
-
-        Returns:
-            GenerationResult with standardized output
-        """
-        pass
-
-    @abstractmethod
-    async def annotate_batch(
-        self,
-        items: List[Dict[str, Any]],
-        **kwargs
-    ) -> List[GenerationResult]:
-        """Batch annotation for efficiency."""
-        pass
+    def encoder_pool(self) -> FrameEncoderPool:
+        """Lazy-initialize frame encoder pool."""
+        if self._encoder_pool is None:
+            max_workers = self.config.get("encoder_workers", 4)
+            self._encoder_pool = FrameEncoderPool(max_workers=max_workers)
+        return self._encoder_pool
 
     def _encode_image(self, image: np.ndarray, format: str = "JPEG") -> str:
         """Encode numpy image to base64 string."""
@@ -78,10 +52,21 @@ class TeacherModel(UnifiedModel):
         pil_image.save(buffer, format=format)
         return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
-    def _encode_frames(self, frames: List[np.ndarray]) -> List[str]:
-        """Encode multiple frames to base64 strings.
+    async def _encode_frames(self, frames: List[np.ndarray]) -> List[str]:
+        """Encode multiple frames to base64 strings using async pool.
 
-        Uses concurrent encoding for better performance with large batches.
+        Uses FrameEncoderPool for parallel encoding with proper
+        async/await semantics.
+        """
+        return await self.encoder_pool.encode_frames(frames)
+
+    def _encode_frames_sync(
+        self, frames: List[np.ndarray]
+    ) -> List[str]:
+        """Synchronous fallback for frame encoding.
+
+        For small batches, use simple list comprehension.
+        For larger batches, use thread pool.
         """
         from concurrent.futures import ThreadPoolExecutor
 

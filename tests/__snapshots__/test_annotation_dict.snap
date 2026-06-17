@@ -1,0 +1,68 @@
+{
+  "created_at": "2026-06-17 18:02:38.444199+00:00",
+  "id": "snapshot_test",
+  "metadata": {
+    "bitrate": null,
+    "codec": null,
+    "duration": 10.0,
+    "fps": 30.0,
+    "has_audio": false,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "total_frames": 300
+  },
+  "model_version": null,
+  "parent_id": null,
+  "quality_metrics": {},
+  "quality_score": null,
+  "segments": [
+    {
+      "actions": [
+        {
+          "confidence": null,
+          "end_time": null,
+          "hand": "right",
+          "noun": "spoon",
+          "start_time": null,
+          "verb": "pick"
+        }
+      ],
+      "caption": "First segment",
+      "caption_dense": null,
+      "end_time": 3.0,
+      "key_frames": [],
+      "objects": [],
+      "qa_pairs": [],
+      "start_time": 0.0
+    },
+    {
+      "actions": [
+        {
+          "confidence": null,
+          "end_time": null,
+          "hand": "left",
+          "noun": "soup",
+          "start_time": null,
+          "verb": "stir"
+        }
+      ],
+      "caption": "Second segment",
+      "caption_dense": null,
+      "end_time": 6.0,
+      "key_frames": [],
+      "objects": [],
+      "qa_pairs": [],
+      "start_time": 3.0
+    }
+  ],
+  "source": "teacher",
+  "tags": [
+    "cooking",
+    "kitchen"
+  ],
+  "updated_at": null,
+  "video_id": "vid_001",
+  "video_path": "/path/to/video.mp4"
+}

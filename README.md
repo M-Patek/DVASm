@@ -2,7 +2,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-123%2F123%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-130%2F130%20passing-brightgreen.svg)]()
 
 > AI-powered video annotation platform with teacher-student distillation for robotic manipulation and egocentric vision.
 
@@ -22,6 +22,8 @@ DVAS generates high-quality temporal annotations for videos using a **teacher-st
 - **Fault Tolerance** — Retry with exponential backoff, checkpoint persistence, batch recovery
 - **Multi-Format Export** — LLaVA, OpenAI, ShareGPT training formats
 - **Security** — PII detection, data anonymization, watermarking, RBAC
+- **Developer Experience** — Hot reload, code scaffolding, DB migrations, lint/test runners
+- **Advanced Algorithms** — Adaptive sampling, keyframe extraction, video summarization, semantic segmentation
 
 ## Quick Start
 
@@ -147,14 +149,13 @@ python -m pytest tests/ --cov=src/dvas --cov-report=html
 ### Code Quality
 
 ```bash
-# Linting
-ruff check src/
+# Using the built-in CLI (recommended)
+python -m dvas lint --fix
+python -m dvas test --cov
+
+# Or manually
 ruff check src/ --fix
-
-# Type checking
 mypy src/dvas
-
-# Formatting
 black src/ tests/
 ```
 
@@ -163,6 +164,9 @@ black src/ tests/
 ```
 DVASm/
 ├── src/dvas/              # Core source code
+│   ├── api/               # FastAPI REST endpoints with rate limiting & health checks
+│   ├── cli/               # Developer tools (scaffold, migrate, dev mode)
+│   ├── core/              # Event bus, circuit breaker, algorithms, actors
 │   ├── data/              # Video loading, schemas, storage
 │   ├── models/            # Teacher & student models
 │   ├── pipeline/          # Annotation pipeline
@@ -172,9 +176,14 @@ DVASm/
 │   │   └── parser.py      # Response parsing
 │   ├── prompts/           # Adaptive prompt engineering
 │   ├── quality/           # Quality evaluation
-│   ├── security/          # Privacy & access control
+│   ├── security/          # Privacy & access control, audit logging, encryption
 │   └── utils/             # Logging, retry, caching
-├── tests/                 # Test suite (123 tests)
+├── tests/                 # Test suite (130 tests)
+│   ├── test_security.py     # Security utilities (56 tests)
+│   ├── test_properties.py   # Property-based tests (10 tests)
+│   ├── test_load.py         # Load & benchmark tests (12 tests)
+│   ├── test_algorithms.py   # Algorithm & data structure tests (52 tests)
+│   └── test_cli.py          # CLI developer tools tests (23 tests)
 ├── scripts/               # Utility scripts
 ├── benchmarks/            # Performance benchmarks
 ├── docs/                  # Documentation
@@ -185,6 +194,8 @@ DVASm/
 ```
 
 ## CLI Reference
+
+### Core Commands
 
 ```bash
 # Annotate a single video
@@ -200,6 +211,38 @@ python -m dvas export training_data.jsonl --format llava --source gold
 python -m dvas stats --source gold
 ```
 
+### Developer Commands
+
+```bash
+# Development mode with hot reload
+python -m dvas dev --server --port 8000
+
+# Generate code scaffolding
+python -m dvas scaffold module my_feature --output src/dvas/
+python -m dvas scaffold model my_teacher --output src/dvas/models/teacher/
+python -m dvas scaffold test my_feature --output tests/
+
+# Database migrations
+python -m dvas migrate status
+python -m dvas migrate create --name add_users_table
+python -m dvas migrate up
+
+# Generate API documentation
+python -m dvas docs --output docs/api --format markdown
+
+# Lint and format code
+python -m dvas lint --fix
+
+# Run tests with coverage
+python -m dvas test --cov --fail-fast
+
+# Validate environment
+python -m dvas validate
+
+# Show project info
+python -m dvas info
+```
+
 ## Performance
 
 DVAS implements multiple performance optimizations across the video processing pipeline:
@@ -212,6 +255,10 @@ DVAS implements multiple performance optimizations across the video processing p
 | **Metadata Caching** | Module-level cache avoids re-reading video headers |
 | **GC Between Chunks** | Explicit garbage collection in batch processing to free frame memory |
 | **Async Streaming** | Background thread + asyncio queue for true frame streaming |
+| **Adaptive Sampling** | Content-aware frame allocation using motion/edge/entropy metrics |
+| **Min-Max Heap** | O(log n) insertion with O(1) median query for importance tracking |
+| **Sliding Window Buffer** | Circular buffer for streaming frame analysis without reallocation |
+| **Semantic Segmentation** | Multi-feature boundary detection for coherent shot grouping |
 
 Run the benchmark:
 

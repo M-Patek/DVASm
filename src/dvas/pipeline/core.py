@@ -10,6 +10,7 @@ import asyncio
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
+from dvas.core.concurrency import AsyncBatchProcessor, ConcurrencyLimiter
 from dvas.data.schemas import Annotation, Segment, VideoMetadata
 from dvas.data.storage import AnnotationStore
 from dvas.data.video_loader import Frame, VideoLoader
@@ -229,8 +230,8 @@ class AnnotationPipeline:
     ) -> Tuple[List[Annotation], List[Dict]]:
         """Process multiple videos with concurrency control and streaming results.
 
-        Uses chunked processing to limit memory usage and enable checkpointing.
-        Results are yielded as they complete rather than accumulating all in memory.
+        Uses AsyncBatchProcessor for controlled concurrency with proper
+        backpressure and error isolation.
 
         Args:
             video_items: List of dicts with 'video_path' and 'video_id'
@@ -242,7 +243,6 @@ class AnnotationPipeline:
         """
         from dvas.utils.retry import BatchProcessor
 
-        semaphore = asyncio.Semaphore(max_concurrent)
         successful: List[Annotation] = []
         failed: List[Dict] = []
         processed_count = 0
@@ -255,48 +255,51 @@ class AnnotationPipeline:
             )
 
         async def process_one(item: Dict) -> Optional[Annotation]:
-            async with semaphore:
-                try:
-                    return await self.annotate_video(
-                        video_path=Path(item["video_path"]),
-                        video_id=item["video_id"],
+            try:
+                return await self.annotate_video(
+                    video_path=Path(item["video_path"]),
+                    video_id=item["video_id"],
+                )
+            except (ConnectionError, TimeoutError, OSError) as e:
+                logger.error(
+                    "batch_processing_failed",
+                    video_id=item.get("video_id"),
+                    error=str(e),
+                )
+                if self.checkpoint:
+                    self.checkpoint.mark_failed(
+                        item.get("video_id", "unknown"), str(e)
                     )
-                except (ConnectionError, TimeoutError, OSError) as e:
-                    logger.error(
-                        "batch_processing_failed",
-                        video_id=item.get("video_id"),
-                        error=str(e),
+                return None
+
+        # Use AsyncBatchProcessor for controlled concurrency with backpressure
+        batch = AsyncBatchProcessor[Dict](max_concurrent=max_concurrent)
+        results = await batch.process(
+            video_items,
+            process_one,
+            on_error=lambda item, err: logger.error(
+                "batch_item_failed",
+                video_id=item.get("video_id"),
+                error=str(err),
+            ),
+        )
+
+        # Collect results
+        for i, result in enumerate(results):
+            processed_count += 1
+            if isinstance(result, Annotation):
+                successful.append(result)
+                if batch_processor:
+                    batch_processor.mark_processed(f"item_{processed_count}")
+            elif result is None:
+                failed.append({"item": video_items[i], "error": "processing_failed"})
+                if batch_processor:
+                    batch_processor.mark_failed(
+                        f"item_{processed_count}", "processing_failed"
                     )
-                    if self.checkpoint:
-                        self.checkpoint.mark_failed(
-                            item.get("video_id", "unknown"), str(e)
-                        )
-                    return None
 
-        # Process in chunks to limit memory and enable checkpointing
-        for i in range(0, len(video_items), checkpoint_every):
-            chunk = video_items[i : i + checkpoint_every]
-            tasks = [process_one(item) for item in chunk]
-            chunk_results = await asyncio.gather(*tasks, return_exceptions=True)
-
-            for result in chunk_results:
-                processed_count += 1
-                if isinstance(result, Exception):
-                    failed.append({"error": str(result)})
-                    if batch_processor:
-                        batch_processor.mark_failed(
-                            f"item_{processed_count}", str(result)
-                        )
-                elif isinstance(result, Annotation):
-                    successful.append(result)
-                    if batch_processor:
-                        batch_processor.mark_processed(f"item_{processed_count}")
-
-            # Force garbage collection between chunks to free frame memory
-            import gc
-            gc.collect()
-
-            if self.checkpoint:
+            # Save checkpoint periodically
+            if processed_count % checkpoint_every == 0 and self.checkpoint:
                 self.checkpoint.save()
                 if batch_processor:
                     batch_processor._save_checkpoint()

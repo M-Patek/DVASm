@@ -1,0 +1,12 @@
+{
+  "bitrate": 5000000,
+  "codec": "h264",
+  "duration": 120.0,
+  "fps": 30.0,
+  "has_audio": true,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "total_frames": 3600
+}

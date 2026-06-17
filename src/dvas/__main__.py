@@ -17,6 +17,11 @@ from dvas.utils.logging import setup_logging
 app = typer.Typer(help="DVAS - Distilled Video Annotation Specialist")
 console = Console()
 
+# Import dev CLI commands
+from dvas.cli.commands import app as dev_app  # noqa: E402
+
+app.add_typer(dev_app, name="dev", help="Developer tools")
+
 
 @app.command()
 def annotate(

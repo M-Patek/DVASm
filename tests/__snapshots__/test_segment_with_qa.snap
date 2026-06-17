@@ -1,0 +1,23 @@
+{
+  "actions": [],
+  "caption": "A cooking scene",
+  "caption_dense": null,
+  "end_time": 5.0,
+  "key_frames": [],
+  "objects": [],
+  "qa_pairs": [
+    {
+      "answer": "Cooking",
+      "confidence": null,
+      "question": "What is happening?",
+      "question_type": "other"
+    },
+    {
+      "answer": "A knife",
+      "confidence": null,
+      "question": "What tool is used?",
+      "question_type": "other"
+    }
+  ],
+  "start_time": 0.0
+}
