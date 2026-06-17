@@ -2,20 +2,37 @@
 
 import base64
 import io
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import numpy as np
 from PIL import Image
 
+from dvas.models.base import GenerationResult, ModelType, UnifiedModel
 
-class TeacherModel(ABC):
-    """Abstract base class for teacher (gold-standard) models."""
 
-    def __init__(self, model_name: str, **kwargs):
+class TeacherModel(UnifiedModel):
+    """Abstract base class for teacher (gold-standard) models.
+
+    Extends UnifiedModel to provide teacher-specific functionality
+    while conforming to the standardized interface.
+    """
+
+    def __init__(self, model_name: str, **kwargs: Any):
+        """Initialize teacher model.
+
+        Args:
+            model_name: Name of the model to use
+            **kwargs: Additional configuration options
+        """
         self.model_name = model_name
         self.config = kwargs
+
+    @property
+    def model_version(self) -> str:
+        """Return the model version string."""
+        return self.model_name
 
     @abstractmethod
     async def annotate(
@@ -24,7 +41,7 @@ class TeacherModel(ABC):
         frames: Optional[List[np.ndarray]] = None,
         prompt: Optional[str] = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> GenerationResult:
         """
         Generate annotation for a video or frames.
 
@@ -35,7 +52,7 @@ class TeacherModel(ABC):
             **kwargs: Additional model-specific parameters
 
         Returns:
-            Dictionary containing annotation results
+            GenerationResult with standardized output
         """
         pass
 
@@ -44,7 +61,7 @@ class TeacherModel(ABC):
         self,
         items: List[Dict[str, Any]],
         **kwargs
-    ) -> List[Dict[str, Any]]:
+    ) -> List[GenerationResult]:
         """Batch annotation for efficiency."""
         pass
 
@@ -62,8 +79,19 @@ class TeacherModel(ABC):
         return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
     def _encode_frames(self, frames: List[np.ndarray]) -> List[str]:
-        """Encode multiple frames to base64 strings."""
-        return [self._encode_image(frame) for frame in frames]
+        """Encode multiple frames to base64 strings.
+
+        Uses concurrent encoding for better performance with large batches.
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        # For small batches, use simple list comprehension
+        if len(frames) <= 4:
+            return [self._encode_image(frame) for frame in frames]
+
+        # For larger batches, use thread pool
+        with ThreadPoolExecutor(max_workers=min(8, len(frames))) as executor:
+            return list(executor.map(self._encode_image, frames))
 
     def _get_default_prompt(self, task: str = "caption") -> str:
         """Get default prompt for a task."""
@@ -77,7 +105,7 @@ class TeacherModel(ABC):
         return prompts.get(task, prompts["caption"])
 
     def _caption_prompt(self) -> str:
-        """Basic captioning prompt."""
+        """Return basic captioning prompt."""
         return """Describe what is happening in this video. Be concise but accurate."""
 
     def _dense_caption_prompt(self) -> str:

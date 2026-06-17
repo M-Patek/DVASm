@@ -94,7 +94,7 @@ EPIC-KITCHENS Video
 ### TeacherModel (02-teacher)
 
 ```python
-class TeacherModel(ABC):
+class TeacherModel(UnifiedModel):
     @abstractmethod
     async def annotate(
         self,
@@ -102,7 +102,26 @@ class TeacherModel(ABC):
         frames: Optional[List[np.ndarray]] = None,
         prompt: Optional[str] = None,
         **kwargs
-    ) -> Dict[str, Any]: ...
+    ) -> GenerationResult: ...
+```
+
+**Key**: All models now return `GenerationResult` with standardized fields: `text`, `model_type`, `status`, `latency_ms`, `token_usage`, `cost_usd`.
+
+### UnifiedModel (Base)
+
+```python
+class UnifiedModel(ABC):
+    @abstractmethod
+    async def generate(self, **kwargs) -> GenerationResult: ...
+    @abstractmethod
+    async def generate_batch(self, items: List[Dict]) -> List[GenerationResult]: ...
+    @property
+    @abstractmethod
+    def model_type(self) -> ModelType: ...
+    @property
+    def model_version(self) -> str: ...
+    def supports(self, capability: str) -> bool: ...
+    def estimate_cost(self, **kwargs) -> float: ...
 ```
 
 ### AnnotationStore (01-data)
@@ -110,8 +129,8 @@ class TeacherModel(ABC):
 ```python
 class AnnotationStore:
     def save(self, annotation: Annotation, source: str) -> Path: ...
-    def load(self, annotation_id: str) -> Optional[Annotation]: ...
-    def export_to_jsonl(self, output_path: Path, format: str) -> int: ...
+    def load(self, annotation_id: str, source: str) -> Optional[Annotation]: ...
+    def load_all(self, source: str) -> Iterator[Annotation]: ...
 ```
 
 ### Pipeline (04-pipeline)
@@ -119,7 +138,9 @@ class AnnotationStore:
 ```python
 class AnnotationPipeline:
     async def annotate_video(self, video_path: Path, video_id: str) -> Annotation: ...
-    async def process_batch(self, items: List[Dict]) -> List[Annotation]: ...
+    async def process_batch(
+        self, items: List[Dict], max_concurrent: int = 5
+    ) -> Tuple[List[Annotation], List[Dict]]: ...
 ```
 
 ---

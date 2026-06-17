@@ -56,6 +56,7 @@ subsystems:
     doc: "docs/subsystems/02-teacher.md"
     notable_recent_changes:
       - "2024-06-17: Base class + 3 implementations created"
+      - "2024-06-18: UnifiedModel interface with GenerationResult standardized across all teachers"
     known_gaps: []
     last_validated:
       date: "2024-06-17"
@@ -85,11 +86,14 @@ subsystems:
   - id: 04-pipeline
     title: "Annotation Pipeline — End-to-end video annotation"
     status: active-dev
-    health: yellow
+    health: green
     code_root: "src/dvas/pipeline/"
     doc: "docs/subsystems/04-pipeline.md"
     notable_recent_changes:
       - "2024-06-17: EPIC-specific pipeline created"
+      - "2024-06-18: Type hints added, mypy clean for pipeline modules"
+      - "2024-06-18: Exception hierarchy unified (dvas.exceptions)"
+      - "2024-06-18: Performance optimizations: frame sampling, batch processing, memory"
     known_gaps:
       - title: "No batch retry logic for API failures"
         opened: "2024-06-17"
@@ -97,10 +101,10 @@ subsystems:
         next_review: "2024-06-21"
         notes: "Currently fails fast. Need partial retry + checkpoint."
     last_validated:
-      date: "2024-06-17"
+      date: "2024-06-18"
       by: "claude"
-      method: "code-review"
-      evidence: "Flow validation"
+      method: "unit-tests"
+      evidence: "123 tests pass, pipeline modules mypy clean"
 
   - id: 05-evaluation
     title: "Quality Evaluation — BLEU/CIDEr + LLM-as-Judge"

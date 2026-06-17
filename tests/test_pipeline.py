@@ -27,33 +27,89 @@ class TestAnnotationPipeline:
 
     @pytest.mark.asyncio
     async def test_parse_response(self):
-        """Test response parsing."""
+        """Test response parsing with new structured parser."""
         from dvas.pipeline.core import AnnotationPipeline
 
         pipeline = AnnotationPipeline()
 
-        # Test JSON-like response
-        text = """{"scene_description": "A person cooking", "steps": [{"order": 1, "action": "cut", "details": "cutting vegetables"}]}"""
+        # Test JSON-like response with markdown code block
+        text = """```json
+{"scene_description": "A person cooking", "steps": [{"order": 1, "action": "cut", "details": "cutting vegetables"}]}
+```"""
         parsed = pipeline._parse_response(text)
         assert parsed["scene_description"] == "A person cooking"
         assert len(parsed["qa_pairs"]) == 1
+        assert parsed["_parse_metadata"]["method"] == "json_block"
+
+        # Test JSON without code block
+        text2 = '{"scene_description": "A person cooking", "steps": []}'
+        parsed2 = pipeline._parse_response(text2)
+        assert parsed2["scene_description"] == "A person cooking"
 
         # Test plain text response
         plain_text = "This is a simple description of the video."
-        parsed2 = pipeline._parse_response(plain_text)
-        assert parsed2["scene_description"] == plain_text[:500]
+        parsed3 = pipeline._parse_response(plain_text)
+        assert parsed3["scene_description"] == plain_text[:500]
+        assert parsed3["_parse_metadata"]["method"] == "plain_text"
+
+    @pytest.mark.asyncio
+    async def test_parse_response_structured_text(self):
+        """Test parsing structured text with section markers."""
+        from dvas.pipeline.core import AnnotationPipeline
+
+        pipeline = AnnotationPipeline()
+
+        text = """Scene: A person is preparing a salad in the kitchen.
+
+Actions:
+- cut vegetables
+- wash lettuce
+- mix ingredients
+
+Objects: knife, cutting board, bowl"""
+
+        parsed = pipeline._parse_response(text)
+        assert "preparing a salad" in parsed["scene_description"]
+        assert len(parsed["actions"]) > 0
+        assert len(parsed["objects"]) > 0
+        assert parsed["_parse_metadata"]["method"] == "structured_text"
+
+    @pytest.mark.asyncio
+    async def test_parse_response_with_objects_and_actions(self):
+        """Test parsing response with objects and hand_actions."""
+        from dvas.pipeline.core import AnnotationPipeline
+
+        pipeline = AnnotationPipeline()
+
+        text = '{"scene_description": "Cooking scene", "objects": [{"name": "knife", "state": "sharp"}], "hand_actions": [{"hand": "right", "action": "cutting", "target": "vegetables"}]}'
+        parsed = pipeline._parse_response(text)
+        assert parsed["scene_description"] == "Cooking scene"
+        assert len(parsed["objects"]) == 1
+        assert parsed["objects"][0].name == "knife"
+        assert len(parsed["actions"]) == 1
+        assert parsed["actions"][0].verb == "cutting"
+
+    @pytest.mark.asyncio
+    async def test_parse_response_empty(self):
+        """Test parsing empty response."""
+        from dvas.pipeline.core import AnnotationPipeline
+
+        pipeline = AnnotationPipeline()
+        parsed = pipeline._parse_response("")
+        assert parsed["scene_description"] == ""
+        assert parsed["_parse_metadata"]["method"] == "empty_input"
 
     def test_checkpoint_creation(self, tmp_path):
         """Test checkpoint save/load."""
-        from dvas.pipeline.core import PipelineCheckpoint
+        from dvas.pipeline.checkpoint import CheckpointManager
 
-        checkpoint = PipelineCheckpoint(tmp_path / "test_checkpoint.json")
+        checkpoint = CheckpointManager(tmp_path / "test_checkpoint.json")
         checkpoint.mark_processed("video_001")
         checkpoint.mark_failed("video_002", "API error")
         checkpoint.save()
 
         # Load in new checkpoint
-        new_checkpoint = PipelineCheckpoint(tmp_path / "test_checkpoint.json")
+        new_checkpoint = CheckpointManager(tmp_path / "test_checkpoint.json")
         loaded = new_checkpoint.load()
         assert loaded is True
         assert "video_001" in new_checkpoint.processed_ids

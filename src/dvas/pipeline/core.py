@@ -1,22 +1,22 @@
-"""Annotation pipeline with retry and checkpoint support."""
+"""Annotation pipeline - thin orchestration layer.
+
+Delegates all work to focused components:
+- CheckpointManager: checkpoint persistence
+- StructuredParser: response parsing
+- AnnotationBuilder: annotation construction
+"""
 
 import asyncio
-import json
-import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-from dvas.data.schemas import (
-    Action,
-    Annotation,
-    Hand,
-    Object,
-    QAPair,
-    Segment,
-    VideoMetadata,
-)
+from dvas.data.schemas import Annotation, Segment, VideoMetadata
 from dvas.data.storage import AnnotationStore
 from dvas.data.video_loader import Frame, VideoLoader
+from dvas.models.base import GenerationResult
+from dvas.pipeline.builder import AnnotationBuilder
+from dvas.pipeline.checkpoint import CheckpointManager
+from dvas.pipeline.parser import StructuredParser
 from dvas.utils.logging import get_logger
 from dvas.utils.retry import with_retry
 
@@ -26,57 +26,12 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-class PipelineCheckpoint:
-    """Checkpoint for resumable pipeline processing."""
-
-    def __init__(self, checkpoint_path: Path):
-        self.checkpoint_path = checkpoint_path
-        self.processed_ids: set = set()
-        self.failed_items: List[Dict] = []
-
-    def load(self) -> bool:
-        """Load checkpoint if exists."""
-        if not self.checkpoint_path.exists():
-            return False
-
-        try:
-            with open(self.checkpoint_path) as f:
-                data = json.load(f)
-            self.processed_ids = set(data.get("processed", []))
-            self.failed_items = data.get("failed", [])
-            logger.info(
-                "checkpoint_loaded",
-                processed=len(self.processed_ids),
-                failed=len(self.failed_items),
-            )
-            return True
-        except Exception as e:
-            logger.error("checkpoint_load_failed", error=str(e))
-            return False
-
-    def save(self) -> None:
-        """Save current checkpoint."""
-        self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.checkpoint_path, "w") as f:
-            json.dump(
-                {
-                    "processed": list(self.processed_ids),
-                    "failed": self.failed_items,
-                },
-                f,
-            )
-
-    def mark_processed(self, video_id: str) -> None:
-        """Mark video as processed."""
-        self.processed_ids.add(video_id)
-
-    def mark_failed(self, video_id: str, error: str) -> None:
-        """Mark video as failed."""
-        self.failed_items.append({"video_id": video_id, "error": error})
-
-
 class AnnotationPipeline:
-    """Pipeline for generating fine-grained temporal annotations with retry."""
+    """Thin orchestrator for video annotation.
+
+    Pipeline does not contain business logic. It only coordinates
+    between specialized components.
+    """
 
     def __init__(
         self,
@@ -86,24 +41,40 @@ class AnnotationPipeline:
         segment_duration: float = 5.0,
         checkpoint_path: Optional[Path] = None,
     ):
+        """Initialize the annotation pipeline.
+
+        Args:
+            teacher_model: Teacher model for generating annotations
+            store: Annotation storage backend
+            num_frames: Number of frames to sample per segment
+            segment_duration: Duration of each segment in seconds
+            checkpoint_path: Path for checkpoint persistence
+        """
         self._teacher = teacher_model
         self.store = store or AnnotationStore()
         self.num_frames = num_frames
         self.segment_duration = segment_duration
         self.checkpoint = (
-            PipelineCheckpoint(checkpoint_path) if checkpoint_path else None
+            CheckpointManager(checkpoint_path) if checkpoint_path else None
+        )
+        self.parser = StructuredParser()
+        self.builder = AnnotationBuilder(
+            model_version=getattr(teacher_model, "model_name", "unknown")
         )
 
     @property
     def teacher(self) -> "TeacherModel":
+        """Lazy-load teacher model if not provided."""
         if self._teacher is None:
             from dvas.models.teacher.gpt4v import GPT4VTeacher
             self._teacher = GPT4VTeacher()
+            self.builder.model_version = self._teacher.model_name
         return self._teacher
 
     @teacher.setter
     def teacher(self, value: "TeacherModel") -> None:
         self._teacher = value
+        self.builder.model_version = getattr(value, "model_name", "unknown")
 
     @with_retry(
         max_attempts=3,
@@ -116,42 +87,40 @@ class AnnotationPipeline:
         video_path: Path,
         video_id: str,
     ) -> Annotation:
-        """Generate complete annotation for a video with retry."""
-        logger.info(
-            "annotation_starting",
-            video_id=video_id,
-            path=str(video_path),
-        )
+        """Generate complete annotation for a video.
 
-        # Check if already processed
-        if self.checkpoint and video_id in self.checkpoint.processed_ids:
+        Args:
+            video_path: Path to the video file
+            video_id: Unique identifier for the video
+
+        Returns:
+            Complete annotation with segments and metadata
+        """
+        logger.info("annotation_starting", video_id=video_id, path=str(video_path))
+
+        # Check checkpoint
+        if self.checkpoint and self.checkpoint.is_processed(video_id):
             logger.info("video_already_processed", video_id=video_id)
             existing = self.store.load(f"{video_id}_annotated", source="gold")
             if existing:
                 return existing
 
+        # Step 1: Load video and detect scenes
         segments: List[Segment] = []
         metadata: Optional[VideoMetadata] = None
 
         with VideoLoader(video_path) as loader:
             metadata = loader.metadata
-
-            # Detect scenes using optimized method
             scenes = loader.detect_scenes(min_duration=1.0, max_scenes=20)
-            logger.info(
-                "scenes_detected",
-                video_id=video_id,
-                num_scenes=len(scenes),
-            )
+            logger.info("scenes_detected", video_id=video_id, num_scenes=len(scenes))
 
-            # Process each scene
+            # Step 2: Annotate each scene
             for i, (start, end) in enumerate(scenes):
                 try:
-                    segment = await self._annotate_segment_streaming(
+                    segment = await self._annotate_segment(
                         loader=loader,
                         start_time=start,
                         end_time=end,
-                        segment_idx=i,
                     )
                     segments.append(segment)
                 except Exception as e:
@@ -161,26 +130,24 @@ class AnnotationPipeline:
                         segment=i,
                         error=str(e),
                     )
-                    # Continue with other segments
+                    segments.append(
+                        self.builder.build_empty_segment(start, end, str(e))
+                    )
 
         if not metadata:
             raise RuntimeError("Failed to extract video metadata")
 
-        # Build complete annotation
-        annotation = Annotation(
-            id=f"{video_id}_annotated",
+        # Step 3: Build and save annotation
+        annotation = self.builder.build_annotation(
             video_id=video_id,
             video_path=str(video_path),
             segments=segments,
             metadata=metadata,
-            source="teacher",
-            model_version=self.teacher.model_name,
         )
 
-        # Save to store
         self.store.save(annotation, source="gold")
 
-        # Update checkpoint
+        # Step 4: Update checkpoint
         if self.checkpoint:
             self.checkpoint.mark_processed(video_id)
             self.checkpoint.save()
@@ -193,15 +160,14 @@ class AnnotationPipeline:
 
         return annotation
 
-    async def _annotate_segment_streaming(
+    async def _annotate_segment(
         self,
         loader: VideoLoader,
         start_time: float,
         end_time: float,
-        segment_idx: int = 0,
     ) -> Segment:
-        """Annotate a single segment using streaming frames."""
-        # Use streaming instead of loading all frames into memory
+        """Annotate a single segment."""
+        # Collect frames
         frames: List[Frame] = []
         async for frame in loader.aiter_frames(
             start_time=start_time,
@@ -211,106 +177,49 @@ class AnnotationPipeline:
             frames.append(frame)
 
         if not frames:
-            return Segment(
-                start_time=start_time,
-                end_time=end_time,
-                caption="",
+            return self.builder.build_empty_segment(
+                start_time, end_time, "no_frames_extracted"
             )
 
         frame_arrays = [f.data for f in frames]
 
-        # Get teacher response with retry
-        @with_retry(
-            max_attempts=3,
-            base_delay=2.0,
-            max_delay=60.0,
-            exceptions=(ConnectionError, TimeoutError, OSError),
-        )
-        async def _call_teacher():
-            return await self.teacher.annotate(
-                frames=frame_arrays,
-                task="fine_grained",
+        # Call teacher with retry
+        result = await self._call_teacher_with_retry(frame_arrays)
+
+        if result.is_failure():
+            return self.builder.build_empty_segment(
+                start_time, end_time, result.error_message or "teacher_failed"
             )
 
-        result = await _call_teacher()
-        response_text = result.get("text", "")
+        response_text = result.text
 
-        # Parse structured output
+        # Parse response
         parsed = self._parse_response(response_text)
 
-        return Segment(
+        # Build segment
+        return self.builder.build_segment(
             start_time=start_time,
             end_time=end_time,
-            caption=parsed.get("scene_description", ""),
-            caption_dense=response_text,
-            qa_pairs=parsed.get("qa_pairs", []),
-            objects=parsed.get("objects", []),
-            actions=parsed.get("actions", []),
+            response_text=response_text,
+            parsed=parsed,
         )
 
+    @with_retry(
+        max_attempts=3,
+        base_delay=2.0,
+        max_delay=60.0,
+        exceptions=(ConnectionError, TimeoutError, OSError),
+    )
+    async def _call_teacher_with_retry(
+        self, frame_arrays: List[Any]
+    ) -> GenerationResult:
+        """Call teacher model with retry logic."""
+        return await self.teacher.annotate(frames=frame_arrays, task="fine_grained")
+
     def _parse_response(self, text: str) -> Dict[str, Any]:
-        """Parse structured output from model response."""
-        result = {
-            "scene_description": "",
-            "qa_pairs": [],
-            "objects": [],
-            "actions": [],
-        }
-
-        # Try to extract JSON-like structure
-        try:
-            # Look for JSON block
-            json_match = re.search(r"\{[\s\S]*\}", text)
-            if json_match:
-                json_str = json_match.group()
-                data = json.loads(json_str)
-
-                # Extract scene description
-                result["scene_description"] = data.get(
-                    "scene_description", text[:500]
-                )
-
-                # Extract QA pairs
-                if "steps" in data:
-                    for i, step in enumerate(data["steps"][:5]):
-                        result["qa_pairs"].append(
-                            QAPair(
-                                question=f"Step {i+1}: What action is performed?",
-                                answer=step.get("action", "")
-                                + " "
-                                + step.get("details", ""),
-                            )
-                        )
-
-                # Extract objects
-                if "objects" in data:
-                    for obj in data["objects"]:
-                        result["objects"].append(
-                            Object(
-                                name=obj.get("name", "unknown"),
-                                attributes={"state": obj.get("state", "")},
-                            )
-                        )
-
-                # Extract actions
-                if "hand_actions" in data:
-                    for ha in data["hand_actions"]:
-                        result["actions"].append(
-                            Action(
-                                verb=ha.get("action", "").split()[0],
-                                noun=ha.get("target", ""),
-                                hand=Hand(ha.get("hand", "unknown")),
-                            )
-                        )
-            else:
-                # No JSON block found, use plain text
-                result["scene_description"] = text[:500]
-
-        except json.JSONDecodeError:
-            # If JSON parsing fails, use heuristics
-            result["scene_description"] = text[:500]
-
-        return result
+        """Parse model response using structured parser."""
+        parsed = self.parser.parse(text)
+        return self.parser.to_legacy_dict(parsed)
 
     async def process_batch(
         self,
@@ -318,12 +227,18 @@ class AnnotationPipeline:
         max_concurrent: int = 5,
         checkpoint_every: int = 10,
     ) -> Tuple[List[Annotation], List[Dict]]:
-        """Process multiple videos with concurrency control and checkpointing.
+        """Process multiple videos with concurrency control and streaming results.
 
-        Uses BatchProcessor for automatic checkpoint persistence and retry.
+        Uses chunked processing to limit memory usage and enable checkpointing.
+        Results are yielded as they complete rather than accumulating all in memory.
+
+        Args:
+            video_items: List of dicts with 'video_path' and 'video_id'
+            max_concurrent: Max concurrent annotation tasks
+            checkpoint_every: Save checkpoint every N items
 
         Returns:
-            Tuple of (successful annotations, failed items)
+            Tuple of (successful_annotations, failed_items)
         """
         from dvas.utils.retry import BatchProcessor
 
@@ -332,7 +247,6 @@ class AnnotationPipeline:
         failed: List[Dict] = []
         processed_count = 0
 
-        # Initialize BatchProcessor for checkpoint persistence
         batch_processor = None
         if self.checkpoint:
             batch_processor = BatchProcessor(
@@ -343,11 +257,10 @@ class AnnotationPipeline:
         async def process_one(item: Dict) -> Optional[Annotation]:
             async with semaphore:
                 try:
-                    result = await self.annotate_video(
+                    return await self.annotate_video(
                         video_path=Path(item["video_path"]),
                         video_id=item["video_id"],
                     )
-                    return result
                 except (ConnectionError, TimeoutError, OSError) as e:
                     logger.error(
                         "batch_processing_failed",
@@ -360,7 +273,7 @@ class AnnotationPipeline:
                         )
                     return None
 
-        # Process in chunks to save checkpoints
+        # Process in chunks to limit memory and enable checkpointing
         for i in range(0, len(video_items), checkpoint_every):
             chunk = video_items[i : i + checkpoint_every]
             tasks = [process_one(item) for item in chunk]
@@ -374,12 +287,15 @@ class AnnotationPipeline:
                         batch_processor.mark_failed(
                             f"item_{processed_count}", str(result)
                         )
-                elif result is not None:
+                elif isinstance(result, Annotation):
                     successful.append(result)
                     if batch_processor:
                         batch_processor.mark_processed(f"item_{processed_count}")
 
-            # Save checkpoint after each chunk
+            # Force garbage collection between chunks to free frame memory
+            import gc
+            gc.collect()
+
             if self.checkpoint:
                 self.checkpoint.save()
                 if batch_processor:
@@ -396,7 +312,13 @@ class AnnotationPipeline:
 class EPICAnnotationPipeline(AnnotationPipeline):
     """Specialized pipeline for EPIC-KITCHENS dataset."""
 
-    def __init__(self, epic_root: Path, **kwargs):
+    def __init__(self, epic_root: Path, **kwargs: Any) -> None:
+        """Initialize EPIC-KITCHENS pipeline.
+
+        Args:
+            epic_root: Root directory of EPIC-KITCHENS dataset
+            **kwargs: Passed to AnnotationPipeline.__init__
+        """
         super().__init__(**kwargs)
         from dvas.data.video_loader import EPICKitchensLoader
 
@@ -408,8 +330,7 @@ class EPICAnnotationPipeline(AnnotationPipeline):
         max_videos: int = 1000,
         participant: Optional[str] = None,
     ) -> Tuple[List[Annotation], List[Dict]]:
-        """Annotate videos from an EPIC-KITCHENS split with checkpointing."""
-        # Get video list
+        """Annotate videos from an EPIC-KITCHENS split."""
         import pandas as pd
 
         split_file = self.epic_loader.root_path / f"EPIC_100_{split}.csv"
@@ -420,29 +341,18 @@ class EPICAnnotationPipeline(AnnotationPipeline):
 
         video_ids = df["video_id"].unique()[:max_videos]
 
-        # Filter out already processed
         if self.checkpoint:
             video_ids = [
-                vid
-                for vid in video_ids
-                if vid not in self.checkpoint.processed_ids
+                vid for vid in video_ids if not self.checkpoint.is_processed(vid)
             ]
-            logger.info(
-                "filtered_processed_videos",
-                remaining=len(video_ids),
-            )
+            logger.info("filtered_processed_videos", remaining=len(video_ids))
 
-        # Build video items
         items = []
         for vid in video_ids:
             video_path = self.epic_loader.get_video_path(vid)
             if video_path and video_path.exists():
-                items.append({
-                    "video_id": vid,
-                    "video_path": video_path,
-                })
+                items.append({"video_id": vid, "video_path": video_path})
 
-        # Process batch
         return await self.process_batch(items)
 
 
@@ -451,7 +361,7 @@ def create_training_data_from_gold(
     output_path: Path,
     format: str = "llava",
 ) -> int:
-    """Export gold annotations as training dataset for student model."""
+    """Export gold annotations as training dataset."""
     annotations = store.load_all(source="gold")
 
     count = 0
@@ -462,36 +372,27 @@ def create_training_data_from_gold(
             elif format == "openai":
                 data = ann.to_openai_format()
             else:
-                # Conversational format for SFT
+                import json as _json
                 data = {
                     "messages": [
                         {
                             "role": "system",
-                            "content": "You are a video understanding AI that generates detailed annotations for robotic manipulation tasks.",
+                            "content": "You are a video understanding AI.",
                         },
                         {
                             "role": "user",
-                            "content": f"<video> {ann.video_path}\nProvide a detailed analysis of this first-person video, including hand actions, object interactions, and temporal sequence.",
+                            "content": f"<video> {ann.video_path}\nAnalyze.",
                         },
                         {
                             "role": "assistant",
-                            "content": (
-                                ann.segments[0].caption_dense
-                                if ann.segments
-                                else ""
-                            ),
+                            "content": ann.segments[0].caption_dense if ann.segments else "",
                         },
                     ]
                 }
 
-            f.write(json.dumps(data, ensure_ascii=False) + "\n")
+            import json as _json
+            f.write(_json.dumps(data, ensure_ascii=False) + "\n")
             count += 1
 
-    logger.info(
-        "training_data_exported",
-        count=count,
-        format=format,
-        path=str(output_path),
-    )
-
+    logger.info("training_data_exported", count=count, format=format, path=str(output_path))
     return count

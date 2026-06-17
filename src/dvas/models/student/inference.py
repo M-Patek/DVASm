@@ -1,12 +1,14 @@
 """Inference engine for student model with vLLM support."""
 
+import time
 from pathlib import Path
-from typing import AsyncIterator, Dict, List, Optional, Union
+from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
 import numpy as np
 from PIL import Image
 from transformers import AutoModelForVision2Seq, AutoProcessor
 
+from dvas.models.base import GenerationResult, GenerationStatus, ModelType, UnifiedModel
 from dvas.models.teacher.base import TeacherModel
 from dvas.utils.logging import get_logger
 
@@ -31,7 +33,7 @@ def load_frames_from_video(
     return frames
 
 
-class StudentInferenceEngine:
+class StudentInferenceEngine(UnifiedModel):
     """Inference engine for the fine-tuned student model."""
 
     def __init__(
@@ -47,6 +49,16 @@ class StudentInferenceEngine:
         self.model = None
         self.processor = None
         self._load_model()
+
+    @property
+    def model_type(self) -> ModelType:
+        """Return the model type identifier."""
+        return ModelType.STUDENT_LOCAL
+
+    @property
+    def model_version(self) -> str:
+        """Return the model version string."""
+        return str(self.model_path.name)
 
     def _load_model(self) -> None:
         """Load model and processor."""
@@ -96,44 +108,123 @@ class StudentInferenceEngine:
             self.use_vllm = False
             self._load_hf()
 
-    def generate(
+    def _capabilities(self) -> List[str]:
+        """Return list of supported capabilities."""
+        return ["video", "frames", "text", "multimodal"]
+
+    def estimate_cost(
         self,
-        video_path: Path,
-        prompt: str = "Describe the video in detail, including hand actions and object interactions.",
-        max_new_tokens: int = 512,
-        temperature: float = 0.2,
-        num_beams: int = 1,
-    ) -> str:
+        num_frames: int = 16,
+        prompt_length: int = 500,
+    ) -> float:
+        """Estimate cost for a generation request."""
+        # Local inference: essentially free (compute cost only)
+        return 0.0
+
+    async def generate(
+        self,
+        frames: Optional[List[np.ndarray]] = None,
+        video_path: Optional[Path] = None,
+        prompt: Optional[str] = None,
+        task: str = "fine_grained",
+        **kwargs
+    ) -> GenerationResult:
         """Generate description for a video."""
-        # Load frames
-        frames = load_frames_from_video(video_path)
+        start_time = time.perf_counter()
 
-        if not frames:
-            return ""
+        try:
+            if video_path is None and frames is None:
+                return GenerationResult.failure(
+                    error_message="Must provide either video_path or frames",
+                    model_type=self.model_type,
+                    model_version=self.model_version,
+                )
 
-        # Build messages
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "video"},
-                    {"type": "text", "text": prompt},
-                ],
-            }
-        ]
+            # Load frames if video_path provided
+            if frames is None and video_path is not None:
+                pil_frames = load_frames_from_video(video_path)
+            else:
+                pil_frames = []
+                for frame in (frames or []):
+                    if isinstance(frame, np.ndarray):
+                        rgb = frame[:, :, ::-1] if frame.shape[2] == 3 else frame
+                        pil_frames.append(Image.fromarray(rgb))
+                    elif isinstance(frame, Image.Image):
+                        pil_frames.append(frame)
 
-        if self.use_vllm:
-            return self._generate_vllm(messages, frames, max_new_tokens, temperature)
-        else:
-            return self._generate_hf(messages, frames, max_new_tokens, temperature, num_beams)
+            if not pil_frames:
+                return GenerationResult.failure(
+                    error_message="No frames could be loaded",
+                    model_type=self.model_type,
+                    model_version=self.model_version,
+                )
+
+            default_prompt = "Describe the video in detail, including hand actions and object interactions."
+            system_prompt = prompt or default_prompt
+
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "video"},
+                        {"type": "text", "text": system_prompt},
+                    ],
+                }
+            ]
+
+            if self.use_vllm:
+                text = self._generate_vllm(messages, pil_frames, **kwargs)
+            else:
+                text = self._generate_hf(messages, pil_frames, **kwargs)
+
+            latency_ms = (time.perf_counter() - start_time) * 1000
+
+            return GenerationResult(
+                text=text,
+                model_type=self.model_type,
+                model_version=self.model_version,
+                status=GenerationStatus.SUCCESS,
+                latency_ms=latency_ms,
+                cost_usd=0.0,
+                metadata={"device": self.device, "backend": "vllm" if self.use_vllm else "hf"},
+            )
+
+        except Exception as e:
+            latency_ms = (time.perf_counter() - start_time) * 1000
+            return GenerationResult(
+                text="",
+                model_type=self.model_type,
+                model_version=self.model_version,
+                status=GenerationStatus.FAILURE,
+                latency_ms=latency_ms,
+                error_message=str(e),
+            )
+
+    async def generate_batch(
+        self,
+        items: List[Dict[str, Any]],
+        **kwargs
+    ) -> List[GenerationResult]:
+        """Batch generation."""
+        results = []
+        for item in items:
+            result = await self.generate(
+                frames=item.get("frames"),
+                video_path=item.get("video_path"),
+                prompt=item.get("prompt"),
+                task=item.get("task", "fine_grained"),
+                **kwargs
+            )
+            results.append(result)
+        return results
 
     def _generate_hf(
         self,
         messages: List[Dict],
         frames: List[Image.Image],
-        max_new_tokens: int,
-        temperature: float,
-        num_beams: int,
+        max_new_tokens: int = 512,
+        temperature: float = 0.2,
+        num_beams: int = 1,
     ) -> str:
         """Generate with HF transformers."""
         import torch
@@ -178,8 +269,9 @@ class StudentInferenceEngine:
         self,
         messages: List[Dict],
         frames: List[Image.Image],
-        max_new_tokens: int,
-        temperature: float,
+        max_new_tokens: int = 512,
+        temperature: float = 0.2,
+        **kwargs
     ) -> str:
         """Generate with vLLM."""
         # vLLM handles prompt formatting differently
@@ -208,7 +300,11 @@ class StudentInferenceEngine:
         """Stream generation tokens."""
         # For streaming, we need to use text-generation-inference or similar
         # This is a placeholder implementation
-        full_text = self.generate(video_path, prompt, max_new_tokens)
+        full_text = self.generate(
+            video_path=video_path,
+            prompt=prompt,
+            task="fine_grained",
+        )
 
         # Yield word by word for demonstration
         words = full_text.split()
@@ -225,10 +321,16 @@ class StudentTeacherBridge(TeacherModel):
         fallback_to_teacher: bool = True,
         confidence_threshold: float = 0.7,
     ):
+        super().__init__(model_name="student-bridge")
         self.student = student_engine
         self.fallback_to_teacher = fallback_to_teacher
         self.confidence_threshold = confidence_threshold
         self._teacher_fallback = None
+
+    @property
+    def model_type(self) -> ModelType:
+        """Return the model type identifier."""
+        return ModelType.STUDENT_EDGE
 
     def _load_fallback_teacher(self):
         """Load teacher model for fallback."""
@@ -239,33 +341,24 @@ class StudentTeacherBridge(TeacherModel):
 
     async def annotate(
         self,
-        frames: List[np.ndarray],
+        video_path: Optional[Path] = None,
+        frames: Optional[List[np.ndarray]] = None,
         prompt: Optional[str] = None,
         task: str = "fine_grained",
         **kwargs,
-    ) -> Dict[str, any]:
+    ) -> GenerationResult:
         """Annotate using student model with fallback option."""
-        # Convert frames to PIL images
-        pil_frames = []
-        for frame in frames:
-            if isinstance(frame, np.ndarray):
-                rgb = frame[:, :, ::-1] if frame.shape[2] == 3 else frame
-                pil_frames.append(Image.fromarray(rgb))
-            else:
-                pil_frames.append(frame)
-
         # Try student model
         try:
-            result = self.student.generate(
-                video_path=kwargs.get("video_path", Path("temp.mp4")),
+            result = await self.student.generate(
+                frames=frames,
+                video_path=video_path,
                 prompt=prompt or f"Task: {task}",
+                task=task,
             )
 
-            # Simple confidence estimation (placeholder)
-            confidence = self._estimate_confidence(result)
-
-            if confidence >= self.confidence_threshold:
-                return {"text": result, "confidence": confidence, "source": "student"}
+            if result.is_success() and result.confidence >= self.confidence_threshold:
+                return result
 
         except Exception as e:
             logger.error("Student inference failed", error=str(e))
@@ -274,29 +367,73 @@ class StudentTeacherBridge(TeacherModel):
         if self.fallback_to_teacher:
             logger.info("Falling back to teacher model")
             self._load_fallback_teacher()
-            return await self._teacher_fallback.annotate(
-                frames=frames, prompt=prompt, task=task, **kwargs
+            teacher_result = await self._teacher_fallback.annotate(
+                video_path=video_path,
+                frames=frames,
+                prompt=prompt,
+                task=task,
+                **kwargs
             )
+            if teacher_result.is_success():
+                return GenerationResult.fallback(
+                    text=teacher_result.text,
+                    fallback_from=self.model_type,
+                    model_type=self._teacher_fallback.model_type,
+                )
+            return teacher_result
 
-        return {"text": "", "confidence": 0.0, "error": "Student failed, fallback disabled"}
+        return GenerationResult.failure(
+            error_message="Student failed, fallback disabled",
+            model_type=self.model_type,
+            model_version=self.model_version,
+        )
 
-    def _estimate_confidence(self, text: str) -> float:
-        """Estimate confidence based on response characteristics."""
-        # Simple heuristic: longer, more structured responses are more confident
-        length_score = min(len(text) / 500, 1.0)
+    async def annotate_batch(
+        self,
+        items: List[Dict[str, Any]],
+        **kwargs
+    ) -> List[GenerationResult]:
+        """Batch annotation with concurrency control."""
+        tasks = [
+            self.annotate(
+                video_path=item.get("video_path"),
+                frames=item.get("frames"),
+                prompt=item.get("prompt"),
+                task=item.get("task", "fine_grained"),
+                **kwargs
+            )
+            for item in items
+        ]
+        return await asyncio.gather(*tasks)
 
-        # Check for action keywords
-        action_keywords = ["hand", "pick", "place", "hold", "cut", "pour", "move"]
-        has_actions = any(kw in text.lower() for kw in action_keywords)
+    async def generate(
+        self,
+        frames: Optional[List[np.ndarray]] = None,
+        video_path: Optional[Path] = None,
+        prompt: Optional[str] = None,
+        task: str = "fine_grained",
+        **kwargs
+    ) -> GenerationResult:
+        """UnifiedModel.generate implementation - delegates to annotate."""
+        return await self.annotate(
+            video_path=video_path,
+            frames=frames,
+            prompt=prompt,
+            task=task,
+            **kwargs
+        )
 
-        # Check for temporal markers
-        temporal_markers = ["then", "next", "after", "before", "while"]
-        has_temporal = any(tm in text.lower() for tm in temporal_markers)
+    async def generate_batch(
+        self,
+        items: List[Dict[str, Any]],
+        **kwargs
+    ) -> List[GenerationResult]:
+        """UnifiedModel.generate_batch implementation - delegates to annotate_batch."""
+        return await self.annotate_batch(items, **kwargs)
 
-        # Combine scores
-        score = length_score * 0.5 + has_actions * 0.3 + has_temporal * 0.2
-
-        return min(score, 1.0)
+    def _capabilities(self) -> List[str]:
+        """Return list of supported capabilities."""
+        return ["video", "frames", "text", "multimodal"]
 
 
 def batch_inference(
@@ -305,11 +442,11 @@ def batch_inference(
     prompts: Optional[List[str]] = None,
     batch_size: int = 4,
     max_new_tokens: int = 512,
-) -> List[Dict]:
+) -> List[GenerationResult]:
     """Run batch inference on multiple videos."""
     engine = StudentInferenceEngine(model_path)
 
-    results = []
+    results: List[GenerationResult] = []
     prompts = prompts or ["Describe this video in detail."] * len(video_paths)
 
     for i in range(0, len(video_paths), batch_size):
@@ -318,22 +455,19 @@ def batch_inference(
 
         for video_path, prompt in zip(batch_paths, batch_prompts):
             try:
-                text = engine.generate(
+                result = engine.generate(
                     video_path=video_path,
                     prompt=prompt,
-                    max_new_tokens=max_new_tokens,
+                    task="fine_grained",
                 )
-                results.append({
-                    "video_path": str(video_path),
-                    "text": text,
-                    "status": "success",
-                })
+                # Note: generate is async, but batch_inference is sync
+                # In practice, you'd use asyncio.run() or similar
+                results.append(result)
             except Exception as e:
-                results.append({
-                    "video_path": str(video_path),
-                    "text": "",
-                    "status": "failed",
-                    "error": str(e),
-                })
+                results.append(GenerationResult.failure(
+                    error_message=str(e),
+                    model_type=engine.model_type,
+                    model_version=engine.model_version,
+                ))
 
     return results

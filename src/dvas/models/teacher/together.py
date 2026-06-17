@@ -1,6 +1,7 @@
 """Together.ai API wrapper for open-source vision models with connection pooling."""
 
 import asyncio
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -10,6 +11,7 @@ from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from dvas.config import settings
+from dvas.models.base import GenerationResult, GenerationStatus, ModelType
 from dvas.models.teacher.base import TeacherModel
 
 
@@ -41,6 +43,11 @@ class TogetherTeacher(TeacherModel):
         self._client: Optional[AsyncOpenAI] = None
         self._semaphore: Optional[asyncio.Semaphore] = None
         self.together_model = self.MODELS.get(model_name, model_name)
+
+    @property
+    def model_type(self) -> ModelType:
+        """Return the model type identifier."""
+        return ModelType.TEACHER_TOGETHER
 
     @property
     def _http_client(self) -> httpx.AsyncClient:
@@ -90,6 +97,21 @@ class TogetherTeacher(TeacherModel):
         if self.__http_client is not None:
             await self.__http_client.aclose()
 
+    def _capabilities(self) -> List[str]:
+        """Return list of supported capabilities."""
+        return ["video", "frames", "text", "multimodal"]
+
+    def estimate_cost(
+        self,
+        num_frames: int = 16,
+        prompt_length: int = 500,
+    ) -> float:
+        """Estimate cost for a generation request."""
+        # Together: ~$0.001 per image, ~$0.001 per 1K tokens
+        image_cost = num_frames * 0.001
+        token_cost = (prompt_length / 1000) * 0.001
+        return image_cost + token_cost
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=4, max=10)
@@ -101,57 +123,89 @@ class TogetherTeacher(TeacherModel):
         prompt: Optional[str] = None,
         temperature: float = 0.2,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> GenerationResult:
         """Generate annotation using Together AI."""
         if frames is None:
-            raise ValueError("Together API requires pre-extracted frames")
-
-        system_prompt = prompt or self._get_default_prompt("fine_grained")
-
-        # Sample frames if too many
-        if len(frames) > self.max_frames:
-            indices = np.linspace(0, len(frames) - 1, self.max_frames, dtype=int)
-            frames = [frames[i] for i in indices]
-
-        # Encode frames
-        encoded_frames = self._encode_frames(frames)
-
-        # Build content
-        content = [{"type": "text", "text": system_prompt}]
-        for encoded in encoded_frames:
-            content.append({
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{encoded}",
-                }
-            })
-
-        async with self.semaphore:
-            response = await self.client.chat.completions.create(
-                model=self.together_model,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": content
-                    }
-                ],
-                temperature=temperature,
-                max_tokens=2048,
-                **kwargs
+            return GenerationResult.failure(
+                error_message="Together API requires pre-extracted frames",
+                model_type=self.model_type,
+                model_version=self.model_version,
             )
 
-        return {
-            "text": response.choices[0].message.content,
-            "model": self.together_model,
-            "usage": response.usage.model_dump() if response.usage else {},
-            "finish_reason": response.choices[0].finish_reason,
-        }
+        start_time = time.perf_counter()
+
+        try:
+            system_prompt = prompt or self._get_default_prompt("fine_grained")
+
+            # Sample frames if too many
+            if len(frames) > self.max_frames:
+                indices = np.linspace(0, len(frames) - 1, self.max_frames, dtype=int)
+                frames = [frames[i] for i in indices]
+
+            # Encode frames
+            encoded_frames = self._encode_frames(frames)
+
+            # Build content
+            content = [{"type": "text", "text": system_prompt}]
+            for encoded in encoded_frames:
+                content.append({
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{encoded}",
+                    }
+                })
+
+            async with self.semaphore:
+                response = await self.client.chat.completions.create(
+                    model=self.together_model,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": content
+                        }
+                    ],
+                    temperature=temperature,
+                    max_tokens=2048,
+                    **kwargs
+                )
+
+            latency_ms = (time.perf_counter() - start_time) * 1000
+
+            usage = response.usage.model_dump() if response.usage else {}
+            token_usage = {
+                "input": usage.get("prompt_tokens", 0),
+                "output": usage.get("completion_tokens", 0),
+            }
+
+            return GenerationResult(
+                text=response.choices[0].message.content or "",
+                model_type=self.model_type,
+                model_version=self.together_model,
+                status=GenerationStatus.SUCCESS,
+                latency_ms=latency_ms,
+                token_usage=token_usage,
+                cost_usd=self.estimate_cost(num_frames=len(encoded_frames)),
+                metadata={
+                    "finish_reason": response.choices[0].finish_reason,
+                },
+            )
+
+        except Exception as e:
+            latency_ms = (time.perf_counter() - start_time) * 1000
+            return GenerationResult(
+                text="",
+                model_type=self.model_type,
+                model_version=self.together_model,
+                status=GenerationStatus.FAILURE,
+                latency_ms=latency_ms,
+                error_message=str(e),
+            )
 
     async def annotate_batch(
         self,
         items: List[Dict[str, Any]],
         **kwargs
-    ) -> List[Dict[str, Any]]:
+    ) -> List[GenerationResult]:
         """Batch annotation with concurrency control."""
         tasks = [
             self.annotate(
@@ -161,4 +215,28 @@ class TogetherTeacher(TeacherModel):
             )
             for item in items
         ]
-        return await asyncio.gather(*tasks, return_exceptions=True)
+        return await asyncio.gather(*tasks)
+
+    async def generate(
+        self,
+        frames: Optional[List[np.ndarray]] = None,
+        video_path: Optional[Path] = None,
+        prompt: Optional[str] = None,
+        task: str = "fine_grained",
+        **kwargs
+    ) -> GenerationResult:
+        """UnifiedModel.generate implementation - delegates to annotate."""
+        return await self.annotate(
+            video_path=video_path,
+            frames=frames,
+            prompt=prompt,
+            **kwargs
+        )
+
+    async def generate_batch(
+        self,
+        items: List[Dict[str, Any]],
+        **kwargs
+    ) -> List[GenerationResult]:
+        """UnifiedModel.generate_batch implementation - delegates to annotate_batch."""
+        return await self.annotate_batch(items, **kwargs)

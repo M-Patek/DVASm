@@ -47,15 +47,26 @@ Unified async interface to GPT-4V, Claude 3, and Together AI (Qwen2-VL) for batc
 
 ## §3 — Key behaviors & contracts
 
-### Behavior 1: Async Pattern
+### Behavior 1: UnifiedModel Interface
 
-All teacher models are **async**:
+All teacher models extend `UnifiedModel` and return `GenerationResult`:
+
 ```python
 teacher = GPT4VTeacher()
-result = await teacher.annotate(frames=frames, task="fine_grained")
+result: GenerationResult = await teacher.annotate(frames=frames, task="fine_grained")
+
+if result.is_success():
+    print(result.text)           # Annotation text
+    print(result.latency_ms)     # Response time
+    print(result.token_usage)      # Token counts
+    print(result.cost_usd)         # Estimated cost
+else:
+    print(result.error_message)    # Error details
 ```
 
 Use `annotate_batch()` for concurrent processing with semaphore-based rate limiting.
+
+### Behavior 2: Frame Limits & Sampling
 
 ### Behavior 2: Frame Limits & Sampling
 
@@ -80,7 +91,9 @@ Base class provides default prompts:
 
 - Uses `tenacity` for retry with exponential backoff
 - 3 retries max for API failures
-- Batch processing returns exceptions in result list—check with `isinstance(result, Exception)`
+- All errors captured in `GenerationResult` with `status=GenerationStatus.FAILURE`
+- Batch processing returns `GenerationResult` objects—check with `result.is_failure()`
+- Custom exception hierarchy in `dvas.exceptions`: `APIError`, `APIRateLimitError`, `APITimeoutError`
 
 ## §4 — Integration with other subsystems
 

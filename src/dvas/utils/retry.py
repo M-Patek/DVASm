@@ -9,39 +9,15 @@ from functools import wraps
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, TypeVar
 
+from dvas.exceptions import (
+    APIRateLimitError,
+    APITimeoutError,
+    RetryExhaustedError,
+)
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
-
-
-class RetryExhaustedError(Exception):
-    """Raised when all retry attempts are exhausted."""
-
-    def __init__(self, message: str, attempts: int, last_error: Optional[Exception] = None):
-        super().__init__(message)
-        self.attempts = attempts
-        self.last_error = last_error
-
-
-class DVASException(Exception):
-    """Base exception for DVAS."""
-
-    def __init__(self, message: str, error_code: Optional[str] = None, details: Optional[Dict] = None):
-        super().__init__(message)
-        self.error_code = error_code
-        self.details = details or {}
-
-
-class APIRateLimitError(DVASException):
-    """Raised when API rate limit is exceeded."""
-
-    pass
-
-
-class APITimeoutError(DVASException):
-    """Raised when API call times out."""
-
-    pass
 
 
 def with_retry(

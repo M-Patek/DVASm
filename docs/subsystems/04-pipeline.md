@@ -79,8 +79,24 @@ Current parsing is heuristic-based:
 ### Behavior 4: Batch Processing
 
 - Uses `asyncio.Semaphore` for concurrency control
-- Failed items return as exceptions in results list
-- No automatic retry—must handle failures manually
+- Failed items are caught as exceptions and recorded in failed list
+- Check `isinstance(result, Exception)` to identify failures
+- Successful results are `Annotation` objects
+- **Note**: `process_batch()` now uses `asyncio.gather(return_exceptions=True)` for robust error handling
+- **Performance**: Batch processing includes garbage collection between chunks to free frame memory
+
+### Behavior 5: Performance Optimizations
+
+Recent performance improvements:
+
+| Optimization | Location | Impact |
+|-------------|----------|--------|
+| Frame seeking | `video_reader.py` | Skip frames via `CAP_PROP_POS_FRAMES` instead of reading each one |
+| Key frame heap | `frame_sampler.py` | Min-heap for top-N selection instead of storing all frames |
+| Concurrent encoding | `teacher/base.py` | ThreadPool for base64 encoding of large frame batches |
+| Metadata caching | `video_loader.py` | Module-level cache avoids re-reading video headers |
+| GC between chunks | `core.py` | Explicit garbage collection in batch processing |
+| Async streaming | `video_loader.py` | Background thread + asyncio queue for frame streaming |
 
 ## §4 — Integration with other subsystems
 
@@ -95,9 +111,10 @@ Current parsing is heuristic-based:
 | Generic pipeline | Complete | Scene detect → annotate → store |
 | EPIC pipeline | Complete | Integrates with EPIC action labels |
 | Response parsing | Partial | Heuristic-based, needs JSON mode |
-| Batch processing | Complete | With semaphore concurrency |
+| Batch processing | Complete | With semaphore concurrency + GC between chunks |
 | Checkpoint/resume | Missing | No recovery on failure |
 | Progress tracking | Partial | Via AnnotationStore counts |
+| Performance | Optimized | Frame seeking, heap sampling, concurrent encoding |
 
 **Active known_gaps** (from `status.yaml`):
 - No batch retry logic for API failures (severity: medium)
@@ -113,8 +130,11 @@ pytest tests/test_pipeline_epic.py -v --epic-root /path/to/epic
 
 # Test batch processing
 pytest tests/test_pipeline_batch.py -v
+
+# Run performance benchmarks
+python benchmarks/perf_benchmark.py
 ```
 
 ---
 
-*Subsystem doc: 04-pipeline | Updated: 2024-06-17*
+*Subsystem doc: 04-pipeline | Updated: 2024-06-18*
