@@ -102,7 +102,8 @@ class TestMigrationManager:
     def test_init(self, tmp_path: Path) -> None:
         """Test migration manager initialization."""
         db_path = tmp_path / "test.db"
-        manager = MigrationManager(db_path)
+        migrations_dir = tmp_path / "migrations"
+        manager = MigrationManager(db_path, migrations_dir=migrations_dir)
 
         assert manager.db_path == db_path
         assert manager.migrations_dir.exists()
@@ -110,7 +111,8 @@ class TestMigrationManager:
     def test_get_applied_empty(self, tmp_path: Path) -> None:
         """Test getting applied migrations when empty."""
         db_path = tmp_path / "test.db"
-        manager = MigrationManager(db_path)
+        migrations_dir = tmp_path / "migrations"
+        manager = MigrationManager(db_path, migrations_dir=migrations_dir)
 
         applied = manager.get_applied()
         assert applied == []
@@ -118,7 +120,8 @@ class TestMigrationManager:
     def test_create_migration(self, tmp_path: Path) -> None:
         """Test creating a new migration."""
         db_path = tmp_path / "test.db"
-        manager = MigrationManager(db_path)
+        migrations_dir = tmp_path / "migrations"
+        manager = MigrationManager(db_path, migrations_dir=migrations_dir)
 
         path = manager.create("test_migration")
         assert path.exists()
@@ -132,7 +135,8 @@ class TestMigrationManager:
     def test_apply_migration(self, tmp_path: Path) -> None:
         """Test applying a migration."""
         db_path = tmp_path / "test.db"
-        manager = MigrationManager(db_path)
+        migrations_dir = tmp_path / "migrations"
+        manager = MigrationManager(db_path, migrations_dir=migrations_dir)
 
         # Create a migration that creates a table
         migration_file = tmp_path / "001_test.sql"
@@ -152,7 +156,8 @@ class TestMigrationManager:
     def test_get_pending(self, tmp_path: Path) -> None:
         """Test getting pending migrations."""
         db_path = tmp_path / "test.db"
-        manager = MigrationManager(db_path)
+        migrations_dir = tmp_path / "migrations"
+        manager = MigrationManager(db_path, migrations_dir=migrations_dir)
 
         # Create a migration file
         migration_file = manager.migrations_dir / "001_test.sql"
@@ -186,7 +191,8 @@ class TestCLICommands:
     def test_migration_manager_db_creation(self, tmp_path: Path) -> None:
         """Test that migration manager creates database."""
         db_path = tmp_path / "migrations" / "test.db"
-        manager = MigrationManager(db_path)
+        migrations_dir = tmp_path / "migrations"
+        manager = MigrationManager(db_path, migrations_dir=migrations_dir)
         assert db_path.exists()
 
     def test_scaffold_module_content(self) -> None:
@@ -273,11 +279,14 @@ class TestScaffoldIntegration:
                 module_name=module_name,
                 ModuleName=ModuleName,
             )
-            file_path = target_dir / filename
+            file_path = target_dir / filename.format(
+                module_name=module_name,
+                ModuleName=ModuleName,
+            )
             file_path.write_text(content, encoding="utf-8")
 
         # Verify test file
-        test_file = target_dir / "test_my_feature.py"
+        test_file = target_dir / "my_feature.py"
         assert test_file.exists()
         content = test_file.read_text()
         assert "class TestMyFeatureProcessor" in content
@@ -289,7 +298,8 @@ class TestMigrationIntegration:
     def test_full_migration_workflow(self, tmp_path: Path) -> None:
         """Test complete migration workflow."""
         db_path = tmp_path / "app.db"
-        manager = MigrationManager(db_path)
+        migrations_dir = tmp_path / "migrations"
+        manager = MigrationManager(db_path, migrations_dir=migrations_dir)
 
         # Create migration
         migration_path = manager.create("add_users")
@@ -324,7 +334,8 @@ class TestMigrationIntegration:
     def test_multiple_migrations(self, tmp_path: Path) -> None:
         """Test multiple sequential migrations."""
         db_path = tmp_path / "app.db"
-        manager = MigrationManager(db_path)
+        migrations_dir = tmp_path / "migrations"
+        manager = MigrationManager(db_path, migrations_dir=migrations_dir)
 
         # Create two migrations
         m1 = manager.migrations_dir / "001_create_table.sql"
@@ -350,7 +361,8 @@ class TestMigrationIntegration:
     def test_migration_idempotency(self, tmp_path: Path) -> None:
         """Test that applying same migration twice is handled."""
         db_path = tmp_path / "app.db"
-        manager = MigrationManager(db_path)
+        migrations_dir = tmp_path / "migrations"
+        manager = MigrationManager(db_path, migrations_dir=migrations_dir)
 
         migration = manager.migrations_dir / "001_init.sql"
         migration.write_text("CREATE TABLE test (id INTEGER);")

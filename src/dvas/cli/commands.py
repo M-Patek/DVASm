@@ -301,7 +301,7 @@ class {ModuleName}Stage(PipelineStage):
         name="test",
         description="New test suite",
         files={
-            "test_{module_name}.py": '''"""Tests for {module_name}."""
+            "{module_name}.py": '''"""Tests for {module_name}."""
 
 import pytest
 
@@ -415,9 +415,9 @@ class Migration:
 class MigrationManager:
     """Simple migration manager for SQLite metadata."""
 
-    def __init__(self, db_path: Path) -> None:
+    def __init__(self, db_path: Path, migrations_dir: Optional[Path] = None) -> None:
         self.db_path = db_path
-        self.migrations_dir = settings.PROJECT_ROOT / "migrations"
+        self.migrations_dir = migrations_dir or (settings.PROJECT_ROOT / "migrations")
         self._init_db()
 
     def _init_db(self) -> None:
@@ -425,6 +425,7 @@ class MigrationManager:
         import sqlite3
 
         self.migrations_dir.mkdir(parents=True, exist_ok=True)
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(str(self.db_path))
         conn.execute("""
             CREATE TABLE IF NOT EXISTS _migrations (

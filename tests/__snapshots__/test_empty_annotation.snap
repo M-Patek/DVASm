@@ -1,5 +1,4 @@
 {
-  "created_at": "2026-06-17 18:02:38.446360+00:00",
   "id": "empty_test",
   "metadata": {
     "bitrate": null,
@@ -20,7 +19,6 @@
   "segments": [],
   "source": "teacher",
   "tags": [],
-  "updated_at": null,
   "video_id": "vid_empty",
   "video_path": "/path/to/empty.mp4"
 }

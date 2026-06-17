@@ -50,6 +50,11 @@ class TogetherTeacher(TeacherModel):
         return ModelType.TEACHER_TOGETHER
 
     @property
+    def model_version(self) -> str:
+        """Return the model version string."""
+        return self.together_model
+
+    @property
     def _http_client(self) -> httpx.AsyncClient:
         if self.__http_client is None:
             self.__http_client = httpx.AsyncClient(
@@ -143,7 +148,7 @@ class TogetherTeacher(TeacherModel):
                 frames = [frames[i] for i in indices]
 
             # Encode frames
-            encoded_frames = self._encode_frames(frames)
+            encoded_frames = await self._encode_frames(frames)
 
             # Build content
             content = [{"type": "text", "text": system_prompt}]

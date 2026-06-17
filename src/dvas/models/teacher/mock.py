@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
+from dvas.models.base import GenerationResult, ModelType
 from dvas.models.teacher.base import TeacherModel
 
 
@@ -28,13 +29,25 @@ class MockTeacher(TeacherModel):
         self.call_count = 0
         self.total_frames_processed = 0
 
-    async def annotate(
+    @property
+    def model_type(self) -> ModelType:
+        return ModelType.MOCK
+
+    @property
+    def model_version(self) -> str:
+        return self.model_name
+
+    def _capabilities(self) -> List[str]:
+        return ["video", "frames", "text", "multimodal"]
+
+    async def generate(
         self,
-        video_path: Optional[Path] = None,
         frames: Optional[List[np.ndarray]] = None,
+        video_path: Optional[Path] = None,
         prompt: Optional[str] = None,
+        task: str = "fine_grained",
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> GenerationResult:
         """Generate synthetic annotation."""
         self.call_count += 1
         if frames:
@@ -79,23 +92,25 @@ class MockTeacher(TeacherModel):
             "steps": steps,
         }
 
-        return {
-            "text": json.dumps(result, indent=2),
-            "model": self.model_name,
-            "usage": {"prompt_tokens": 100, "completion_tokens": 200, "total_tokens": 300},
-            "finish_reason": "stop",
-        }
+        return GenerationResult(
+            text=json.dumps(result, indent=2),
+            model_type=ModelType.MOCK,
+            model_version=self.model_name,
+            latency_ms=100.0,
+            token_usage={"prompt_tokens": 100, "completion_tokens": 200, "total_tokens": 300},
+        )
 
-    async def annotate_batch(
+    async def generate_batch(
         self,
         items: List[Dict[str, Any]],
         **kwargs
-    ) -> List[Dict[str, Any]]:
-        """Batch annotation (just calls annotate sequentially)."""
+    ) -> List[GenerationResult]:
+        """Batch annotation."""
         results = []
         for item in items:
-            result = await self.annotate(
+            result = await self.generate(
                 frames=item.get("frames"),
+                video_path=item.get("video_path"),
                 prompt=item.get("prompt"),
                 **kwargs
             )

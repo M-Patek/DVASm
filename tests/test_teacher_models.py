@@ -250,6 +250,10 @@ class TestTeacherModelBase:
             def model_type(self):
                 return ModelType.MOCK
 
+            @property
+            def model_version(self):
+                return "test-model"
+
             async def annotate(self, **kwargs):
                 return GenerationResult()
 
@@ -278,6 +282,10 @@ class TestTeacherModelBase:
             def model_type(self):
                 return ModelType.MOCK
 
+            @property
+            def model_version(self):
+                return "test-model"
+
             async def annotate(self, **kwargs):
                 return GenerationResult()
 
@@ -299,7 +307,8 @@ class TestTeacherModelBase:
         assert isinstance(encoded, str)
         assert len(encoded) > 0
 
-    def test_encode_frames(self):
+    @pytest.mark.asyncio
+    async def test_encode_frames(self):
         """Test batch frame encoding."""
         from dvas.models.teacher.base import TeacherModel
 
@@ -307,6 +316,10 @@ class TestTeacherModelBase:
             @property
             def model_type(self):
                 return ModelType.MOCK
+
+            @property
+            def model_version(self):
+                return "test-model"
 
             async def annotate(self, **kwargs):
                 return GenerationResult()
@@ -325,7 +338,7 @@ class TestTeacherModelBase:
 
         teacher = MockTeacher("test-model")
         frames = [np.zeros((100, 100, 3), dtype=np.uint8) for _ in range(3)]
-        encoded = teacher._encode_frames(frames)
+        encoded = await teacher._encode_frames(frames)
         assert len(encoded) == 3
         assert all(isinstance(e, str) for e in encoded)
 
@@ -337,6 +350,10 @@ class TestTeacherModelBase:
             @property
             def model_type(self):
                 return ModelType.MOCK
+
+            @property
+            def model_version(self):
+                return "test-model"
 
             async def annotate(self, **kwargs):
                 return GenerationResult()

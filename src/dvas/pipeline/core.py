@@ -215,7 +215,7 @@ class AnnotationPipeline:
         self, frame_arrays: List[Any]
     ) -> GenerationResult:
         """Call teacher model with retry logic."""
-        return await self.teacher.annotate(frames=frame_arrays, task="fine_grained")
+        return await self.teacher.generate(frames=frame_arrays, task="fine_grained")
 
     def _parse_response(self, text: str) -> Dict[str, Any]:
         """Parse model response using structured parser."""

@@ -300,11 +300,25 @@ class SnapshotStore:
         safe_name = name.replace("/", "_").replace("\\", "_")
         return self.snapshot_dir / f"{safe_name}.snap"
 
+    def _normalize(self, value: Any) -> Any:
+        """Normalize value for snapshot comparison, removing dynamic fields."""
+        if isinstance(value, dict):
+            result = {}
+            for k, v in value.items():
+                if k in ("created_at", "updated_at"):
+                    continue
+                result[k] = self._normalize(v)
+            return result
+        if isinstance(value, list):
+            return [self._normalize(v) for v in value]
+        return value
+
     def _serialize(self, value: Any) -> str:
         """Serialize a value for snapshot comparison."""
-        if isinstance(value, (dict, list)):
-            return json.dumps(value, indent=2, sort_keys=True, default=str)
-        return str(value)
+        normalized = self._normalize(value)
+        if isinstance(normalized, (dict, list)):
+            return json.dumps(normalized, indent=2, sort_keys=True, default=str)
+        return str(normalized)
 
     def assert_match(self, name: str, value: Any) -> None:
         """Assert that a value matches the stored snapshot.

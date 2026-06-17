@@ -2,7 +2,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-130%2F130%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-347%2F347%20passing-brightgreen.svg)]()
 
 > AI-powered video annotation platform with teacher-student distillation for robotic manipulation and egocentric vision.
 

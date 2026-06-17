@@ -86,8 +86,16 @@ class TestFuzzBoundingBox:
         """BoundingBox should reject non-numeric inputs."""
         for _ in range(100):
             s = fuzz_string(max_length=10)
-            with pytest.raises((ValueError, TypeError)):
-                BoundingBox(x1=s, y1=0.5, x2=0.5, y2=0.5)
+            # Pydantic v2 auto-converts numeric strings, so only non-convertible
+            # strings should raise errors
+            try:
+                bbox = BoundingBox(x1=s, y1=0.5, x2=0.5, y2=0.5)
+                # If conversion succeeded, value should be a valid float in range
+                assert isinstance(bbox.x1, float)
+                assert 0.0 <= bbox.x1 <= 1.0
+            except (ValueError, TypeError):
+                # Non-convertible strings should raise errors
+                pass
 
     def test_bounding_box_with_extreme_values(self):
         """BoundingBox should handle extreme values."""

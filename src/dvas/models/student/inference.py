@@ -332,6 +332,11 @@ class StudentTeacherBridge(TeacherModel):
         """Return the model type identifier."""
         return ModelType.STUDENT_EDGE
 
+    @property
+    def model_version(self) -> str:
+        """Return the model version string."""
+        return self.model_name
+
     def _load_fallback_teacher(self):
         """Load teacher model for fallback."""
         if self._teacher_fallback is None:

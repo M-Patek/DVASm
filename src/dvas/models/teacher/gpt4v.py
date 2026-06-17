@@ -39,6 +39,11 @@ class GPT4VTeacher(TeacherModel):
         return ModelType.TEACHER_GPT4V
 
     @property
+    def model_version(self) -> str:
+        """Return the model version string."""
+        return self.model_name
+
+    @property
     def _http_client(self) -> httpx.AsyncClient:
         if self.__http_client is None:
             self.__http_client = httpx.AsyncClient(
@@ -134,7 +139,7 @@ class GPT4VTeacher(TeacherModel):
                     frames = [frames[i] for i in indices]
 
                 # Encode frames to base64
-                encoded_frames = self._encode_frames(frames)
+                encoded_frames = await self._encode_frames(frames)
 
                 # Build content with images
                 content = [{"type": "text", "text": system_prompt}]
