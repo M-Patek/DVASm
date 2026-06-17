@@ -2,7 +2,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-57%2F57%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-123%2F123%20passing-brightgreen.svg)]()
 
 > AI-powered video annotation platform with teacher-student distillation for robotic manipulation and egocentric vision.
 
@@ -16,7 +16,8 @@ DVAS generates high-quality temporal annotations for videos using a **teacher-st
 
 ### Key Features
 
-- **Streaming Video Processing** — Frame-by-frame async streaming with `asyncio.Queue`, no full video load
+- **Streaming Video Processing** — Async frame streaming with `asyncio.Queue`, no full video load
+- **Performance Optimized** — Frame seeking, min-heap sampling, concurrent encoding, metadata caching
 - **Adaptive Prompts** — Video-type classification with specialized prompt templates
 - **Fault Tolerance** — Retry with exponential backoff, checkpoint persistence, batch recovery
 - **Multi-Format Export** — LLaVA, OpenAI, ShareGPT training formats
@@ -165,11 +166,15 @@ DVASm/
 │   ├── data/              # Video loading, schemas, storage
 │   ├── models/            # Teacher & student models
 │   ├── pipeline/          # Annotation pipeline
+│   │   ├── core.py        # Main orchestrator
+│   │   ├── builder.py     # Annotation construction
+│   │   ├── checkpoint.py  # Resume persistence
+│   │   └── parser.py      # Response parsing
 │   ├── prompts/           # Adaptive prompt engineering
 │   ├── quality/           # Quality evaluation
 │   ├── security/          # Privacy & access control
 │   └── utils/             # Logging, retry, caching
-├── tests/                 # Test suite (57 tests)
+├── tests/                 # Test suite (123 tests)
 ├── scripts/               # Utility scripts
 ├── benchmarks/            # Performance benchmarks
 ├── docs/                  # Documentation
@@ -197,11 +202,21 @@ python -m dvas stats --source gold
 
 ## Performance
 
-The `aiter_frames` async streaming implementation reduces memory usage by streaming frames through an `asyncio.Queue` with a background thread, rather than loading all frames into memory.
+DVAS implements multiple performance optimizations across the video processing pipeline:
+
+| Optimization | Impact |
+|-------------|--------|
+| **Frame Seeking** | Direct jump to target frames instead of sequential read when `step > 1` |
+| **Min-Heap Sampling** | KeyFrameSampler uses O(K) memory instead of O(N) |
+| **Concurrent Encoding** | ThreadPoolExecutor for parallel base64 encoding of frame batches |
+| **Metadata Caching** | Module-level cache avoids re-reading video headers |
+| **GC Between Chunks** | Explicit garbage collection in batch processing to free frame memory |
+| **Async Streaming** | Background thread + asyncio queue for true frame streaming |
+
+Run the benchmark:
 
 ```bash
-# Run benchmark
-python benchmarks/benchmark_aiter_frames.py
+python benchmarks/perf_benchmark.py
 ```
 
 ## Tech Debt & Status
