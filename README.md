@@ -136,7 +136,12 @@ DVAS
 | 06 | [Export](docs/subsystems/06-export.md) | ✅ Stable | Multi-format training data export |
 | 07 | [API](docs/subsystems/07-api.md) | ✅ Stable | FastAPI REST endpoints with auth |
 | 08 | [Routing](docs/subsystems/08-routing.md) | ✅ Stable | Smart router with complexity-based model selection |
-| 09-14 | *(see docs/subsystems/)* | | Quality, Explainability, Security, etc. |
+| 09 | [Quality](docs/subsystems/09-quality.md) | ✅ Stable | Data quality analysis, anomaly detection, augmentation |
+| 10 | [Explainability](docs/subsystems/10-explainability.md) | ✅ Stable | Visualization, attention heatmaps, keyframe extraction |
+| 11 | [Monitoring](docs/subsystems/11-monitoring.md) | ✅ Stable | A/B testing, drift detection, performance monitoring |
+| 12 | [Security](docs/subsystems/12-security.md) | ✅ Stable | PII detection, anonymization, watermarking, RBAC |
+| 13 | [Prompts](docs/subsystems/13-prompts.md) | ✅ Stable | Adaptive prompt engineering, video classification |
+| 14 | [Deployment](docs/subsystems/14-deployment.md) | 📝 Draft | ONNX export, TensorRT optimization, edge inference |
 
 **Test Coverage:** 500+ tests passing (~90% pass rate, failures are Windows/env-specific)
 
