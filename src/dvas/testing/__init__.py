@@ -710,7 +710,7 @@ def create_test_annotation(
         "segments": segments,
         "metadata": create_test_video_metadata(),
         "source": "teacher",
-        "model_version": "gpt-4o-2024-05-13",
+        "model_version": "gpt-5.5-2024-05-13",
     }
 
 

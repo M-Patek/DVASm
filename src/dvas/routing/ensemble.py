@@ -7,9 +7,6 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 from dvas.models.teacher.base import TeacherModel
-from dvas.models.teacher.claude import ClaudeTeacher
-from dvas.models.teacher.gpt4v import GPT4VTeacher
-from dvas.models.teacher.together import TogetherTeacher
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -110,9 +107,9 @@ class MultiTeacherEnsemble:
     def _default_teachers(self) -> List[TeacherModel]:
         """Get default set of teachers."""
         return [
-            GPT4VTeacher(model_name="gpt-4o"),
-            ClaudeTeacher(model_name="claude-3-opus-20240229"),
-            TogetherTeacher(model_name="meta-llama/Llama-3.2-90B-Vision-Instruct"),
+            TeacherModel(model_name="gpt-5.5"),
+            TeacherModel(model_name="claude-opus-4-8"),
+            TeacherModel(model_name="meta-llama/Llama-3.2-90B-Vision-Instruct"),
         ]
 
     def _get_consensus_method(self, name: str):
@@ -226,7 +223,7 @@ class MultiTeacherEnsemble:
         """Estimate API cost for teacher."""
         frame_count = len(frames)
         base_costs = {
-            "GPT4VTeacher": 0.005,  # per frame
+            "GPTTeacher": 0.005,  # per frame
             "ClaudeTeacher": 0.004,
             "TogetherTeacher": 0.001,
         }

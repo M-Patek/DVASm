@@ -135,33 +135,65 @@ class IndexStore:
         self._db_path = Path(self.config.db_path)
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
+        # Use thread-local storage for connections
+        self._local = threading.local()
+        # Keep main thread connection for backward compatibility
         self._connection: Optional[sqlite3.Connection] = None
+        self._main_thread_id = threading.current_thread().ident
 
     def _get_connection(self) -> sqlite3.Connection:
-        """Get or create a database connection."""
+        """Get or create a database connection for the current thread."""
+        current_thread_id = threading.current_thread().ident
+
+        # Fast path: main thread uses instance connection
+        if current_thread_id == self._main_thread_id and self._connection is not None:
+            return self._connection
+
+        # Thread-local storage for non-main threads
+        if not hasattr(self._local, 'connection') or self._local.connection is None:
+            self._local.connection = sqlite3.connect(
+                str(self._db_path),
+                check_same_thread=True,  # Now we enforce same thread
+                detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
+            )
+            self._local.connection.row_factory = sqlite3.Row
+
+            # Enable WAL mode for concurrent reads/writes
+            if self.config.wal_mode:
+                self._local.connection.execute("PRAGMA journal_mode=WAL")
+                self._local.connection.execute("PRAGMA synchronous=NORMAL")
+
+            # Enable foreign keys
+            self._local.connection.execute("PRAGMA foreign_keys=ON")
+
+            logger.debug("sqlite_connection_created", thread_id=current_thread_id)
+
+        return self._local.connection
+
+    def _get_or_create_main_connection(self) -> None:
+        """Create main thread connection if needed."""
         if self._connection is None:
             self._connection = sqlite3.connect(
                 str(self._db_path),
-                check_same_thread=False,
                 detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
             )
             self._connection.row_factory = sqlite3.Row
 
-            # Enable WAL mode for concurrent reads/writes
             if self.config.wal_mode:
                 self._connection.execute("PRAGMA journal_mode=WAL")
                 self._connection.execute("PRAGMA synchronous=NORMAL")
 
-            # Enable foreign keys
             self._connection.execute("PRAGMA foreign_keys=ON")
 
-        return self._connection
-
     def close(self) -> None:
-        """Close the database connection."""
+        """Close all database connections."""
+        # Close main thread connection
         if self._connection:
             self._connection.close()
             self._connection = None
+
+        # Note: Cannot close thread-local connections from other threads
+        # They will be closed when threads exit
 
     def create_index(self) -> None:
         """Create all database tables and indexes."""

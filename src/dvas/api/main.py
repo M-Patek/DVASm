@@ -2,6 +2,7 @@
 
 Features:
 - API versioning (/api/v1/)
+- API key authentication
 - Rate limiting with token bucket
 - Request/response compression
 - Health checks (liveness/readiness)
@@ -13,14 +14,15 @@ import tempfile
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator, Dict, List, Optional
+from typing import AsyncGenerator, Dict, List, Optional, Any
 
 import aiofiles
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
+from dvas.api.auth import get_auth_status, require_auth, require_auth_strict
 from dvas.api.middleware import (
     APIVersion,
     CompressionMiddleware,
@@ -35,7 +37,7 @@ from dvas.api.middleware import (
 )
 from dvas.config import settings
 from dvas.data.storage import AnnotationStore
-from dvas.models.teacher.gpt4v import GPT4VTeacher
+from dvas.models.teacher import TeacherModel
 from dvas.pipeline.core import AnnotationPipeline
 from dvas.utils.logging import get_logger
 
@@ -120,7 +122,7 @@ class AnnotationTaskRequest(BaseModel):
     """Request to start annotation task."""
 
     video_id: str
-    teacher_model: str = "gpt-4o"
+    teacher_model: str = "gpt-5.5"
     num_frames: int = 16
     priority: int = Field(default=5, ge=1, le=10)
 
@@ -238,7 +240,7 @@ async def add_request_tracking(request: Request, call_next):
 # ---------------------------------------------------------------------------
 
 @app.get("/health")
-async def health_check() -> Dict[str, str]:
+async def health_check() -> Dict[str, Any]:
     """Liveness probe - is the process running?"""
     return health_checker.liveness()
 
@@ -256,7 +258,20 @@ async def readiness_check() -> Dict:
 API_PREFIX = APIVersion.get_path_prefix()
 
 
-@app.post(f"{API_PREFIX}/videos/upload", response_model=VideoUploadResponse)
+@app.get(f"{API_PREFIX}/auth/status")
+async def auth_status() -> Dict:
+    """Get authentication status."""
+    return api_response(
+        data=get_auth_status(),
+        message="Authentication status",
+    )
+
+
+@app.post(
+    f"{API_PREFIX}/videos/upload",
+    response_model=VideoUploadResponse,
+    dependencies=[require_auth],
+)
 async def upload_video(
     request: Request,
     file: UploadFile = File(...),
@@ -327,7 +342,11 @@ async def upload_video(
         )
 
 
-@app.post(f"{API_PREFIX}/annotations/tasks", response_model=AnnotationTaskResponse)
+@app.post(
+    f"{API_PREFIX}/annotations/tasks",
+    response_model=AnnotationTaskResponse,
+    dependencies=[require_auth],
+)
 async def create_annotation_task(
     request: Request,
     task_request: AnnotationTaskRequest,
@@ -402,7 +421,7 @@ async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> N
         video_path = video_files[0]
 
         # Initialize pipeline
-        teacher = GPT4VTeacher(model_name=request.teacher_model)
+        teacher = TeacherModel(model_name=request.teacher_model)
         pipeline = AnnotationPipeline(
             teacher_model=teacher,
             num_frames=request.num_frames,
@@ -437,7 +456,11 @@ async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> N
         )
 
 
-@app.get(f"{API_PREFIX}/annotations/tasks/{{task_id}}", response_model=AnnotationResult)
+@app.get(
+    f"{API_PREFIX}/annotations/tasks/{{task_id}}",
+    response_model=AnnotationResult,
+    dependencies=[require_auth],
+)
 async def get_task_status(task_id: str) -> AnnotationResult:
     """Get annotation task status and result."""
     if task_id not in tasks:
@@ -457,7 +480,10 @@ async def get_task_status(task_id: str) -> AnnotationResult:
     )
 
 
-@app.get(f"{API_PREFIX}/annotations/{{video_id}}")
+@app.get(
+    f"{API_PREFIX}/annotations/{{video_id}}",
+    dependencies=[require_auth],
+)
 async def get_annotation(video_id: str) -> Dict:
     """Get annotation for a video."""
     store = AnnotationStore()
@@ -487,7 +513,10 @@ async def get_annotation(video_id: str) -> Dict:
     )
 
 
-@app.post(f"{API_PREFIX}/export")
+@app.post(
+    f"{API_PREFIX}/export",
+    dependencies=[require_auth],
+)
 async def export_annotations(request: ExportRequest) -> FileResponse:
     """Export annotations to file."""
     store = AnnotationStore()
@@ -531,7 +560,10 @@ async def export_annotations(request: ExportRequest) -> FileResponse:
     )
 
 
-@app.get(f"{API_PREFIX}/stats")
+@app.get(
+    f"{API_PREFIX}/stats",
+    dependencies=[require_auth_strict],  # Admin endpoint
+)
 async def get_statistics() -> Dict:
     """Get storage and request statistics."""
     store = AnnotationStore()
@@ -559,7 +591,10 @@ async def get_statistics() -> Dict:
     )
 
 
-@app.get(f"{API_PREFIX}/search")
+@app.get(
+    f"{API_PREFIX}/search",
+    dependencies=[require_auth],
+)
 async def search_annotations(
     q: str,
     limit: int = 100,

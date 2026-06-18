@@ -18,7 +18,7 @@ logger = get_logger(__name__)
 class ModelType(str, Enum):
     """Available model types."""
 
-    TEACHER_GPT4V = "gpt-4v"
+    TEACHER_GPT55 = "gpt-5.5"
     TEACHER_CLAUDE = "claude"
     TEACHER_TOGETHER = "together"
     STUDENT_LOCAL = "student-local"
@@ -160,7 +160,7 @@ class SmartRouter:
 
     # Cost estimates (per video in USD)
     COST_TABLE = {
-        ModelType.TEACHER_GPT4V: 0.05,  # ~5 cents per video
+        ModelType.TEACHER_GPT55: 0.05,  # ~5 cents per video
         ModelType.TEACHER_CLAUDE: 0.04,
         ModelType.TEACHER_TOGETHER: 0.02,
         ModelType.STUDENT_LOCAL: 0.001,  # Compute cost only
@@ -169,7 +169,7 @@ class SmartRouter:
 
     # Quality estimates (0-1 scale)
     QUALITY_TABLE = {
-        ModelType.TEACHER_GPT4V: 0.95,
+        ModelType.TEACHER_GPT55: 0.95,
         ModelType.TEACHER_CLAUDE: 0.93,
         ModelType.TEACHER_TOGETHER: 0.88,
         ModelType.STUDENT_LOCAL: 0.80,
@@ -233,7 +233,7 @@ class SmartRouter:
             model = ModelType.TEACHER_TOGETHER
             reasoning = "Budget constrained, using most affordable teacher"
         else:
-            model = ModelType.TEACHER_GPT4V
+            model = ModelType.TEACHER_GPT55
             reasoning = "Quality-first strategy: using best available model"
 
         return RoutingDecision(
@@ -278,7 +278,7 @@ class SmartRouter:
             model = ModelType.TEACHER_TOGETHER
             reasoning = "Balanced: moderate complexity uses affordable teacher"
         else:
-            model = ModelType.TEACHER_GPT4V
+            model = ModelType.TEACHER_GPT55
             reasoning = "Balanced: complex video needs best quality"
 
         return RoutingDecision(
@@ -324,7 +324,7 @@ class SmartRouter:
             model = ModelType.TEACHER_CLAUDE
             reasoning = f"Adaptive: high complexity (score={score:.2f})"
         else:
-            model = ModelType.TEACHER_GPT4V
+            model = ModelType.TEACHER_GPT55
             reasoning = f"Adaptive: very complex video (score={score:.2f})"
 
         # Check budget constraint
@@ -373,7 +373,7 @@ class SmartRouter:
         avg_complexity = complexity_sum / total
 
         # Calculate savings from student usage
-        teacher_cost = self.COST_TABLE[ModelType.TEACHER_GPT4V] * total
+        teacher_cost = self.COST_TABLE[ModelType.TEACHER_GPT55] * total
         actual_cost = sum(
             self.COST_TABLE[ModelType(m)]
             for m in [e["decision"] for e in self.routing_history]
@@ -421,7 +421,7 @@ async def route_and_annotate(
                     logger.info("student_confidence_low_fallback", confidence=confidence)
                     # Fallback to teacher
                     if teacher_pool:
-                        teacher = teacher_pool.get(ModelType.TEACHER_GPT4V)
+                        teacher = teacher_pool.get(ModelType.TEACHER_GPT55)
                         if teacher:
                             # Import here to avoid circular dependency
 

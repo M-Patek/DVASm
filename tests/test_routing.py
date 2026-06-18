@@ -50,12 +50,12 @@ class TestEnsemble:
         from dvas.routing.ensemble import TeacherVote
 
         vote = TeacherVote(
-            teacher_id="gpt4v",
+            teacher_id="gpt55",
             response="Test response",
             confidence=0.9,
             cost=0.05,
             latency_ms=100.0,
         )
 
-        assert vote.teacher_id == "gpt4v"
+        assert vote.teacher_id == "gpt55"
         assert vote.confidence == 0.9

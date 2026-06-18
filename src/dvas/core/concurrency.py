@@ -166,6 +166,7 @@ class AsyncIteratorBridge(Generic[T]):
 
     def _run_producer(self, queue: asyncio.Queue, loop: asyncio.AbstractEventLoop) -> None:
         """Producer thread: reads from sync iterator, puts to async queue."""
+        sentinel_sent = False
         try:
             for item in self._iterator:
                 # Use asyncio.run_coroutine_threadsafe for thread-safe queue put
@@ -176,16 +177,25 @@ class AsyncIteratorBridge(Generic[T]):
                     future.result(timeout=30.0)
                 except asyncio.TimeoutError:
                     logger.warning("async_iterator_timeout", queue_size=queue.qsize())
+                    self._error = TimeoutError("Producer timeout waiting for queue space")
                     break
 
             # Signal completion
-            asyncio.run_coroutine_threadsafe(queue.put(self._sentinel), loop)
+            try:
+                asyncio.run_coroutine_threadsafe(queue.put(self._sentinel), loop).result(timeout=5.0)
+                sentinel_sent = True
+            except Exception as e:
+                logger.error("failed_to_send_sentinel", error=str(e))
         except Exception as e:
             self._error = e
-            try:
-                asyncio.run_coroutine_threadsafe(queue.put(self._sentinel), loop)
-            except Exception:
-                pass
+            logger.error("async_iterator_producer_error", error=str(e))
+        finally:
+            if not sentinel_sent:
+                # Last resort: try to send sentinel even after error
+                try:
+                    asyncio.run_coroutine_threadsafe(queue.put(self._sentinel), loop).result(timeout=1.0)
+                except Exception:
+                    pass  # Nothing more we can do
 
     async def _ensure_started(self) -> None:
         """Start the producer thread if not already started."""
@@ -211,7 +221,13 @@ class AsyncIteratorBridge(Generic[T]):
         await self._ensure_started()
         assert self._queue is not None
 
-        item = await self._queue.get()
+        # Use timeout to prevent indefinite waiting
+        try:
+            item = await asyncio.wait_for(self._queue.get(), timeout=60.0)
+        except asyncio.TimeoutError:
+            self._stopped = True
+            logger.error("async_iterator_consumer_timeout", queue_size=self._queue.qsize())
+            raise TimeoutError("AsyncIteratorBridge consumer timeout - producer may be dead")
 
         if item is self._sentinel:
             self._stopped = True
@@ -226,6 +242,8 @@ class AsyncIteratorBridge(Generic[T]):
         self._stopped = True
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=2.0)
+            if self._thread.is_alive():
+                logger.warning("async_iterator_thread_did_not_exit")
 
     async def __aenter__(self) -> AsyncIteratorBridge[T]:
         return self
@@ -442,13 +460,16 @@ class AsyncBatchProcessor(Generic[T]):
 class FrameEncoderPool:
     """Pool for parallel frame encoding operations.
 
-    Offloads CPU-intensive frame encoding (BGR->RGB, PIL conversion,
+    Offloads CPU-intensive frame encoding (BGR->RGB optional, PIL conversion,
     base64 encoding) to a thread pool.
 
     Usage::
 
         encoder = FrameEncoderPool(max_workers=4)
-        encoded = await encoder.encode_frames(frames)
+        # If frames are BGR (OpenCV default):
+        encoded = await encoder.encode_frames(frames, convert_bgr_to_rgb=True)
+        # If frames are already RGB:
+        encoded = await encoder.encode_frames(frames, convert_bgr_to_rgb=False)
     """
 
     def __init__(self, max_workers: int = 4) -> None:
@@ -457,15 +478,15 @@ class FrameEncoderPool:
         self._encoded_count = 0
         self._total_bytes = 0
 
-    def _encode_single(self, frame: np.ndarray, format: str = "JPEG") -> str:
+    def _encode_single(self, frame: np.ndarray, format: str = "JPEG", convert_bgr_to_rgb: bool = True) -> str:
         """Encode a single frame to base64."""
         import base64
         import io
 
         from PIL import Image
 
-        # Convert BGR to RGB
-        if len(frame.shape) == 3 and frame.shape[2] == 3:
+        # Conditionally convert BGR to RGB
+        if convert_bgr_to_rgb and len(frame.shape) == 3 and frame.shape[2] == 3:
             frame_rgb = frame[:, :, ::-1]
         else:
             frame_rgb = frame
@@ -480,12 +501,14 @@ class FrameEncoderPool:
         self,
         frames: List[np.ndarray],
         format: str = "JPEG",
+        convert_bgr_to_rgb: bool = True,
     ) -> List[str]:
         """Encode multiple frames in parallel.
 
         Args:
-            frames: List of numpy arrays (BGR images)
+            frames: List of numpy arrays (BGR or RGB images)
             format: Image format (JPEG, PNG)
+            convert_bgr_to_rgb: Whether to convert BGR to RGB (default True for OpenCV frames)
 
         Returns:
             List of base64-encoded strings
@@ -494,7 +517,7 @@ class FrameEncoderPool:
 
         # For small batches, encode synchronously
         if len(frames) <= 2:
-            results = [self._encode_single(f, format) for f in frames]
+            results = [self._encode_single(f, format, convert_bgr_to_rgb) for f in frames]
             self._encoded_count += len(results)
             return results
 
@@ -505,6 +528,7 @@ class FrameEncoderPool:
                 self._encode_single,
                 frame,
                 format,
+                convert_bgr_to_rgb,
             )
             for frame in frames
         ]

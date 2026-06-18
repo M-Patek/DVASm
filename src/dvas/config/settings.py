@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     TOGETHER_API_KEY: Optional[str] = None
 
     # Teacher Model Settings
-    DEFAULT_TEACHER_MODEL: str = "gpt-4o"
+    DEFAULT_TEACHER_MODEL: str = "gpt-5.5"
     TEACHER_MAX_CONCURRENT: int = 10
     TEACHER_RATE_LIMIT_RPM: int = 500
     TEACHER_TIMEOUT_SECONDS: int = 120
@@ -62,8 +62,10 @@ class Settings(BaseSettings):
     # Redis (for task queue)
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    # Database
-    DATABASE_URL: Optional[str] = None
+    # API Authentication
+    API_KEY: Optional[str] = None  # Set to enable API key auth
+    API_KEY_HEADER: str = "X-API-Key"
+    ALLOW_UNAUTHENTICATED: bool = True  # Set False to require API key
 
     @property
     def data_paths(self) -> dict:

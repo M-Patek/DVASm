@@ -42,8 +42,8 @@ NEED ops commands?
 
 | ID | Name | Status | Health | Doc | Code |
 |--|--|--|--|--|--|
-| 01-data | Data Layer | active-dev | yellow | [01-data.md](subsystems/01-data.md) | `src/dvas/data/` |
-| 02-teacher | Teacher Models | active-dev | green | [02-teacher.md](subsystems/02-teacher.md) | `src/dvas/models/teacher/` |
+| 01-data | Data Layer | stable | green | [01-data.md](subsystems/01-data.md) | `src/dvas/data/` |
+| 02-teacher | Teacher Models | stable | green | [02-teacher.md](subsystems/02-teacher.md) | `src/dvas/models/teacher/` |
 | 03-student | Student Models | stable | green | [03-student.md](subsystems/03-student.md) | `src/dvas/models/student/` |
 | 04-pipeline | Annotation Pipeline | stable | green | [04-pipeline.md](subsystems/04-pipeline.md) | `src/dvas/pipeline/` |
 | 05-evaluation | Quality Evaluation | stable | green | [05-evaluation.md](subsystems/05-evaluation.md) | `src/dvas/models/evaluator/` |
@@ -107,4 +107,4 @@ Per `AGENTS.md`:
 
 ---
 
-*Updated: 2024-06-17*
+*Updated: 2026-06-18*

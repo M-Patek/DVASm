@@ -1,31 +1,32 @@
-"""Tests for teacher models (GPT4V, Claude, Together) returning GenerationResult."""
+"""Tests for teacher models returning GenerationResult."""
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch, Mock
 import numpy as np
 
 from dvas.models.base import GenerationResult, GenerationStatus, ModelType
+from dvas.models.teacher.base import TeacherModel
 
 
-class TestGPT4VTeacher:
-    """Test GPT4VTeacher returns GenerationResult."""
+class TestTeacherModel:
+    """Test TeacherModel returns GenerationResult."""
 
     @pytest.fixture
-    def mock_gpt4v(self):
-        """Create a GPT4VTeacher with mocked client."""
-        with patch("dvas.models.teacher.gpt4v.AsyncOpenAI") as mock_client_class:
-            mock_client = MagicMock()
-            mock_client_class.return_value = mock_client
+    def mock_teacher(self):
+        """Create a TeacherModel with mocked OpenAI client."""
+        from unittest.mock import AsyncMock
 
-            from dvas.models.teacher.gpt4v import GPT4VTeacher
-            teacher = GPT4VTeacher(api_key="test-key")
-            teacher._client = mock_client
-            yield teacher, mock_client
+        teacher = TeacherModel(model_name="gpt-5.5", api_key="test-key")
+
+        # Create mock client
+        mock_client = AsyncMock()
+        teacher._openai_client = mock_client
+        yield teacher, mock_client
 
     @pytest.mark.asyncio
-    async def test_annotate_returns_generation_result(self, mock_gpt4v):
+    async def test_annotate_returns_generation_result(self, mock_teacher):
         """Test annotate returns GenerationResult."""
-        teacher, mock_client = mock_gpt4v
+        teacher, mock_client = mock_teacher
 
         # Mock the API response
         mock_response = MagicMock()
@@ -45,8 +46,8 @@ class TestGPT4VTeacher:
 
         assert isinstance(result, GenerationResult)
         assert result.text == "Test annotation"
-        assert result.model_type == ModelType.TEACHER_GPT4V
-        assert result.model_version == "gpt-4o"
+        assert result.model_type == ModelType.TEACHER_GPT55
+        assert result.model_version == "gpt-5.5"
         assert result.status == GenerationStatus.SUCCESS
         assert result.is_success() is True
         assert result.latency_ms >= 0
@@ -54,9 +55,9 @@ class TestGPT4VTeacher:
         assert result.cost_usd > 0
 
     @pytest.mark.asyncio
-    async def test_annotate_no_frames_error(self, mock_gpt4v):
+    async def test_annotate_no_frames_error(self, mock_teacher):
         """Test annotate with no frames returns failure."""
-        teacher, _ = mock_gpt4v
+        teacher, _ = mock_teacher
         result = await teacher.annotate(frames=None)
 
         assert isinstance(result, GenerationResult)
@@ -65,9 +66,9 @@ class TestGPT4VTeacher:
         assert "Must provide either video_path or frames" in result.error_message
 
     @pytest.mark.asyncio
-    async def test_annotate_api_error(self, mock_gpt4v):
+    async def test_annotate_api_error(self, mock_teacher):
         """Test annotate handles API errors gracefully."""
-        teacher, mock_client = mock_gpt4v
+        teacher, mock_client = mock_teacher
         mock_client.chat.completions.create = AsyncMock(side_effect=Exception("API Error"))
 
         frames = [np.zeros((224, 224, 3), dtype=np.uint8) for _ in range(4)]
@@ -78,58 +79,57 @@ class TestGPT4VTeacher:
         assert "API Error" in result.error_message
         assert result.latency_ms >= 0
 
-    def test_model_type(self, mock_gpt4v):
+    def test_model_type(self, mock_teacher):
         """Test model_type property."""
-        teacher, _ = mock_gpt4v
-        assert teacher.model_type == ModelType.TEACHER_GPT4V
+        teacher, _ = mock_teacher
+        assert teacher.model_type == ModelType.TEACHER_GPT55
 
-    def test_model_version(self, mock_gpt4v):
+    def test_model_version(self, mock_teacher):
         """Test model_version property."""
-        teacher, _ = mock_gpt4v
-        assert teacher.model_version == "gpt-4o"
+        teacher, _ = mock_teacher
+        assert teacher.model_version == "gpt-5.5"
 
-    def test_estimate_cost(self, mock_gpt4v):
+    def test_estimate_cost(self, mock_teacher):
         """Test cost estimation."""
-        teacher, _ = mock_gpt4v
+        teacher, _ = mock_teacher
         cost = teacher.estimate_cost(num_frames=16, prompt_length=500)
         assert cost > 0
 
-    def test_capabilities(self, mock_gpt4v):
+    def test_capabilities(self, mock_teacher):
         """Test supported capabilities."""
-        teacher, _ = mock_gpt4v
+        teacher, _ = mock_teacher
         assert teacher.supports("video") is True
         assert teacher.supports("frames") is True
         assert teacher.supports("text") is True
         assert teacher.supports("multimodal") is True
         assert teacher.supports("audio") is False
 
-    def test_max_frames(self, mock_gpt4v):
+    def test_max_frames(self, mock_teacher):
         """Test max frames configuration."""
-        teacher, _ = mock_gpt4v
+        teacher, _ = mock_teacher
         assert teacher.max_frames == 32
 
 
-class TestClaudeTeacher:
-    """Test ClaudeTeacher returns GenerationResult."""
+class TestTeacherModelClaude:
+    """Test TeacherModel with Claude backend."""
 
     @pytest.fixture
-    def mock_claude(self):
-        """Create a ClaudeTeacher with mocked client."""
-        with patch("dvas.models.teacher.claude.AsyncAnthropic") as mock_client_class:
-            mock_client = MagicMock()
-            mock_client_class.return_value = mock_client
+    def mock_claude_teacher(self):
+        """Create a TeacherModel with mocked Anthropic client."""
+        from unittest.mock import AsyncMock
 
-            from dvas.models.teacher.claude import ClaudeTeacher
-            teacher = ClaudeTeacher(api_key="test-key")
-            teacher._client = mock_client
-            yield teacher, mock_client
+        teacher = TeacherModel(model_name="claude-opus-4-8", api_key="test-key")
+
+        # Create mock client
+        mock_client = AsyncMock()
+        teacher._anthropic_client = mock_client
+        yield teacher, mock_client
 
     @pytest.mark.asyncio
-    async def test_annotate_returns_generation_result(self, mock_claude):
-        """Test annotate returns GenerationResult."""
-        teacher, mock_client = mock_claude
+    async def test_annotate_returns_generation_result(self, mock_claude_teacher):
+        """Test annotate returns GenerationResult with Claude."""
+        teacher, mock_client = mock_claude_teacher
 
-        # Mock the API response
         mock_response = MagicMock()
         mock_response.content = [MagicMock()]
         mock_response.content[0].text = "Claude annotation"
@@ -148,48 +148,32 @@ class TestClaudeTeacher:
         assert result.model_type == ModelType.TEACHER_CLAUDE
         assert result.status == GenerationStatus.SUCCESS
 
-    @pytest.mark.asyncio
-    async def test_annotate_no_frames_error(self, mock_claude):
-        """Test annotate with no frames returns failure."""
-        teacher, _ = mock_claude
-        result = await teacher.annotate(frames=None)
-
-        assert isinstance(result, GenerationResult)
-        assert result.status == GenerationStatus.FAILURE
-        assert "Claude requires pre-extracted frames" in result.error_message
-
-    def test_model_type(self, mock_claude):
-        """Test model_type property."""
-        teacher, _ = mock_claude
-        assert teacher.model_type == ModelType.TEACHER_CLAUDE
-
-    def test_max_frames(self, mock_claude):
-        """Test max frames configuration."""
-        teacher, _ = mock_claude
+    def test_max_frames_claude(self, mock_claude_teacher):
+        """Test max frames for Claude models."""
+        teacher, _ = mock_claude_teacher
         assert teacher.max_frames == 20
 
 
-class TestTogetherTeacher:
-    """Test TogetherTeacher returns GenerationResult."""
+class TestTeacherModelTogether:
+    """Test TeacherModel with Together AI backend."""
 
     @pytest.fixture
-    def mock_together(self):
-        """Create a TogetherTeacher with mocked client."""
-        with patch("dvas.models.teacher.together.AsyncOpenAI") as mock_client_class:
-            mock_client = MagicMock()
-            mock_client_class.return_value = mock_client
+    def mock_together_teacher(self):
+        """Create a TeacherModel with mocked Together client."""
+        from unittest.mock import AsyncMock
 
-            from dvas.models.teacher.together import TogetherTeacher
-            teacher = TogetherTeacher(api_key="test-key")
-            teacher._client = mock_client
-            yield teacher, mock_client
+        teacher = TeacherModel(model_name="meta-llama/Llama-3.2-90B-Vision-Instruct")
+
+        # Create mock client (Together uses OpenAI client)
+        mock_client = AsyncMock()
+        teacher._openai_client = mock_client
+        yield teacher, mock_client
 
     @pytest.mark.asyncio
-    async def test_annotate_returns_generation_result(self, mock_together):
-        """Test annotate returns GenerationResult."""
-        teacher, mock_client = mock_together
+    async def test_annotate_returns_generation_result(self, mock_together_teacher):
+        """Test annotate returns GenerationResult with Together."""
+        teacher, mock_client = mock_together_teacher
 
-        # Mock the API response
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.content = "Together annotation"
@@ -210,98 +194,57 @@ class TestTogetherTeacher:
         assert result.model_type == ModelType.TEACHER_TOGETHER
         assert result.status == GenerationStatus.SUCCESS
 
-    @pytest.mark.asyncio
-    async def test_annotate_no_frames_error(self, mock_together):
-        """Test annotate with no frames returns failure."""
-        teacher, _ = mock_together
-        result = await teacher.annotate(frames=None)
+    def test_max_frames_together(self, mock_together_teacher):
+        """Test max frames for Together models."""
+        teacher, _ = mock_together_teacher
+        assert teacher.max_frames == 16
 
-        assert isinstance(result, GenerationResult)
-        assert result.status == GenerationStatus.FAILURE
-        assert "Together API requires pre-extracted frames" in result.error_message
 
-    def test_model_type(self, mock_together):
-        """Test model_type property."""
-        teacher, _ = mock_together
+class TestTeacherModelAutoDetection:
+    """Test provider auto-detection."""
+
+    def test_detect_openai(self):
+        teacher = TeacherModel(model_name="gpt-5.5")
+        assert teacher._provider == "openai"
+        assert teacher.model_type == ModelType.TEACHER_GPT55
+
+    def test_detect_claude(self):
+        teacher = TeacherModel(model_name="claude-opus-4-8")
+        assert teacher._provider == "anthropic"
+        assert teacher.model_type == ModelType.TEACHER_CLAUDE
+
+    def test_detect_together(self):
+        teacher = TeacherModel(model_name="meta-llama/Llama-3.2-90B-Vision-Instruct")
+        assert teacher._provider == "together"
         assert teacher.model_type == ModelType.TEACHER_TOGETHER
 
-    def test_model_mapping(self, mock_together):
-        """Test model name mapping."""
-        teacher, _ = mock_together
-        assert "qwen" in teacher.together_model.lower()
+    def test_detect_qwen_together(self):
+        teacher = TeacherModel(model_name="Qwen/Qwen2-VL-7B-Instruct")
+        assert teacher._provider == "together"
+
+    def test_default_to_openai(self):
+        # Unknown models default to OpenAI
+        teacher = TeacherModel(model_name="some-unknown-model")
+        assert teacher._provider == "openai"
 
 
-class TestTeacherModelBase:
-    """Test TeacherModel base class."""
+class TestTeacherModelBaseFeatures:
+    """Test TeacherModel base class features."""
 
     def test_teacher_is_unified_model(self):
         """Test TeacherModel extends UnifiedModel."""
-        from dvas.models.teacher.base import TeacherModel
         from dvas.models.base import UnifiedModel
-
         assert issubclass(TeacherModel, UnifiedModel)
 
     def test_teacher_has_model_name(self):
         """Test TeacherModel stores model_name."""
-        from dvas.models.teacher.base import TeacherModel
-
-        class DummyTeacher(TeacherModel):
-            @property
-            def model_type(self):
-                return ModelType.MOCK
-
-            @property
-            def model_version(self):
-                return "test-model"
-
-            async def annotate(self, **kwargs):
-                return GenerationResult()
-
-            async def annotate_batch(self, items, **kwargs):
-                return []
-
-            async def generate(self, **kwargs):
-                return GenerationResult()
-
-            async def generate_batch(self, items, **kwargs):
-                return []
-
-            def _capabilities(self):
-                return []
-
-        teacher = DummyTeacher(model_name="test-model")
-        assert teacher.model_name == "test-model"
-        assert teacher.model_version == "test-model"
+        teacher = TeacherModel(model_name="gpt-5.5")
+        assert teacher.model_name == "gpt-5.5"
+        assert teacher.model_version == "gpt-5.5"
 
     def test_encode_image(self):
         """Test image encoding."""
-        from dvas.models.teacher.base import TeacherModel
-
-        class MockTeacher(TeacherModel):
-            @property
-            def model_type(self):
-                return ModelType.MOCK
-
-            @property
-            def model_version(self):
-                return "test-model"
-
-            async def annotate(self, **kwargs):
-                return GenerationResult()
-
-            async def annotate_batch(self, items, **kwargs):
-                return []
-
-            async def generate(self, **kwargs):
-                return GenerationResult()
-
-            async def generate_batch(self, items, **kwargs):
-                return []
-
-            def _capabilities(self):
-                return []
-
-        teacher = MockTeacher("test-model")
+        teacher = TeacherModel(model_name="gpt-5.5")
         image = np.zeros((100, 100, 3), dtype=np.uint8)
         encoded = teacher._encode_image(image)
         assert isinstance(encoded, str)
@@ -310,33 +253,7 @@ class TestTeacherModelBase:
     @pytest.mark.asyncio
     async def test_encode_frames(self):
         """Test batch frame encoding."""
-        from dvas.models.teacher.base import TeacherModel
-
-        class MockTeacher(TeacherModel):
-            @property
-            def model_type(self):
-                return ModelType.MOCK
-
-            @property
-            def model_version(self):
-                return "test-model"
-
-            async def annotate(self, **kwargs):
-                return GenerationResult()
-
-            async def annotate_batch(self, items, **kwargs):
-                return []
-
-            async def generate(self, **kwargs):
-                return GenerationResult()
-
-            async def generate_batch(self, items, **kwargs):
-                return []
-
-            def _capabilities(self):
-                return []
-
-        teacher = MockTeacher("test-model")
+        teacher = TeacherModel(model_name="gpt-5.5")
         frames = [np.zeros((100, 100, 3), dtype=np.uint8) for _ in range(3)]
         encoded = await teacher._encode_frames(frames)
         assert len(encoded) == 3
@@ -344,33 +261,7 @@ class TestTeacherModelBase:
 
     def test_get_default_prompt(self):
         """Test prompt template retrieval."""
-        from dvas.models.teacher.base import TeacherModel
-
-        class MockTeacher(TeacherModel):
-            @property
-            def model_type(self):
-                return ModelType.MOCK
-
-            @property
-            def model_version(self):
-                return "test-model"
-
-            async def annotate(self, **kwargs):
-                return GenerationResult()
-
-            async def annotate_batch(self, items, **kwargs):
-                return []
-
-            async def generate(self, **kwargs):
-                return GenerationResult()
-
-            async def generate_batch(self, items, **kwargs):
-                return []
-
-            def _capabilities(self):
-                return []
-
-        teacher = MockTeacher("test-model")
+        teacher = TeacherModel(model_name="gpt-5.5")
         prompt = teacher._get_default_prompt("caption")
         assert isinstance(prompt, str)
         assert len(prompt) > 0

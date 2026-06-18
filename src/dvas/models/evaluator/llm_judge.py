@@ -4,7 +4,7 @@ import asyncio
 from typing import Any, Dict, List, Optional
 
 from dvas.models.teacher.base import TeacherModel
-from dvas.models.teacher.gpt4v import GPT4VTeacher
+from dvas.models.teacher import TeacherModel
 
 
 class LLMJudge:
@@ -26,7 +26,7 @@ class LLMJudge:
         self,
         judge_model: Optional[TeacherModel] = None,
     ):
-        self.judge = judge_model or GPT4VTeacher(model_name="gpt-4o")
+        self.judge = judge_model or TeacherModel(model_name="gpt-5.5")
 
     async def evaluate_segment(
         self,

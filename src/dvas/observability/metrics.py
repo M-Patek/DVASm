@@ -171,7 +171,7 @@ def timed(metric_name: Optional[str] = None, labels: Optional[Dict[str, str]] = 
 
     Usage::
 
-        @timed("process_video_duration", labels={"model": "gpt4v"})
+        @timed("process_video_duration", labels={"model": "gpt55"})
         async def process_video(video_path):
             ...
     """
@@ -212,7 +212,7 @@ def counted(metric_name: Optional[str] = None, labels: Optional[Dict[str, str]] 
 
     Usage::
 
-        @counted("annotations_generated", labels={"model": "gpt4v"})
+        @counted("annotations_generated", labels={"model": "gpt55"})
         async def generate_annotation(video_path):
             ...
     """

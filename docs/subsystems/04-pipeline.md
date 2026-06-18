@@ -13,6 +13,7 @@ agent_hints:
   - "WARNING: EPIC pipeline combines automatic scene detection with existing action labels"
   - "WARNING: Always use async process_batch()—don't loop annotate_video() synchronously"
   - "WARNING: Results auto-saved to AnnotationStore—check store for progress on failure"
+  - "DEPRECATED: src/dvas/core/pipeline.py was renamed to _deprecated_pipeline.py (2026-06-18). Use dvas.pipeline.core:AnnotationPipeline for production."
 ---
 
 # §04 Annotation Pipeline

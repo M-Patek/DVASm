@@ -1,10 +1,11 @@
-"""Tests for DVAS CLI developer tools."""
+"""Tests for DVAS CLI developer tools and main CLI."""
 
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from typer.testing import CliRunner
 
 from dvas.cli.commands import (
     DevModeWatcher,
@@ -12,6 +13,44 @@ from dvas.cli.commands import (
     SCAFFOLD_TEMPLATES,
     ScaffoldTemplate,
 )
+
+# Import main CLI app
+from dvas.__main__ import app as main_app
+
+
+runner = CliRunner()
+
+
+class TestMainCLI:
+    """Test main CLI entry points from __main__.py."""
+
+    def test_main_help(self):
+        """Test main CLI help."""
+        result = runner.invoke(main_app, ["--help"])
+        assert result.exit_code == 0
+        assert "DVAS" in result.output
+
+    def test_annotate_help(self):
+        """Test annotate command help."""
+        result = runner.invoke(main_app, ["annotate", "--help"])
+        assert result.exit_code == 0
+        assert "annotate" in result.output.lower()
+
+    def test_annotate_missing_video(self):
+        """Test annotate with non-existent video."""
+        result = runner.invoke(main_app, ["annotate", "/nonexistent/video.mp4"])
+        assert result.exit_code == 1
+
+    def test_export_help(self):
+        """Test export command help."""
+        result = runner.invoke(main_app, ["export", "--help"])
+        assert result.exit_code == 0
+        assert "export" in result.output.lower()
+
+    def test_stats_help(self):
+        """Test stats command help."""
+        result = runner.invoke(main_app, ["stats", "--help"])
+        assert result.exit_code == 0
 
 
 class TestDevModeWatcher:

@@ -29,7 +29,7 @@ class AnnotationTask:
     task_id: str
     video_id: str
     status: TaskStatus = TaskStatus.PENDING
-    teacher_model: str = "gpt-4o"
+    teacher_model: str = "gpt-5.5"
     num_frames: int = 16
     priority: int = 5
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -197,13 +197,13 @@ class CeleryTaskQueue:
         @app.task(bind=True, max_retries=3)
         def annotate_video_task(self, video_id: str, video_path: str, **kwargs):
             """Celery task for video annotation."""
-            from dvas.models.teacher.gpt4v import GPT4VTeacher
+            from dvas.models.teacher.gpt55 import GPT55Teacher
             from dvas.pipeline.core import AnnotationPipeline
 
             logger.info("celery_task_started", video_id=video_id)
 
             try:
-                teacher = GPT4VTeacher(model_name=kwargs.get("teacher_model", "gpt-4o"))
+                teacher = TeacherModel(model_name=kwargs.get("teacher_model", "gpt-5.5"))
                 pipeline = AnnotationPipeline(
                     teacher_model=teacher,
                     num_frames=kwargs.get("num_frames", 16),

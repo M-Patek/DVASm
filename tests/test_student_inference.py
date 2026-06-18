@@ -2,7 +2,7 @@
 
 import sys
 import asyncio
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 from pathlib import Path
 import numpy as np
 import pytest
@@ -101,27 +101,23 @@ class TestStudentTeacherBridge:
                 )
             engine.generate = mock_generate
 
-            # Mock fallback teacher
-            with patch("dvas.models.teacher.gpt4v.GPT4VTeacher") as MockTeacher:
-                mock_teacher = MagicMock()
-                mock_teacher.model_type = ModelType.TEACHER_GPT4V
-                mock_teacher.model_version = "gpt-4o"
+            # Set up mock teacher directly on the bridge
+            mock_teacher = MagicMock()
+            mock_teacher.model_type = ModelType.TEACHER_GPT55
+            mock_teacher.model_version = "gpt-5.5"
+            mock_teacher.annotate = AsyncMock(return_value=GenerationResult(
+                text="teacher result",
+                model_type=ModelType.TEACHER_GPT55,
+                status=GenerationStatus.SUCCESS,
+            ))
+            bridge._teacher_fallback = mock_teacher
 
-                async def mock_annotate(**kwargs):
-                    return GenerationResult(
-                        text="teacher result",
-                        model_type=ModelType.TEACHER_GPT4V,
-                        status=GenerationStatus.SUCCESS,
-                    )
-                mock_teacher.annotate = mock_annotate
-                MockTeacher.return_value = mock_teacher
+            frames = [np.zeros((224, 224, 3), dtype=np.uint8) for _ in range(4)]
+            result = await bridge.annotate(frames=frames)
 
-                frames = [np.zeros((224, 224, 3), dtype=np.uint8) for _ in range(4)]
-                result = await bridge.annotate(frames=frames)
-
-                assert isinstance(result, GenerationResult)
-                assert result.text == "teacher result"
-                assert result.model_type == ModelType.TEACHER_GPT4V
+            assert isinstance(result, GenerationResult)
+            assert result.text == "teacher result"
+            assert result.model_type == ModelType.TEACHER_GPT55
 
     @pytest.mark.asyncio
     async def test_bridge_no_fallback_on_failure(self):

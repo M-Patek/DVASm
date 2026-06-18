@@ -10,6 +10,7 @@ code_anchors:
   - "src/dvas/data/schemas.py:Action"
   - "src/dvas/data/video_loader.py:VideoLoader"
   - "src/dvas/data/video_loader.py:EPICKitchensLoader"
+  - "src/dvas/data/video_reader.py:VideoReader"
   - "src/dvas/data/storage.py:AnnotationStore"
 agent_hints:
   - "WARNING: Always use VideoLoader as context manager: `with VideoLoader(path) as loader:`"
@@ -17,7 +18,7 @@ agent_hints:
   - "WARNING: Annotation model uses Pydantic v2—use model_dump() not dict()"
   - "WARNING: Storage uses orjson for speed—use .model_dump() then orjson.dumps()"
   - "WARNING: Large videos may cause memory issues—use read_frames() generator, don't convert to list"
-  - "WARNING: Video file extensions may vary (MP4, mp4, avi)—get_video_path() tries alternatives"
+  - "WARNING: Supported formats are listed in dvas.data.SUPPORTED_VIDEO_FORMATS (mp4/mov/avi/mkv/webm/m4v/flv/3gp via OpenCV+FFmpeg); VideoReader raises ValueError on other extensions"
 ---
 
 # §01 Data Layer
@@ -99,12 +100,11 @@ If modifying `Annotation`, `Segment`, `Action`, or `Object`:
 | VideoLoader | Complete | Scene detection, frame sampling, optical flow |
 | EPIC loader | Complete | Action label parsing, metadata loading |
 | Storage | Complete | JSON with versioning |
+| Format support | Complete | MP4/MOV/AVI/MKV/WebM/M4V/FLV/3GP via OpenCV+FFmpeg |
 | Distributed processing | Missing | Single-process only |
-| Format support | Partial | MP4 tested, others unknown |
 
 **Active known_gaps** (from `status.yaml`):
 - No distributed video processing (severity: low)
-- Limited video format support (severity: low)
 
 ## §6 — Testing
 
@@ -114,10 +114,13 @@ pytest tests/test_schemas.py -v
 pytest tests/test_video_loader.py -v
 pytest tests/test_storage.py -v
 
+# Multi-format coverage (TestVideoFormatSupport)
+pytest tests/test_video_loader.py::TestVideoFormatSupport -v
+
 # Integration test with sample video
 pytest tests/test_data_integration.py -v
 ```
 
 ---
 
-*Subsystem doc: 01-data | Updated: 2024-06-17*
+*Subsystem doc: 01-data | Updated: 2026-06-18*

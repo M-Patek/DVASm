@@ -3,12 +3,7 @@
 import pytest
 import numpy as np
 
-from dvas.models.base import (
-    GenerationResult,
-    GenerationStatus,
-    ModelType,
-    UnifiedModel,
-)
+from dvas.models.base import GenerationResult, GenerationStatus, ModelType, UnifiedModel
 
 
 class TestGenerationResult:
@@ -35,8 +30,8 @@ class TestGenerationResult:
         result = GenerationResult(
             text="A person cooking",
             structured_data={"scene": "kitchen"},
-            model_type=ModelType.TEACHER_GPT4V,
-            model_version="gpt-4o",
+            model_type=ModelType.TEACHER_GPT55,
+            model_version="gpt-5.5",
             status=GenerationStatus.SUCCESS,
             confidence=0.95,
             latency_ms=1234.5,
@@ -47,8 +42,8 @@ class TestGenerationResult:
             metadata={"finish_reason": "stop"},
         )
         assert result.text == "A person cooking"
-        assert result.model_type == ModelType.TEACHER_GPT4V
-        assert result.model_version == "gpt-4o"
+        assert result.model_type == ModelType.TEACHER_GPT55
+        assert result.model_version == "gpt-5.5"
         assert result.confidence == 0.95
         assert result.latency_ms == 1234.5
 
@@ -58,7 +53,7 @@ class TestGenerationResult:
         failure = GenerationResult(status=GenerationStatus.FAILURE)
         fallback = GenerationResult(
             status=GenerationStatus.FALLBACK,
-            fallback_from=ModelType.TEACHER_GPT4V,
+            fallback_from=ModelType.TEACHER_GPT55,
         )
 
         assert success.is_success() is True
@@ -80,7 +75,7 @@ class TestGenerationResult:
         """Test is_fallback method."""
         normal = GenerationResult()
         fallback = GenerationResult(
-            fallback_from=ModelType.TEACHER_GPT4V,
+            fallback_from=ModelType.TEACHER_GPT55,
         )
 
         assert normal.is_fallback() is False
@@ -92,13 +87,13 @@ class TestGenerationResult:
             text="test",
             model_type=ModelType.TEACHER_CLAUDE,
             status=GenerationStatus.SUCCESS,
-            fallback_from=ModelType.TEACHER_GPT4V,
+            fallback_from=ModelType.TEACHER_GPT55,
         )
         d = result.to_dict()
         assert d["text"] == "test"
         assert d["model_type"] == "claude"
         assert d["status"] == "success"
-        assert d["fallback_from"] == "gpt-4v"
+        assert d["fallback_from"] == "gpt-5.5"
         assert "structured_data" in d
 
     def test_to_dict_no_fallback(self):
@@ -112,8 +107,8 @@ class TestGenerationResult:
         data = {
             "text": "test",
             "structured_data": None,
-            "model_type": "gpt-4v",
-            "model_version": "gpt-4o",
+            "model_type": "gpt-5.5",
+            "model_version": "gpt-5.5",
             "status": "success",
             "confidence": 0.9,
             "latency_ms": 100.0,
@@ -125,7 +120,7 @@ class TestGenerationResult:
         }
         result = GenerationResult.from_dict(data)
         assert result.text == "test"
-        assert result.model_type == ModelType.TEACHER_GPT4V
+        assert result.model_type == ModelType.TEACHER_GPT55
         assert result.status == GenerationStatus.SUCCESS
         assert result.confidence == 0.9
 
@@ -135,23 +130,23 @@ class TestGenerationResult:
             "text": "fallback text",
             "model_type": "claude",
             "status": "fallback",
-            "fallback_from": "gpt-4v",
+            "fallback_from": "gpt-5.5",
         }
         result = GenerationResult.from_dict(data)
-        assert result.fallback_from == ModelType.TEACHER_GPT4V
+        assert result.fallback_from == ModelType.TEACHER_GPT55
         assert result.status == GenerationStatus.FALLBACK
 
     def test_failure_factory(self):
         """Test GenerationResult.failure factory method."""
         result = GenerationResult.failure(
             error_message="API timeout",
-            model_type=ModelType.TEACHER_GPT4V,
-            model_version="gpt-4o",
+            model_type=ModelType.TEACHER_GPT55,
+            model_version="gpt-5.5",
         )
         assert result.status == GenerationStatus.FAILURE
         assert result.error_message == "API timeout"
-        assert result.model_type == ModelType.TEACHER_GPT4V
-        assert result.model_version == "gpt-4o"
+        assert result.model_type == ModelType.TEACHER_GPT55
+        assert result.model_version == "gpt-5.5"
         assert result.confidence == 0.0
         assert result.text == ""
 
@@ -159,12 +154,12 @@ class TestGenerationResult:
         """Test GenerationResult.fallback factory method."""
         result = GenerationResult.fallback(
             text="fallback result",
-            fallback_from=ModelType.TEACHER_GPT4V,
+            fallback_from=ModelType.TEACHER_GPT55,
             model_type=ModelType.TEACHER_CLAUDE,
         )
         assert result.status == GenerationStatus.FALLBACK
         assert result.text == "fallback result"
-        assert result.fallback_from == ModelType.TEACHER_GPT4V
+        assert result.fallback_from == ModelType.TEACHER_GPT55
         assert result.model_type == ModelType.TEACHER_CLAUDE
 
     def test_roundtrip_serialization(self):
@@ -194,7 +189,7 @@ class TestModelType:
 
     def test_enum_values(self):
         """Test all enum values exist."""
-        assert ModelType.TEACHER_GPT4V.value == "gpt-4v"
+        assert ModelType.TEACHER_GPT55.value == "gpt-5.5"
         assert ModelType.TEACHER_CLAUDE.value == "claude"
         assert ModelType.TEACHER_TOGETHER.value == "together"
         assert ModelType.STUDENT_LOCAL.value == "student-local"
@@ -203,7 +198,7 @@ class TestModelType:
 
     def test_enum_from_string(self):
         """Test creating ModelType from string."""
-        assert ModelType("gpt-4v") == ModelType.TEACHER_GPT4V
+        assert ModelType("gpt-5.5") == ModelType.TEACHER_GPT55
         assert ModelType("mock") == ModelType.MOCK
 
 

@@ -5,7 +5,7 @@ from pathlib import Path
 from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model
 from transformers import (
-    AutoModelForVision2Seq,
+    AutoModelForImageTextToText,
     AutoProcessor,
     BitsAndBytesConfig,
 )
@@ -36,7 +36,7 @@ def load_model_for_dpo(config: DPOConfig, is_ref: bool = False):
     )
 
     # Load model
-    model = AutoModelForVision2Seq.from_pretrained(
+    model = AutoModelForImageTextToText.from_pretrained(
         model_cfg.model_name_or_path,
         torch_dtype=model_cfg.torch_dtype,
         quantization_config=quantization_config,

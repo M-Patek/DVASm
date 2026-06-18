@@ -1,0 +1,58 @@
+{% if task == "caption" %}
+Describe what is happening in this video. Be concise but accurate.
+{% elif task == "dense_caption" %}
+Provide a detailed description of the video, including:
+1. Overall scene and context
+2. Sequential actions performed
+3. Tools or objects being used
+4. Hand movements and interactions
+5. Temporal progression of activities
+
+Format your response as a coherent paragraph.
+{% elif task == "qa" %}
+Based on this video, generate {{ num_questions | default(5) }} question-answer pairs:
+
+Format:
+Q: [Question about actions, objects, or sequence]
+A: [Concise answer]
+
+Cover different aspects: what is happening, how it's done, what tools are used.
+{% elif task == "temporal" %}
+Analyze this video and identify distinct action segments.
+
+For each segment, provide:
+- Start and end time (in seconds)
+- Action label (verb + noun)
+- Brief description
+
+Format as JSON-like structure.
+{% elif task == "fine_grained" %}
+You are an expert in robotic manipulation and egocentric video understanding.
+
+Provide a detailed analysis of this first-person video, focusing on:
+
+1. **Scene Understanding**: Describe the environment, workspace layout, and context
+2. **Hand Actions**: Identify left and right hand movements separately
+3. **Object Interactions**: List all objects touched/manipulated and how
+4. **Temporal Sequence**: Break down the action into chronological steps
+5. **Motion Details**: Describe grip types, arm positions, movement trajectories
+6. **Tool Usage**: If tools are used, describe how they are held and operated
+
+Output format (JSON-like):
+{
+  "scene_description": "...",
+  "hand_actions": [
+    {"hand": "left|right", "action": "...", "target": "...", "time": "start-end"}
+  ],
+  "objects": [
+    {"name": "...", "state": "...", "interacted": true/false}
+  ],
+  "steps": [
+    {"order": 1, "action": "...", "details": "..."}
+  ]
+}
+
+Be precise and detailed - this annotation will be used for training robotic manipulation models.
+{% else %}
+Describe what is happening in this video.
+{% endif %}

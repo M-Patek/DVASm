@@ -5,7 +5,7 @@ from pathlib import Path
 import torch
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from transformers import (
-    AutoModelForVision2Seq,
+    AutoModelForImageTextToText,
     AutoProcessor,
     BitsAndBytesConfig,
     TrainingArguments,
@@ -42,7 +42,7 @@ def load_model_and_processor(config: SFTConfig):
 
     # Load model
     logger.info("Loading model", model_name=model_cfg.model_name_or_path)
-    model = AutoModelForVision2Seq.from_pretrained(
+    model = AutoModelForImageTextToText.from_pretrained(
         model_cfg.model_name_or_path,
         torch_dtype=getattr(torch, model_cfg.torch_dtype),
         quantization_config=quantization_config,
@@ -123,7 +123,7 @@ def train_sft(config: SFTConfig) -> Path:
         save_total_limit=train_cfg.save_total_limit,
         fp16=train_cfg.fp16,
         bf16=train_cfg.bf16,
-        report_to=train_cfg.report_to,
+        report_to=config.report_to,
         remove_unused_columns=False,
         dataloader_num_workers=config.data.num_workers,
     )

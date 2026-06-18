@@ -10,7 +10,7 @@ from rich.table import Table
 from dvas.config import settings
 from dvas.data.storage import AnnotationStore
 from dvas.export.adapters import ADAPTERS
-from dvas.models.teacher.gpt4v import GPT4VTeacher
+from dvas.models.teacher import TeacherModel
 from dvas.pipeline.core import AnnotationPipeline
 from dvas.utils.logging import setup_logging
 
@@ -27,7 +27,7 @@ app.add_typer(dev_app, name="dev", help="Developer tools")
 def annotate(
     video_path: Path = typer.Argument(..., help="Path to video file"),
     video_id: str = typer.Option(None, "--video-id", "-v", help="Video ID (auto-generated if not provided)"),
-    teacher_model: str = typer.Option("gpt-4o", "--model", "-m", help="Teacher model to use"),
+    teacher_model: str = typer.Option("gpt-5.5", "--model", "-m", help="Teacher model to use"),
     num_frames: int = typer.Option(16, "--frames", "-f", help="Number of frames to sample"),
     output: Path = typer.Option(None, "--output", "-o", help="Output path for annotation"),
 ) -> None:
@@ -41,7 +41,7 @@ def annotate(
     console.print(f"[blue]Annotating {video_path.name}...[/blue]")
 
     async def _annotate() -> None:
-        teacher = GPT4VTeacher(model_name=teacher_model)
+        teacher = TeacherModel(model_name=teacher_model)
         pipeline = AnnotationPipeline(teacher_model=teacher, num_frames=num_frames)
         annotation = await pipeline.annotate_video(video_path=video_path, video_id=vid)
         return annotation

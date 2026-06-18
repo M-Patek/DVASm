@@ -1,7 +1,7 @@
 ---
 id: 02-teacher
-title: "02-Teacher — GPT-4V, Claude, Together API Wrappers"
-status: active-dev
+title: "02-Teacher — GPT-5.5, Claude 4.8, Together API Wrappers"
+status: stable
 applies_to:
   - "src/dvas/models/teacher/**"
 code_anchors:
@@ -11,9 +11,9 @@ code_anchors:
   - "src/dvas/models/teacher/together.py:TogetherTeacher"
 agent_hints:
   - "WARNING: Always use async annotate()—batch processing uses asyncio.gather"
-  - "WARNING: GPT-4V supports 32 frames max—sampler will downsample if more provided"
-  - "WARNING: Claude supports 20 frames max—most restrictive"
-  - "WARNING: Together/Qwen supports 8 frames max—cheapest option"
+  - "WARNING: GPT-5.5 supports 32 frames max—sampler will downsample if more provided"
+  - "WARNING: Claude 4.8 supports 20 frames max—most restrictive"
+  - "WARNING: Together/Qwen2.5-VL supports 8 frames max—cheapest option"
   - "WARNING: Base class prompt templates are hardcoded—update base.py for now"
 ---
 
@@ -25,12 +25,12 @@ API wrappers for commercial and hosted VLM models. Generate gold-standard annota
 
 ## §0 — One-liner
 
-Unified async interface to GPT-4V, Claude 3, and Together AI (Qwen2-VL) for batch video annotation.
+Unified async interface to GPT-4V, GPT-5.5, and Together AI for batch video annotation.
 
 ## §1 — Core concepts
 
 - **TeacherModel**: Abstract base class defining the interface
-- **GPT4VTeacher**: OpenAI GPT-4V/GPT-4o with 32-frame support
+- **GPT4VTeacher**: OpenAI GPT-4V/GPT-5.5 with 32-frame support
 - **ClaudeTeacher**: Anthropic Claude 3 Sonnet/Opus with 20-frame support
 - **TogetherTeacher**: Together.ai API for open-source models (Qwen2-VL)
 - **Fine-grained Prompt**: Specialized prompt for robotic manipulation scenes
@@ -68,13 +68,12 @@ Use `annotate_batch()` for concurrent processing with semaphore-based rate limit
 
 ### Behavior 2: Frame Limits & Sampling
 
-### Behavior 2: Frame Limits & Sampling
-
 | Model | Max Frames | Detail Level |
 |-------|-----------|--------------|
-| GPT-4V/4o | 32 | high (if ≤8) / low (if >8) |
-| Claude 3 | 20 | medium |
-| Qwen2-VL (Together) | 8 | medium |
+| GPT-5.5 | 32 | high (if ≤8) / low (if >8) |
+| Claude 4.8 | 20 | medium |
+| Qwen2.5-VL (Together) | 8 | medium |
+| Llama 4 Vision | 16 | medium |
 
 If more frames provided, uniform sampling reduces to max.
 
@@ -106,11 +105,11 @@ Base class provides default prompts:
 | Aspect | Status | Notes |
 |--------|--------|-------|
 | Base class | Complete | Abstract interface with utilities |
-| GPT-4V | Complete | Tested with OpenAI SDK |
-| Claude 3 | Complete | Tested with Anthropic SDK |
-| Together | Complete | Together.ai SDK with OpenAI compat |
+| GPT-5.5 | Complete | gpt-5.5 (latest) |
+| Claude 4.8 | Complete | claude-opus-4-8 (latest) |
+| Together | Complete | Qwen2.5-VL, Llama 4 Scout/Maverick |
 | Prompt templates | Hardcoded | TD-002 to externalize |
-| Batch retry logic | Missing | Must add checkpoint/resume |
+| Batch retry logic | Complete | @with_retry decorator added |
 
 **Active known_gaps**: none (all low priority)
 
@@ -129,4 +128,4 @@ pytest tests/test_teacher_base.py -v
 
 ---
 
-*Subsystem doc: 02-teacher | Updated: 2024-06-17*
+*Subsystem doc: 02-teacher | Updated: 2026-06-18*

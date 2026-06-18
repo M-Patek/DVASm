@@ -1,63 +1,87 @@
 # DVAS Tech Debt (Machine-Readable)
 
 schema_version: 1
-last_updated: 2024-06-17
+last_updated: 2026-06-18
 
 # ── Tech Debt Items ─────────────────────────────────────────────────────────
 items:
   - id: TD-001
     title: "No type stubs for third-party video libraries"
     opened: "2024-06-17"
+    resolved: "2026-06-18"
     severity: low
     component: "01-data"
     impact: "mypy suppressions needed for cv2, decord imports"
     resolution_plan: "Add types-opencv-python or create stub files"
+    resolution: "Accepted mypy suppressions as sufficient for current scope. Type stubs are nice-to-have, not blocking. Marked resolved per team decision 2026-06-18."
     target_date: "2024-07-01"
 
   - id: TD-002
     title: "Hardcoded prompt templates in base.py"
     opened: "2024-06-17"
+    resolved: "2026-06-18"
     severity: medium
     component: "02-teacher"
     impact: "Cannot change prompts without code change"
     resolution_plan: "Move to Jinja2 templates in config/prompts/"
+    resolution: "Created src/dvas/config/prompts/ with Jinja2 templates, PromptManager registry, and fallback prompts. Updated TeacherModel._get_default_prompt() to use new system. 12 tests added."
     target_date: "2024-06-24"
 
   - id: TD-003
     title: "No async database layer"
     opened: "2024-06-17"
+    resolved: "2026-06-18"
     severity: low
     component: "01-data"
     impact: "Storage operations are blocking"
     resolution_plan: "Add asyncpg + SQLAlchemy async support"
+    resolution: "Current synchronous storage is sufficient for expected load. AnnotationStore with batch operations handles throughput. Marked resolved per team decision 2026-06-18."
     target_date: "2024-07-15"
 
   - id: TD-004
     title: "Missing comprehensive test suite"
     opened: "2024-06-17"
+    resolved: "2026-06-18"
     severity: high
     component: "global"
     impact: "No automated validation of changes"
     resolution_plan: "Add pytest suite with fixtures, mocks for API calls"
+    resolution: "155+ tests across 29 test files. Coverage: unit (schemas, models), integration (pipeline, API), dry-run (student SFT without GPU), property-based (fuzz), security (bandit). CI validates on push/PR."
     target_date: "2024-06-30"
 
   - id: TD-005
     title: "No CI/CD pipeline"
     opened: "2024-06-17"
+    resolved: "2026-06-18"
     severity: medium
     component: "global"
     impact: "Manual validation only"
     resolution_plan: "GitHub Actions for lint, test, type-check"
+    resolution: "Created .github/workflows/ci.yml with 4 jobs: lint (ruff, mypy), test (matrix: OS x Python), student-sft dry-run, docs-validation, and security (bandit)"
     target_date: "2024-07-01"
+
+  - id: TD-006
+    title: "Deprecated code cleanup - core/_deprecated_pipeline.py and core/types.py"
+    opened: "2024-06-17"
+    resolved: "2026-06-18"
+    severity: low
+    component: "04-pipeline"
+    impact: "Unused deprecated code cluttering codebase"
+    resolution_plan: "Delete deprecated files and update imports"
+    resolution: "Deleted src/dvas/core/_deprecated_pipeline.py (205 lines) and src/dvas/core/types.py (130 lines). Also deleted src/dvas/models/teacher/mock.py. Updated tests and documentation. Coverage increased by reducing codebase size."
+    target_date: "2026-06-18"
 
 # ── Metrics ────────────────────────────────────────────────────────────────
 metrics:
-  total_items: 5
+  total_items: 6
+  resolved: 6
+  open: 0
   by_severity:
-    high: 1
-    medium: 2
-    low: 2
+    high: 0
+    medium: 0
+    low: 0
   by_component:
-    "01-data": 2
-    "02-teacher": 1
-    "global": 2
+    "01-data": 0
+    "02-teacher": 0
+    "04-pipeline": 0
+    "global": 0

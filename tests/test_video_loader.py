@@ -459,3 +459,74 @@ class TestEPICKitchensLoader:
 
             video_loader = loader.load_video("P01_01")
             assert video_loader is not None
+
+
+class TestVideoFormatSupport:
+    """Test multi-format video support (resolves known_gap: MP4-only)."""
+
+    def test_supported_formats_constant_exposes_common_types(self):
+        """The SUPPORTED_VIDEO_FORMATS constant must cover at least the formats
+        the EPIC-KITCHENS loader resolves to."""
+        from dvas.data.video_reader import SUPPORTED_VIDEO_FORMATS
+
+        for ext in ("mp4", "mov", "avi", "mkv", "webm", "m4v"):
+            assert ext in SUPPORTED_VIDEO_FORMATS, f"{ext} missing from supported formats"
+
+    @pytest.mark.parametrize("ext", ["mp4", "MP4", "mov", "MOV", "avi", "mkv", "webm", "m4v"])
+    def test_video_reader_accepts_supported_extension(self, tmp_path, ext):
+        """VideoReader must accept any supported extension without erroring
+        on format (it can still fail on open, but format check is early)."""
+        video_path = tmp_path / f"sample.{ext}"
+        video_path.write_bytes(b"fake_video_data")
+
+        with patch("dvas.data.video_reader.cv2.VideoCapture") as mock_cap:
+            mock_instance = MagicMock()
+            mock_instance.isOpened.return_value = True
+            mock_cap.return_value = mock_instance
+
+            reader = VideoReader(video_path)
+            assert reader.video_path == video_path
+
+    @pytest.mark.parametrize("ext", ["wmv", "rm", "asf", "vob"])
+    def test_video_reader_rejects_unsupported_extension(self, tmp_path, ext):
+        """VideoReader must fail fast on truly unsupported formats with a
+        clear error message listing valid alternatives."""
+        video_path = tmp_path / f"sample.{ext}"
+        video_path.write_bytes(b"fake_video_data")
+
+        with pytest.raises(ValueError) as exc_info:
+            VideoReader(video_path)
+
+        assert "Unsupported video format" in str(exc_info.value)
+        assert ext in str(exc_info.value)
+
+    @pytest.mark.parametrize("ext", [".mkv", ".webm", ".m4v"])
+    def test_epic_loader_resolves_additional_formats(self, tmp_path, ext):
+        """EPICKitchensLoader.get_video_path must find videos in MKV/WebM/M4V,
+        not just MP4/AVI/MOV."""
+        root = tmp_path / "epic"
+        (root / "P01" / "videos").mkdir(parents=True)
+        video_file = root / "P01" / "videos" / f"P01_01{ext}"
+        video_file.write_bytes(b"fake")
+
+        loader = EPICKitchensLoader(root_path=root)
+        path = loader.get_video_path("P01_01")
+
+        assert path is not None
+        assert path.suffix == ext
+        assert path.exists()
+
+    def test_epic_loader_prefers_mp4_over_alternates(self, tmp_path):
+        """When multiple formats exist, MP4 should win (most common in EPIC)."""
+        root = tmp_path / "epic"
+        (root / "P01" / "videos").mkdir(parents=True)
+
+        # Create an MKV first
+        (root / "P01" / "videos" / "P01_01.mkv").write_bytes(b"fake_mkv")
+        # Then the MP4 - should be preferred
+        (root / "P01" / "videos" / "P01_01.MP4").write_bytes(b"fake_mp4")
+
+        loader = EPICKitchensLoader(root_path=root)
+        path = loader.get_video_path("P01_01")
+
+        assert path.suffix.lower() == ".mp4"

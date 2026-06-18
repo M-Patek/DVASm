@@ -173,6 +173,7 @@ class SagaOrchestrator:
         saga: Saga,
         context: Optional[SagaContext] = None,
         timeout: Optional[float] = None,
+        on_failure: Optional[callable] = None,
     ) -> SagaContext:
         """Execute a saga.
 
@@ -180,6 +181,8 @@ class SagaOrchestrator:
             saga: The saga to execute
             context: Optional initial context
             timeout: Optional timeout in seconds
+            on_failure: Optional callback called when saga fails.
+                       Receives (saga_id, failed_step_name, context) as args.
 
         Returns:
             Final saga context
@@ -236,6 +239,18 @@ class SagaOrchestrator:
                     # Compensate completed steps in reverse order
                     await self._compensate(completed_steps, ctx)
                     self._saga_status[saga_id] = SagaStatus.FAILED
+
+                    # Call failure callback if provided (for checkpoint coordination)
+                    if on_failure:
+                        try:
+                            await on_failure(saga_id, step.name, ctx)
+                        except Exception as callback_err:
+                            logger.error(
+                                "saga_failure_callback_error",
+                                saga_id=saga_id,
+                                error=str(callback_err),
+                            )
+
                     raise SagaExecutionError(
                         f"Saga '{saga.name}' failed at step '{step.name}': {result.error}",
                         saga_id=saga_id,
@@ -261,6 +276,18 @@ class SagaOrchestrator:
             logger.error("saga_unexpected_error", saga_id=saga_id, error=str(e))
             await self._compensate(completed_steps, ctx)
             self._saga_status[saga_id] = SagaStatus.FAILED
+
+            # Call failure callback if provided
+            if on_failure:
+                try:
+                    await on_failure(saga_id, "unexpected", ctx)
+                except Exception as callback_err:
+                    logger.error(
+                        "saga_failure_callback_error",
+                        saga_id=saga_id,
+                        error=str(callback_err),
+                    )
+
             raise SagaExecutionError(
                 f"Saga '{saga.name}' failed unexpectedly: {e}",
                 saga_id=saga_id,

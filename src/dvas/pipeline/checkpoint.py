@@ -9,6 +9,11 @@ from dvas.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
+class CheckpointError(Exception):
+    """Raised when checkpoint operations fail."""
+    pass
+
+
 class CheckpointManager:
     """Manages checkpoint state for resumable pipeline processing.
 
@@ -41,8 +46,18 @@ class CheckpointManager:
                 failed=len(self.failed_items),
             )
             return True
-        except Exception as e:
-            logger.error("checkpoint_load_failed", error=str(e))
+        except json.JSONDecodeError as e:
+            logger.error("checkpoint_corrupted", error=str(e), path=str(self.checkpoint_path))
+            # Try to backup corrupted checkpoint
+            backup_path = self.checkpoint_path.with_suffix(".corrupted")
+            try:
+                self.checkpoint_path.rename(backup_path)
+                logger.info("checkpoint_backed_up", backup_path=str(backup_path))
+            except OSError:
+                pass
+            return False
+        except OSError as e:
+            logger.error("checkpoint_io_error", error=str(e))
             return False
 
     def save(self) -> None:

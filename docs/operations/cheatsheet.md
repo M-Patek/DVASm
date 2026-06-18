@@ -28,7 +28,7 @@ python -m dvas annotate epic \
 python -m dvas annotate epic \
   --split train \
   --num 1000 \
-  --teacher gpt-4o \
+  --teacher gpt-5.5 \
   --workers 10
 ```
 

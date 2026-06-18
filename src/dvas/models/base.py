@@ -12,12 +12,16 @@ import numpy as np
 class ModelType(str, Enum):
     """Type of model used for generation."""
 
-    TEACHER_GPT4V = "gpt-4v"
+    TEACHER_GPT55 = "gpt-5.5"
     TEACHER_CLAUDE = "claude"
     TEACHER_TOGETHER = "together"
     STUDENT_LOCAL = "student-local"
     STUDENT_EDGE = "student-edge"
     MOCK = "mock"
+
+    # Backwards compatibility
+    TEACHER_GPT4V = "gpt-5.5"
+
 
 
 class GenerationStatus(str, Enum):
@@ -57,6 +61,18 @@ class GenerationResult:
     def is_failure(self) -> bool:
         """Check if generation failed."""
         return self.status == GenerationStatus.FAILURE
+
+    def is_timeout(self) -> bool:
+        """Check if generation timed out."""
+        return self.status == GenerationStatus.TIMEOUT
+
+    def is_rate_limited(self) -> bool:
+        """Check if generation was rate limited."""
+        return self.status == GenerationStatus.RATE_LIMITED
+
+    def is_recoverable(self) -> bool:
+        """Check if error is recoverable (timeout or rate limit)."""
+        return self.status in (GenerationStatus.TIMEOUT, GenerationStatus.RATE_LIMITED)
 
     def is_fallback(self) -> bool:
         """Check if this result came from a fallback model."""

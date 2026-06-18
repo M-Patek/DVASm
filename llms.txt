@@ -20,29 +20,29 @@ subsystems:
   - id: "01-data"
     name: "Data Layer"
     doc: "docs/subsystems/01-data.md"
-    status: active-dev
-    health: yellow
+    status: stable
+    health: green
     code_root: "src/dvas/data/"
 
   - id: "02-teacher"
     name: "Teacher Models"
     doc: "docs/subsystems/02-teacher.md"
-    status: active-dev
+    status: stable
     health: green
     code_root: "src/dvas/models/teacher/"
 
   - id: "03-student"
     name: "Student Models"
     doc: "docs/subsystems/03-student.md"
-    status: draft
+    status: stable
     health: green
     code_root: "src/dvas/models/student/"
 
   - id: "04-pipeline"
     name: "Annotation Pipeline"
     doc: "docs/subsystems/04-pipeline.md"
-    status: active-dev
-    health: yellow
+    status: stable
+    health: green
     code_root: "src/dvas/pipeline/"
 
   - id: "05-evaluation"
@@ -130,7 +130,18 @@ export_llava: "python -m dvas export --format llava"
 # External Dependencies
 data_source: EPIC-KITCHENS
 teacher_models:
-  - gpt-4o
-  - claude-3-sonnet
-  - qwen2-vl-7b (via Together)
-student_base: Qwen2-VL-7B-Instruct
+  - gpt-5.5 (user-specified latest)
+  - claude-opus-4-8 (user-specified latest)
+  - qwen2.5-vl-7b / qwen2.5-vl-72b (via Together)
+student_base: Qwen2.5-VL-7B-Instruct
+
+# Recent Fixes (2026-06-18)
+# - src/dvas/pipeline/core.py: GenerationResult status handling (is_recoverable, is_timeout, is_rate_limited)
+# - src/dvas/pipeline/core.py: Checkpoint-storage consistency checks
+# - src/dvas/pipeline/builder.py: Type conversion for Object/Action/QAPair
+# - src/dvas/pipeline/checkpoint.py: Corrupted checkpoint recovery with backup
+# - src/dvas/core/concurrency.py: AsyncIteratorBridge timeout + sentinel fixes
+# - src/dvas/core/saga.py: on_failure callback for checkpoint coordination
+# - src/dvas/core/concurrency.py: FrameEncoderPool BGR/RGB conversion control
+# - src/dvas/data/video_loader.py: LRU metadata cache (max 1000 entries)
+# - src/dvas/persistence/indexed_store.py: Thread-local SQLite connections

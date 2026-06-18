@@ -29,18 +29,6 @@ from dvas.core.event_bus import (
     get_event_bus,
 )
 from dvas.core.outbox import OutboxPublisher, OutboxStatus, OutboxStore
-from dvas.core.pipeline import (
-    BaseStage,
-    DetectScenesStage,
-    FunctionStage,
-    LoadVideoStage,
-    Pipeline,
-    PipelineContext,
-    PipelineStage,
-    SaveAnnotationStage,
-    StageRegistry,
-    StageResult,
-)
 from dvas.core.saga import (
     AnnotationSagaBuilder,
     FunctionSagaStep,
@@ -83,19 +71,10 @@ __all__ = [
     "SagaOrchestrator",
     "FunctionSagaStep",
     "AnnotationSagaBuilder",
-    # Pipeline
-    "Pipeline",
-    "PipelineStage",
-    "PipelineContext",
-    "StageResult",
-    "BaseStage",
-    "FunctionStage",
-    "StageRegistry",
-    "LoadVideoStage",
-    "DetectScenesStage",
-    "SaveAnnotationStage",
     # Outbox
     "OutboxStore",
     "OutboxPublisher",
     "OutboxStatus",
+    # DEPRECATED: Pipeline from core is removed.
+    # Use dvas.pipeline.core:AnnotationPipeline for production.
 ]

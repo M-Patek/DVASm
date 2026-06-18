@@ -6,7 +6,7 @@ from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
 import numpy as np
 from PIL import Image
-from transformers import AutoModelForVision2Seq, AutoProcessor
+from transformers import AutoModelForImageTextToText, AutoProcessor
 
 from dvas.models.base import GenerationResult, GenerationStatus, ModelType, UnifiedModel
 from dvas.models.teacher.base import TeacherModel
@@ -78,7 +78,7 @@ class StudentInferenceEngine(UnifiedModel):
             trust_remote_code=True,
         )
 
-        self.model = AutoModelForVision2Seq.from_pretrained(
+        self.model = AutoModelForImageTextToText.from_pretrained(
             self.model_path,
             torch_dtype=torch.bfloat16,
             device_map=self.device,
@@ -340,9 +340,9 @@ class StudentTeacherBridge(TeacherModel):
     def _load_fallback_teacher(self):
         """Load teacher model for fallback."""
         if self._teacher_fallback is None:
-            from dvas.models.teacher.gpt4v import GPT4VTeacher
+            from dvas.models.teacher import TeacherModel
 
-            self._teacher_fallback = GPT4VTeacher()
+            self._teacher_fallback = TeacherModel()
 
     async def annotate(
         self,

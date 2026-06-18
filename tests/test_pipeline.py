@@ -15,10 +15,10 @@ class TestAnnotationPipeline:
         from dvas.pipeline.core import AnnotationPipeline
 
         mock_teacher = MagicMock()
-        mock_teacher.model_name = "gpt-4o"
+        mock_teacher.model_name = "gpt-5.5"
         mock_teacher.annotate = AsyncMock(return_value={
             "text": "Test annotation",
-            "model": "gpt-4o",
+            "model": "gpt-5.5",
         })
 
         pipeline = AnnotationPipeline(teacher_model=mock_teacher, num_frames=8)
@@ -125,10 +125,10 @@ class TestBatchProcessing:
         from dvas.pipeline.core import AnnotationPipeline
 
         mock_teacher = MagicMock()
-        mock_teacher.model_name = "gpt-4o"
+        mock_teacher.model_name = "gpt-5.5"
         mock_teacher.annotate = AsyncMock(return_value={
             "text": "Test annotation",
-            "model": "gpt-4o",
+            "model": "gpt-5.5",
         })
 
         pipeline = AnnotationPipeline(teacher_model=mock_teacher)
