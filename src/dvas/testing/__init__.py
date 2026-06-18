@@ -866,6 +866,9 @@ def fuzz_dict(
     result = {}
     for _ in range(random.randint(min_keys, max_keys)):
         key = fuzz_string(max_length=key_length)
+        # Ensure unique keys
+        while key in result:
+            key = fuzz_string(max_length=key_length)
         value_type = random.choice([str, int, float, bool, list, dict])
 
         if value_type is str:
