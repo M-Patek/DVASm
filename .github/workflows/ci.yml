@@ -49,7 +49,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+        pip install -e ".[dev,api,train]"
 
     - name: Run tests
       run: pytest tests/ -v --tb=short --ignore=tests/test_student_sft_dryrun.py --ignore=tests/test_student_inference.py --basetemp=./tmp/pytest
@@ -74,7 +74,7 @@ jobs:
     - name: Install minimal dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pydantic pytest structlog datasets pyyaml pillow
+        pip install pydantic-settings pytest structlog datasets pyyaml pillow
         pip install -e "." --no-deps
 
     - name: Run student SFT dry-run tests

@@ -43,7 +43,7 @@ def check_anchor(project_root: Path, anchor: str) -> tuple[bool, str]:
             files = list(parent.iterdir())
             return False, f"File not found: {file_path} (parent contains: {[f.name for f in files]})"
         else:
-            return False, f"File not found: {file_path} (parent missing: {parent})
+            return False, f"File not found: {file_path} (parent missing: {parent})"
 
     content = full_path.read_text(encoding='utf-8')
 
