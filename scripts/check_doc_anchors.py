@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Check that code_anchors in subsystem docs point to valid code locations."""
 
+import os
 import re
 import sys
 from pathlib import Path
@@ -59,7 +60,16 @@ def check_anchor(project_root: Path, anchor: str) -> tuple[bool, str]:
 
 
 def main():
-    project_root = Path(__file__).parent.parent
+    # Use GitHub Actions workspace if available, otherwise use script location
+    if 'GITHUB_WORKSPACE' in os.environ:
+        project_root = Path(os.environ['GITHUB_WORKSPACE'])
+    else:
+        project_root = Path(__file__).parent.parent
+
+    # Debug: print project root and list files
+    print(f"Project root: {project_root}", file=sys.stderr)
+    print(f"Project root exists: {project_root.exists()}", file=sys.stderr)
+
     subsystems_dir = project_root / 'docs' / 'subsystems'
 
     if not subsystems_dir.exists():
