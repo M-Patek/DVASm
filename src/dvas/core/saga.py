@@ -12,7 +12,7 @@ import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Callable, Coroutine, Dict, Generic, List, Optional, TypeVar
+from typing import Any, Callable, Coroutine, Dict, List, Optional, TypeVar
 
 from dvas.utils.logging import get_logger
 

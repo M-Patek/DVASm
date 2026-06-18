@@ -24,7 +24,7 @@ def test_training_code_structure():
     mock_torch.cuda.is_available.return_value = True
     mock_torch.bfloat16 = "bfloat16"
 
-    mock_model = MagicMock()
+    _mock_model = MagicMock()
     mock_processor = MagicMock()
     mock_processor.tokenizer = MagicMock()
 
@@ -50,7 +50,6 @@ def test_training_code_structure():
         try:
             from dvas.models.student.sft_trainer import (
                 load_model_and_processor,
-                setup_lora,
                 train_sft,
             )
             logger.info("  ✓ Training module imports successfully")

@@ -1,7 +1,6 @@
 """Tests for the structured response parser."""
 
-import pytest
-from dvas.data.schemas import QAPair, Object, Action
+from dvas.data.schemas import QAPair
 from dvas.pipeline.parser import (
     JsonBlockStrategy,
     PlainTextStrategy,

@@ -1,5 +1,6 @@
 """Inference engine for student model with vLLM support."""
 
+import asyncio
 import time
 from pathlib import Path
 from typing import Any, AsyncIterator, Dict, List, Optional, Union

@@ -7,7 +7,6 @@ support for typed events, middleware, and persistent subscriptions.
 from __future__ import annotations
 
 import asyncio
-import inspect
 import threading
 import time
 import uuid
@@ -18,16 +17,11 @@ from enum import Enum, auto
 from typing import (
     Any,
     Callable,
-    Coroutine,
     Dict,
-    Generic,
     List,
     Optional,
-    Protocol,
     Type,
     TypeVar,
-    Union,
-    runtime_checkable,
 )
 
 from dvas.utils.logging import get_logger

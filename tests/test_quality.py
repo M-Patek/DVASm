@@ -1,7 +1,5 @@
 """Tests for quality analyzer."""
 
-import pytest
-from pathlib import Path
 
 
 class TestAnomalyDetector:

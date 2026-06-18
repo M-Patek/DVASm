@@ -1,15 +1,12 @@
 """Tests for data schemas."""
 
 import pytest
-from datetime import datetime
 
 from dvas.data.schemas import (
     Action,
     Annotation,
     BoundingBox,
     Hand,
-    Object,
-    QAPair,
     Segment,
     VideoMetadata,
 )

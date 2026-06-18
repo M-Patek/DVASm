@@ -4,12 +4,10 @@ End-to-end tests that verify multiple components work together.
 """
 
 import pytest
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
-import numpy as np
 
-from dvas.testing import create_test_annotation, assert_dict_subset
+from dvas.testing import assert_dict_subset
 
 from dvas.data.schemas import (
     Action,

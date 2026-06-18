@@ -10,8 +10,6 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, TypeVar
 
 from dvas.exceptions import (
-    APIRateLimitError,
-    APITimeoutError,
     RetryExhaustedError,
 )
 

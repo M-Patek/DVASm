@@ -4,7 +4,7 @@ Tests that verify API contracts between consumer and provider.
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from dvas.testing import Contract, ContractStore, contract_test
 

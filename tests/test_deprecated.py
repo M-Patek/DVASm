@@ -3,9 +3,6 @@
 Provides minimal coverage for deprecated modules.
 """
 
-import pytest
-from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 
 class TestExportCLI:

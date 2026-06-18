@@ -4,7 +4,7 @@ Tests for input validation, audit logging, encryption, and security utilities.
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from dvas.security.audit import (
     APIKeyManager,

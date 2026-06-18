@@ -1,6 +1,5 @@
 """Tests for advanced algorithms and data structures."""
 
-import math
 from unittest.mock import MagicMock
 
 import numpy as np

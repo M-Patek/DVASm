@@ -1,7 +1,5 @@
 """Tests for video loading and processing utilities."""
 
-import asyncio
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import numpy as np

@@ -3,7 +3,6 @@
 Tests that verify mutation testing utilities work correctly.
 """
 
-import pytest
 from dvas.testing import (
     ArithmeticMutationOperator,
     ComparisonMutationOperator,

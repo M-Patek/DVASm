@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import AsyncGenerator, Dict, List, Optional, Any
 
 import aiofiles
-from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, status
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
@@ -28,7 +28,6 @@ from dvas.api.middleware import (
     CompressionMiddleware,
     HealthChecker,
     HealthStatus,
-    InputValidator,
     RateLimitConfig,
     RateLimiter,
     RequestTracker,
@@ -63,7 +62,7 @@ def check_storage():
     """Check storage health."""
     try:
         store = AnnotationStore(enable_index=False)
-        stats = store.get_statistics()
+        _stats = store.get_statistics()
         return HealthChecker._run_check.__self__  # type: ignore
     except Exception:
         pass

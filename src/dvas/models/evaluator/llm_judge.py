@@ -3,7 +3,6 @@
 import asyncio
 from typing import Any, Dict, List, Optional
 
-from dvas.models.teacher.base import TeacherModel
 from dvas.models.teacher import TeacherModel
 
 

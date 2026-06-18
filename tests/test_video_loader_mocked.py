@@ -3,9 +3,8 @@
 Avoids Windows permission issues by using mock-based testing.
 """
 
-import asyncio
 from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest

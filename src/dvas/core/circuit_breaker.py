@@ -134,7 +134,7 @@ class CircuitBreaker:
                 f"Circuit '{self.name}' timed out after {self.config.timeout}s"
             )
 
-        except Exception as e:
+        except Exception:
             await self._record_failure()
             raise
 

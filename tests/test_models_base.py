@@ -1,7 +1,6 @@
 """Tests for models/base.py - GenerationResult and UnifiedModel."""
 
 import pytest
-import numpy as np
 
 from dvas.models.base import GenerationResult, GenerationStatus, ModelType, UnifiedModel
 

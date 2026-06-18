@@ -7,12 +7,10 @@ and API versioning.
 from __future__ import annotations
 
 import gzip
-import hashlib
-import json
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Coroutine, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional
 
 from dvas.core.backpressure import TokenBucket
 from dvas.utils.logging import get_logger
@@ -76,7 +74,7 @@ class RateLimiter:
         import asyncio
 
         try:
-            loop = asyncio.get_running_loop()
+            _loop = asyncio.get_running_loop()
             # In async context, we can't do blocking acquire
             # Return based on available tokens
             return bucket.available_tokens >= 1.0
@@ -90,7 +88,7 @@ class RateLimiter:
         import asyncio
 
         try:
-            loop = asyncio.get_running_loop()
+            _loop = asyncio.get_running_loop()
             # Can't do blocking acquire in async context
             if bucket.available_tokens >= 1.0:
                 # Manually consume a token

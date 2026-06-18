@@ -10,8 +10,6 @@ from dvas.data.schemas import (
     Action,
     Annotation,
     BoundingBox,
-    Hand,
-    Object,
     Segment,
     VideoMetadata,
 )
@@ -34,22 +32,22 @@ class TestFuzzString:
 
     def test_fuzz_string_with_null(self):
         """Fuzz string can include null bytes."""
-        found_null = False
+        _found_null = False
         for _ in range(1000):
             s = fuzz_string(max_length=100, include_null=True)
             if "\x00" in s:
-                found_null = True
+                _found_null = True
                 break
         # Null bytes should appear with some probability
         # We don't assert they must appear (probabilistic)
 
     def test_fuzz_string_with_unicode(self):
         """Fuzz string can include unicode."""
-        found_unicode = False
+        _found_unicode = False
         for _ in range(1000):
             s = fuzz_string(max_length=100, include_unicode=True)
             if any(ord(c) > 127 for c in s):
-                found_unicode = True
+                _found_unicode = True
                 break
         # Unicode should appear with some probability
         # We don't assert they must appear (probabilistic)

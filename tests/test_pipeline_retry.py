@@ -7,11 +7,9 @@ across real (mocked) teacher failures.
 
 from __future__ import annotations
 
-import asyncio
 import json
-from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import AsyncMock, MagicMock, patch
+from typing import Any, List
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest

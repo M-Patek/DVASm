@@ -1,7 +1,6 @@
 """Tests for outbox pattern implementation."""
 
 import asyncio
-import json
 import tempfile
 from pathlib import Path
 

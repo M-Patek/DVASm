@@ -3,16 +3,12 @@
 Tests invariants that should hold for ALL valid inputs, not just specific examples.
 """
 
-import pytest
 from dvas.testing import ArbitraryValue
 
 from dvas.data.schemas import (
     Action,
     Annotation,
     BoundingBox,
-    Hand,
-    Object,
-    QAPair,
     Segment,
     VideoMetadata,
 )

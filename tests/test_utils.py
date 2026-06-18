@@ -1,8 +1,6 @@
 """Tests for video loader."""
 
 import pytest
-from pathlib import Path
-import numpy as np
 
 
 class TestVideoLoader:

@@ -11,10 +11,9 @@ Optimizations:
 from __future__ import annotations
 
 import heapq
-import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 
 import cv2
 import numpy as np

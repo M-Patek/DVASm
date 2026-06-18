@@ -134,7 +134,7 @@ class TestAnnotationPipeline:
             )
 
             with patch("dvas.pipeline.core.VideoLoader", MockVideoLoader):
-                annotation = await pipeline.annotate_video(
+                _annotation = await pipeline.annotate_video(
                     Path("/fake/video.mp4"), "vid_1"
                 )
 
@@ -177,7 +177,7 @@ class TestAnnotationPipeline:
         mock_store.load = MagicMock(return_value=existing_annotation)
         mock_store.save = MagicMock()
 
-        pipeline = AnnotationPipeline(
+        _pipeline = AnnotationPipeline(
             teacher_model=mock_teacher,
             store=mock_store,
         )
@@ -391,7 +391,7 @@ class TestAnnotationBuilder:
 
     def test_build_annotation(self):
         """Test building complete annotation."""
-        from dvas.data.schemas import Action, Segment, VideoMetadata
+        from dvas.data.schemas import Action, VideoMetadata
         from dvas.pipeline.builder import AnnotationBuilder
 
         builder = AnnotationBuilder(model_version="gpt-5.5")

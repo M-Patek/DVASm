@@ -3,15 +3,13 @@
 Uses mocking to avoid Windows file permission issues.
 """
 
-import json
 import tempfile
-from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from dvas.data.schemas import Action, Annotation, Object, QAPair, Segment, VideoMetadata
+from dvas.data.schemas import Action, Annotation, Segment, VideoMetadata
 from dvas.data.storage import AnnotationStore
 
 

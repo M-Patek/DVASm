@@ -197,7 +197,7 @@ class CeleryTaskQueue:
         @app.task(bind=True, max_retries=3)
         def annotate_video_task(self, video_id: str, video_path: str, **kwargs):
             """Celery task for video annotation."""
-            from dvas.models.teacher.gpt55 import GPT55Teacher
+            from dvas.models.teacher.base import TeacherModel
             from dvas.pipeline.core import AnnotationPipeline
 
             logger.info("celery_task_started", video_id=video_id)

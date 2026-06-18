@@ -6,17 +6,14 @@ on top of the file-based annotation storage.
 
 from __future__ import annotations
 
-import asyncio
 import json
 import sqlite3
 import threading
-import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import orjson
 
@@ -727,7 +724,7 @@ class IndexStore:
                 )
                 conn.commit()
 
-            except Exception as e:
+            except Exception:
                 conn.execute(
                     "UPDATE sync_log SET status = 'failed' WHERE id = ?",
                     (sync_id,),

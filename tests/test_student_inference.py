@@ -1,19 +1,17 @@
 """Tests for student inference engine."""
 
 import sys
-import asyncio
 from unittest.mock import MagicMock, patch, AsyncMock
-from pathlib import Path
-import numpy as np
-import pytest
-
-from dvas.models.base import GenerationResult, GenerationStatus, ModelType
 
 # Patch the dpo_trainer module to avoid datasets dependency
 sys.modules['dvas.models.student.dpo_trainer'] = MagicMock()
 sys.modules['dvas.models.student.sft_trainer'] = MagicMock()
 
-from dvas.models.student.inference import (
+import numpy as np  # noqa: E402
+import pytest  # noqa: E402
+
+from dvas.models.base import GenerationResult, GenerationStatus, ModelType  # noqa: E402
+from dvas.models.student.inference import (  # noqa: E402
     StudentInferenceEngine,
     StudentTeacherBridge,
     batch_inference,

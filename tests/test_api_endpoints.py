@@ -15,10 +15,7 @@ Uses module-level mocking to avoid external dependencies (Redis, database).
 
 from __future__ import annotations
 
-import json
-import tempfile
 from io import BytesIO
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest

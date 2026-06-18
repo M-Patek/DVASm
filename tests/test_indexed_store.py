@@ -3,11 +3,8 @@
 Uses in-memory SQLite for testing.
 """
 
-import sqlite3
 import tempfile
-from datetime import datetime, timezone
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -17,7 +14,6 @@ from dvas.persistence.indexed_store import (
     AnnotationQuery,
     IndexStore,
     IndexStoreConfig,
-    SearchResult,
 )
 
 

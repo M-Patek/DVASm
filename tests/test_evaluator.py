@@ -4,8 +4,7 @@ Tests automatic metrics (BLEU, ROUGE, CIDEr, METEOR) and LLM-as-Judge.
 """
 
 import pytest
-import numpy as np
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from dvas.models.evaluator.metrics import MetricsCalculator
 from dvas.models.evaluator.llm_judge import LLMJudge, ConsistencyChecker

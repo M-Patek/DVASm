@@ -6,11 +6,10 @@ Delegates all work to focused components:
 - AnnotationBuilder: annotation construction
 """
 
-import asyncio
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-from dvas.core.concurrency import AsyncBatchProcessor, ConcurrencyLimiter
+from dvas.core.concurrency import AsyncBatchProcessor
 from dvas.data.schemas import Annotation, Segment, VideoMetadata
 from dvas.data.storage import AnnotationStore
 from dvas.data.video_loader import Frame, VideoLoader

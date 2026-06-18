@@ -13,7 +13,6 @@ Commands:
 
 from __future__ import annotations
 
-import asyncio
 import importlib
 import json
 import subprocess
@@ -25,9 +24,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 import typer
 from rich.console import Console
-from rich.live import Live
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 from rich.tree import Tree
 
@@ -774,7 +771,7 @@ def benchmark(
     console.print("[blue]Running benchmarks...[/blue]\n")
 
     # Import benchmark suites
-    benchmark_suites: Dict[str, Callable] = {}
+    _benchmark_suites: Dict[str, Callable] = {}
 
     try:
         from tests.test_load import TestBenchmarking

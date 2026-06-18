@@ -5,11 +5,10 @@ Tests that verify system performance under load.
 
 import asyncio
 import time
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from dvas.testing import LoadTester, benchmark, create_test_annotation
+from dvas.testing import LoadTester, benchmark
 
 
 class TestLoadTesting:

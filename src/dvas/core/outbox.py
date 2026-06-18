@@ -11,7 +11,7 @@ import json
 import sqlite3
 import time
 import uuid
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional

@@ -98,10 +98,13 @@ class TensorRTOptimizer:
         try:
             import tensorrt as trt
         except ImportError:
-            logger.error("tensorrt_not_installed")
+            import logging
+            logging.getLogger(__name__).error("tensorrt_not_installed")
             raise
 
-        logger.info("optimizing_with_tensorrt", onnx=str(onnx_path))
+        import logging
+        _logger = logging.getLogger(__name__)
+        _logger.info("optimizing_with_tensorrt", onnx=str(onnx_path))
 
         logger = trt.Logger(trt.Logger.WARNING)
         builder = trt.Builder(logger)
@@ -150,7 +153,7 @@ class ModelQuantizer:
     ) -> Path:
         """Apply INT8 static quantization."""
         try:
-            from onnxruntime.quantization import quantize_static, CalibrationDataReader
+            from onnxruntime.quantization import quantize_static, CalibrationDataReader  # noqa: F401
         except ImportError:
             logger.error("onnxruntime_quantization_not_available")
             raise
@@ -218,8 +221,8 @@ class EdgeInferenceEngine:
         """Load TensorRT engine."""
         try:
             import tensorrt as trt
-            import pycuda.driver as cuda
-            import pycuda.autoinit
+            import pycuda.driver as cuda  # noqa: F401
+            import pycuda.autoinit  # noqa: F401
 
             logger.info("loading_tensorrt_engine")
 

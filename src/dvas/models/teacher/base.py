@@ -4,7 +4,6 @@ import asyncio
 import base64
 import io
 import time
-from abc import abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -316,8 +315,6 @@ class TeacherModel(UnifiedModel):
         **kwargs
     ) -> GenerationResult:
         """Annotate using OpenAI API."""
-        from openai import AsyncOpenAI
-        from dvas.config import settings
 
         client = self._get_openai_client()
 
@@ -373,8 +370,6 @@ class TeacherModel(UnifiedModel):
         **kwargs
     ) -> GenerationResult:
         """Annotate using Anthropic API."""
-        from anthropic import AsyncAnthropic
-        from dvas.config import settings
 
         client = self._get_anthropic_client()
 

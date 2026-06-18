@@ -1,7 +1,5 @@
 """Tests for smart router."""
 
-import pytest
-from pathlib import Path
 
 
 class TestVideoComplexityAnalyzer:

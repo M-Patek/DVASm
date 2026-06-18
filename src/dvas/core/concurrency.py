@@ -8,28 +8,18 @@ from __future__ import annotations
 
 import asyncio
 import concurrent.futures
-import logging
+import os
 import threading
-import time
-import weakref
-from abc import ABC, abstractmethod
-from collections import deque
-from dataclasses import dataclass, field
-from enum import Enum, auto
 from typing import (
     Any,
-    AsyncIterator,
     Callable,
     Coroutine,
-    Deque,
     Dict,
     Generic,
     Iterator,
     List,
     Optional,
-    Set,
     TypeVar,
-    Union,
 )
 
 import numpy as np
@@ -288,7 +278,6 @@ class ProcessPoolWrapper:
         **kwargs: Any,
     ) -> T:
         """Run a function in the process pool."""
-        import os
 
         executor = self._ensure_executor()
         self._task_count += 1

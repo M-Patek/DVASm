@@ -7,11 +7,9 @@ to reduce GC pressure and allocation overhead.
 from __future__ import annotations
 
 import threading
-import weakref
-from abc import ABC, abstractmethod
 from collections import deque
-from dataclasses import dataclass, field
-from typing import Any, Callable, Deque, Dict, Generic, List, Optional, TypeVar, Union
+from dataclasses import dataclass
+from typing import Any, Callable, Deque, Dict, Generic, Optional, TypeVar
 
 import numpy as np
 

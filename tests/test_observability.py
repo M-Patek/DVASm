@@ -1,6 +1,5 @@
 """Tests for observability and metrics collection."""
 
-import time
 
 import pytest
 

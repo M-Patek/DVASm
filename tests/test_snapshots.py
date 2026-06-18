@@ -6,12 +6,11 @@ Tests that verify output matches stored snapshots for regression detection.
 import pytest
 from pathlib import Path
 
-from dvas.testing import SnapshotStore, create_test_annotation
+from dvas.testing import SnapshotStore
 
 from dvas.data.schemas import (
     Action,
     Annotation,
-    BoundingBox,
     Hand,
     Object,
     QAPair,

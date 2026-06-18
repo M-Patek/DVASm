@@ -1,10 +1,7 @@
 """Tests for DVAS CLI developer tools and main CLI."""
 
-import sys
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from typer.testing import CliRunner
 
 from dvas.cli.commands import (
@@ -231,7 +228,7 @@ class TestCLICommands:
         """Test that migration manager creates database."""
         db_path = tmp_path / "migrations" / "test.db"
         migrations_dir = tmp_path / "migrations"
-        manager = MigrationManager(db_path, migrations_dir=migrations_dir)
+        _manager = MigrationManager(db_path, migrations_dir=migrations_dir)
         assert db_path.exists()
 
     def test_scaffold_module_content(self) -> None:

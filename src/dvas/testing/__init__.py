@@ -7,14 +7,11 @@ and load testing utilities for comprehensive quality assurance.
 from __future__ import annotations
 
 import functools
-import hashlib
-import inspect
 import json
 import time
-import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, Generic, Iterator, List, Optional, Protocol, TypeVar, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, TypeVar, Union
 
 T = TypeVar("T")
 
@@ -568,8 +565,6 @@ class ArithmeticMutationOperator(MutationOperator):
 
     def apply(self, source: str) -> Iterator[Mutation]:
         """Apply arithmetic mutations."""
-        import re
-
         for line_num, line in enumerate(source.split("\n"), 1):
             for original, mutated in self.REPLACEMENTS.items():
                 # Simple string replacement - in practice you'd use AST
@@ -854,15 +849,15 @@ def fuzz_dict(
         key = fuzz_string(max_length=key_length)
         value_type = random.choice([str, int, float, bool, list, dict])
 
-        if value_type == str:
+        if value_type is str:
             result[key] = fuzz_string()
-        elif value_type == int:
+        elif value_type is int:
             result[key] = random.randint(-1000000, 1000000)
-        elif value_type == float:
+        elif value_type is float:
             result[key] = random.random() * 1000000
-        elif value_type == bool:
+        elif value_type is bool:
             result[key] = random.choice([True, False])
-        elif value_type == list:
+        elif value_type is list:
             result[key] = [fuzz_string() for _ in range(random.randint(0, 10))]
         else:
             result[key] = {}

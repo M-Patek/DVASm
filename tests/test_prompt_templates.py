@@ -6,7 +6,6 @@ introduced to resolve TD-002 (hardcoded prompts).
 
 from __future__ import annotations
 
-import pytest
 
 
 class TestPromptManager:

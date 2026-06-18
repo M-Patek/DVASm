@@ -14,7 +14,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from dvas.models.student.config import SFTConfig, DataConfig, TrainingConfig
+from dvas.models.student.config import SFTConfig
 from dvas.utils.logging import setup_logging, get_logger
 
 logger = get_logger(__name__)
@@ -44,14 +44,13 @@ def test_data_loading():
 def test_model_init_minimal():
     """Test model initialization with minimal settings."""
     try:
-        import torch
         from transformers import AutoProcessor
 
         model_name = "Qwen/Qwen2-VL-7B-Instruct"
         logger.info(f"Loading processor for {model_name}...")
 
         # Only load processor (lightweight) to verify model access
-        processor = AutoProcessor.from_pretrained(
+        _processor = AutoProcessor.from_pretrained(
             model_name,
             trust_remote_code=True,
         )
@@ -120,7 +119,7 @@ def test_full_pipeline_dry_run():
     # Step 4: Verify training can start (optional - requires GPU)
     logger.info("\n[4/4] Verifying training entry point...")
     try:
-        from dvas.models.student.sft_trainer import train_sft, SFTConfig
+        from dvas.models.student.sft_trainer import SFTConfig
 
         config = SFTConfig()
         config.data.train_data_path = Path("data/training/mini_train.jsonl")

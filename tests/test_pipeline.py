@@ -3,7 +3,6 @@
 import pytest
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
-import numpy as np
 
 
 class TestAnnotationPipeline:
@@ -131,7 +130,7 @@ class TestBatchProcessing:
             "model": "gpt-5.5",
         })
 
-        pipeline = AnnotationPipeline(teacher_model=mock_teacher)
+        _pipeline = AnnotationPipeline(teacher_model=mock_teacher)
 
         # Mock video loading
         with patch("dvas.pipeline.core.VideoLoader") as mock_loader:

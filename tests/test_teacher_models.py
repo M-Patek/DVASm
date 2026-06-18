@@ -1,7 +1,7 @@
 """Tests for teacher models returning GenerationResult."""
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch, Mock
+from unittest.mock import AsyncMock, MagicMock
 import numpy as np
 
 from dvas.models.base import GenerationResult, GenerationStatus, ModelType
