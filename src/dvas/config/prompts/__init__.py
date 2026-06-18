@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional
 
 try:
     from jinja2 import Environment, FileSystemLoader, Template
+
     HAS_JINJA2 = True
 except ImportError:
     HAS_JINJA2 = False
@@ -83,7 +84,7 @@ def _fallback_prompt(task: str, **kwargs: Any) -> str:
 3. Tools or objects being used
 
 Format your response as a coherent paragraph.""",
-        "qa": f"""Based on this video, generate {kwargs.get('num_questions', 5)} question-answer pairs:
+        "qa": f"""Based on this video, generate {kwargs.get("num_questions", 5)} question-answer pairs:
 
 Format:
 Q: [Question about actions, objects, or sequence]
@@ -118,10 +119,7 @@ def list_templates() -> list[str]:
     if not prompts_dir.exists():
         return []
 
-    return [
-        f.name for f in prompts_dir.iterdir()
-        if f.suffix in (".j2", ".jinja", ".txt")
-    ]
+    return [f.name for f in prompts_dir.iterdir() if f.suffix in (".j2", ".jinja", ".txt")]
 
 
 class PromptManager:

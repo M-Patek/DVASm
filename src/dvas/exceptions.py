@@ -40,7 +40,9 @@ class ConfigurationError(DVASException):
 class ValidationError(DVASException):
     """Raised when data validation fails."""
 
-    def __init__(self, message: str, field: Optional[str] = None, details: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, message: str, field: Optional[str] = None, details: Optional[Dict[str, Any]] = None
+    ):
         super().__init__(message, error_code="DVAS_VAL_001", details=details)
         self.field = field
 
@@ -48,7 +50,9 @@ class ValidationError(DVASException):
 class StorageError(DVASException):
     """Raised when storage operations fail."""
 
-    def __init__(self, message: str, path: Optional[str] = None, details: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, message: str, path: Optional[str] = None, details: Optional[Dict[str, Any]] = None
+    ):
         super().__init__(message, error_code="DVAS_STOR_001", details=details)
         self.path = path
 
@@ -82,7 +86,12 @@ class APIError(DVASException):
 class APIRateLimitError(APIError):
     """Raised when API rate limit is exceeded."""
 
-    def __init__(self, message: str, retry_after: Optional[int] = None, details: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        message: str,
+        retry_after: Optional[int] = None,
+        details: Optional[Dict[str, Any]] = None,
+    ):
         super().__init__(message, status_code=429, details=details)
         self.error_code = "DVAS_API_429"
         self.retry_after = retry_after
@@ -91,7 +100,12 @@ class APIRateLimitError(APIError):
 class APITimeoutError(APIError):
     """Raised when API call times out."""
 
-    def __init__(self, message: str, timeout: Optional[float] = None, details: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        message: str,
+        timeout: Optional[float] = None,
+        details: Optional[Dict[str, Any]] = None,
+    ):
         super().__init__(message, status_code=504, details=details)
         self.error_code = "DVAS_API_504"
         self.timeout = timeout

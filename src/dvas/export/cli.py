@@ -105,11 +105,7 @@ def stats(
 
     for src in sources:
         data = stats_data.get(src, {"count": 0, "size_mb": 0})
-        table.add_row(
-            src,
-            str(data["count"]),
-            f"{data['size_mb']:.2f}"
-        )
+        table.add_row(src, str(data["count"]), f"{data['size_mb']:.2f}")
 
     console.print(table)
 
@@ -135,7 +131,9 @@ def inspect(
     table.add_row("Video ID", annotation.video_id)
     table.add_row("Source", annotation.source)
     table.add_row("Model", annotation.model_version or "N/A")
-    table.add_row("Quality Score", f"{annotation.quality_score:.2f}" if annotation.quality_score else "N/A")
+    table.add_row(
+        "Quality Score", f"{annotation.quality_score:.2f}" if annotation.quality_score else "N/A"
+    )
     table.add_row("Segments", str(len(annotation.segments)))
     table.add_row("Created", annotation.created_at.isoformat())
 
@@ -143,7 +141,9 @@ def inspect(
 
     # Show segments
     for i, seg in enumerate(annotation.segments):
-        console.print(f"\n[bold]Segment {i+1}:[/bold] {seg.start_time:.1f}s - {seg.end_time:.1f}s")
+        console.print(
+            f"\n[bold]Segment {i + 1}:[/bold] {seg.start_time:.1f}s - {seg.end_time:.1f}s"
+        )
         console.print(f"  Caption: {seg.caption[:100]}...")
         console.print(f"  Actions: {len(seg.actions)}, Objects: {len(seg.objects)}")
 

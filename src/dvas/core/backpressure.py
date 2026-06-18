@@ -29,6 +29,7 @@ class BackpressureStrategy(Enum):
 # Token Bucket
 # ---------------------------------------------------------------------------
 
+
 class TokenBucket:
     """Token bucket rate limiter with backpressure support.
 
@@ -110,6 +111,7 @@ class TokenBucket:
 # Leaky Bucket
 # ---------------------------------------------------------------------------
 
+
 class LeakyBucket:
     """Leaky bucket rate limiter.
 
@@ -159,6 +161,7 @@ class LeakyBucket:
 # ---------------------------------------------------------------------------
 # Adaptive Rate Limiter
 # ---------------------------------------------------------------------------
+
 
 class AdaptiveRateLimiter:
     """Adaptive rate limiter that adjusts based on downstream feedback.
@@ -223,6 +226,7 @@ class AdaptiveRateLimiter:
 # ---------------------------------------------------------------------------
 # Backpressure Controller
 # ---------------------------------------------------------------------------
+
 
 class BackpressureController:
     """High-level backpressure controller for pipeline stages.
@@ -314,6 +318,7 @@ class BackpressureController:
 # ---------------------------------------------------------------------------
 # Context manager for automatic backpressure
 # ---------------------------------------------------------------------------
+
 
 class ControlledFlow:
     """Context manager for automatic backpressure control.

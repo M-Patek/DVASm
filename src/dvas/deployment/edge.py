@@ -99,18 +99,18 @@ class TensorRTOptimizer:
             import tensorrt as trt
         except ImportError:
             import logging
+
             logging.getLogger(__name__).error("tensorrt_not_installed")
             raise
 
         import logging
+
         _logger = logging.getLogger(__name__)
         _logger.info("optimizing_with_tensorrt", onnx=str(onnx_path))
 
         logger = trt.Logger(trt.Logger.WARNING)
         builder = trt.Builder(logger)
-        network = builder.create_network(
-            1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
-        )
+        network = builder.create_network(1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH))
         parser = trt.OnnxParser(network, logger)
 
         # Parse ONNX
@@ -242,9 +242,7 @@ class EdgeInferenceEngine:
             providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
 
             sess_options = ort.SessionOptions()
-            sess_options.graph_optimization_level = (
-                ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-            )
+            sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
             sess_options.intra_op_num_threads = 4
 
             self.session = ort.InferenceSession(

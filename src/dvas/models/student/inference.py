@@ -128,7 +128,7 @@ class StudentInferenceEngine(UnifiedModel):
         video_path: Optional[Path] = None,
         prompt: Optional[str] = None,
         task: str = "fine_grained",
-        **kwargs
+        **kwargs,
     ) -> GenerationResult:
         """Generate description for a video."""
         start_time = time.perf_counter()
@@ -146,7 +146,7 @@ class StudentInferenceEngine(UnifiedModel):
                 pil_frames = load_frames_from_video(video_path)
             else:
                 pil_frames = []
-                for frame in (frames or []):
+                for frame in frames or []:
                     if isinstance(frame, np.ndarray):
                         rgb = frame[:, :, ::-1] if frame.shape[2] == 3 else frame
                         pil_frames.append(Image.fromarray(rgb))
@@ -160,7 +160,9 @@ class StudentInferenceEngine(UnifiedModel):
                     model_version=self.model_version,
                 )
 
-            default_prompt = "Describe the video in detail, including hand actions and object interactions."
+            default_prompt = (
+                "Describe the video in detail, including hand actions and object interactions."
+            )
             system_prompt = prompt or default_prompt
 
             messages = [
@@ -201,11 +203,7 @@ class StudentInferenceEngine(UnifiedModel):
                 error_message=str(e),
             )
 
-    async def generate_batch(
-        self,
-        items: List[Dict[str, Any]],
-        **kwargs
-    ) -> List[GenerationResult]:
+    async def generate_batch(self, items: List[Dict[str, Any]], **kwargs) -> List[GenerationResult]:
         """Batch generation."""
         results = []
         for item in items:
@@ -214,7 +212,7 @@ class StudentInferenceEngine(UnifiedModel):
                 video_path=item.get("video_path"),
                 prompt=item.get("prompt"),
                 task=item.get("task", "fine_grained"),
-                **kwargs
+                **kwargs,
             )
             results.append(result)
         return results
@@ -256,9 +254,7 @@ class StudentInferenceEngine(UnifiedModel):
             )
 
         # Decode
-        output_text = self.processor.batch_decode(
-            output_ids, skip_special_tokens=True
-        )[0]
+        output_text = self.processor.batch_decode(output_ids, skip_special_tokens=True)[0]
 
         # Extract only the assistant response
         if "assistant" in output_text:
@@ -272,7 +268,7 @@ class StudentInferenceEngine(UnifiedModel):
         frames: List[Image.Image],
         max_new_tokens: int = 512,
         temperature: float = 0.2,
-        **kwargs
+        **kwargs,
     ) -> str:
         """Generate with vLLM."""
         # vLLM handles prompt formatting differently
@@ -374,11 +370,7 @@ class StudentTeacherBridge(TeacherModel):
             logger.info("Falling back to teacher model")
             self._load_fallback_teacher()
             teacher_result = await self._teacher_fallback.annotate(
-                video_path=video_path,
-                frames=frames,
-                prompt=prompt,
-                task=task,
-                **kwargs
+                video_path=video_path, frames=frames, prompt=prompt, task=task, **kwargs
             )
             if teacher_result.is_success():
                 return GenerationResult.fallback(
@@ -394,11 +386,7 @@ class StudentTeacherBridge(TeacherModel):
             model_version=self.model_version,
         )
 
-    async def annotate_batch(
-        self,
-        items: List[Dict[str, Any]],
-        **kwargs
-    ) -> List[GenerationResult]:
+    async def annotate_batch(self, items: List[Dict[str, Any]], **kwargs) -> List[GenerationResult]:
         """Batch annotation with concurrency control."""
         tasks = [
             self.annotate(
@@ -406,7 +394,7 @@ class StudentTeacherBridge(TeacherModel):
                 frames=item.get("frames"),
                 prompt=item.get("prompt"),
                 task=item.get("task", "fine_grained"),
-                **kwargs
+                **kwargs,
             )
             for item in items
         ]
@@ -418,22 +406,14 @@ class StudentTeacherBridge(TeacherModel):
         video_path: Optional[Path] = None,
         prompt: Optional[str] = None,
         task: str = "fine_grained",
-        **kwargs
+        **kwargs,
     ) -> GenerationResult:
         """UnifiedModel.generate implementation - delegates to annotate."""
         return await self.annotate(
-            video_path=video_path,
-            frames=frames,
-            prompt=prompt,
-            task=task,
-            **kwargs
+            video_path=video_path, frames=frames, prompt=prompt, task=task, **kwargs
         )
 
-    async def generate_batch(
-        self,
-        items: List[Dict[str, Any]],
-        **kwargs
-    ) -> List[GenerationResult]:
+    async def generate_batch(self, items: List[Dict[str, Any]], **kwargs) -> List[GenerationResult]:
         """UnifiedModel.generate_batch implementation - delegates to annotate_batch."""
         return await self.annotate_batch(items, **kwargs)
 
@@ -470,10 +450,12 @@ def batch_inference(
                 # In practice, you'd use asyncio.run() or similar
                 results.append(result)
             except Exception as e:
-                results.append(GenerationResult.failure(
-                    error_message=str(e),
-                    model_type=engine.model_type,
-                    model_version=engine.model_version,
-                ))
+                results.append(
+                    GenerationResult.failure(
+                        error_message=str(e),
+                        model_type=engine.model_type,
+                        model_version=engine.model_version,
+                    )
+                )
 
     return results

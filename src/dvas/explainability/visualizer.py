@@ -43,9 +43,7 @@ class KeyFrameExtractor:
     def __init__(self, num_keyframes: int = 5):
         self.num_keyframes = num_keyframes
 
-    def extract(
-        self, video_path: Path, annotation: Annotation
-    ) -> List[KeyFrameInfo]:
+    def extract(self, video_path: Path, annotation: Annotation) -> List[KeyFrameInfo]:
         """Extract key frames based on annotation and visual importance."""
         keyframes = []
 
@@ -106,9 +104,7 @@ class AttentionVisualizer:
     def __init__(self):
         self.colormap = cv2.COLORMAP_JET
 
-    def generate_heatmap(
-        self, frame: np.ndarray, attention_weights: np.ndarray
-    ) -> np.ndarray:
+    def generate_heatmap(self, frame: np.ndarray, attention_weights: np.ndarray) -> np.ndarray:
         """Generate attention heatmap overlay on frame."""
         # Resize attention to match frame
         h, w = frame.shape[:2]
@@ -129,9 +125,7 @@ class AttentionVisualizer:
 
         return overlay
 
-    def create_temporal_attention_map(
-        self, annotation: Annotation, video_path: Path
-    ) -> np.ndarray:
+    def create_temporal_attention_map(self, annotation: Annotation, video_path: Path) -> np.ndarray:
         """Create temporal attention visualization."""
         with VideoLoader(video_path) as loader:
             metadata = loader.metadata
@@ -172,7 +166,7 @@ class AttentionVisualizer:
 
                 # Add label if space permits
                 if end_x - start_x > 50:
-                    label = f"S{i+1}"
+                    label = f"S{i + 1}"
                     cv2.putText(
                         timeline,
                         label,
@@ -226,7 +220,9 @@ class AnnotationVisualizer:
 
         # Draw caption
         if draw_caption and segment.caption:
-            caption = segment.caption[:100] + "..." if len(segment.caption) > 100 else segment.caption
+            caption = (
+                segment.caption[:100] + "..." if len(segment.caption) > 100 else segment.caption
+            )
             self._draw_text_with_bg(draw, 10, y_offset, f"Caption: {caption}", (255, 255, 255))
             y_offset += 25
 
@@ -346,15 +342,15 @@ class ExplainabilityReport:
         # Explain each segment
         for i, segment in enumerate(annotation.segments):
             explanation = self._explain_segment(segment)
-            report["segments_explanation"].append({
-                "segment_idx": i,
-                "explanation": explanation,
-            })
+            report["segments_explanation"].append(
+                {
+                    "segment_idx": i,
+                    "explanation": explanation,
+                }
+            )
 
         # Generate visualizations
-        summary_img = self.visualizer.create_annotation_summary_image(
-            annotation, video_path
-        )
+        summary_img = self.visualizer.create_annotation_summary_image(annotation, video_path)
         summary_path = output_dir / f"{annotation.id}_summary.jpg"
         cv2.imwrite(str(summary_path), summary_img)
         report["summary_image"] = str(summary_path)
@@ -368,8 +364,7 @@ class ExplainabilityReport:
         return {
             "what_happens": segment.caption,
             "key_actions": [
-                {"verb": a.verb, "noun": a.noun, "hand": a.hand.value}
-                for a in segment.actions
+                {"verb": a.verb, "noun": a.noun, "hand": a.hand.value} for a in segment.actions
             ],
             "objects_involved": [obj.name for obj in segment.objects],
             "temporal_context": {
@@ -385,9 +380,7 @@ class ExplainabilityReport:
         parts = []
 
         if segment.actions:
-            action_desc = ", ".join(
-                f"{a.verb}ing {a.noun}" for a in segment.actions[:2]
-            )
+            action_desc = ", ".join(f"{a.verb}ing {a.noun}" for a in segment.actions[:2])
             parts.append(f"The video shows {action_desc}.")
 
         if segment.objects:

@@ -48,7 +48,7 @@ class TeacherModel(UnifiedModel):
         model_name: str = "gpt-5.5",
         api_key: Optional[str] = None,
         max_concurrent: int = 10,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Initialize teacher model.
 
@@ -147,6 +147,7 @@ class TeacherModel(UnifiedModel):
         if self._openai_client is None:
             from openai import AsyncOpenAI
             from dvas.config import settings
+
             self._openai_client = AsyncOpenAI(
                 api_key=self._api_key or settings.OPENAI_API_KEY,
                 http_client=self._http_client,
@@ -158,6 +159,7 @@ class TeacherModel(UnifiedModel):
         if self._anthropic_client is None:
             from anthropic import AsyncAnthropic
             from dvas.config import settings
+
             self._anthropic_client = AsyncAnthropic(
                 api_key=self._api_key or settings.ANTHROPIC_API_KEY,
                 http_client=self._http_client,
@@ -223,14 +225,13 @@ class TeacherModel(UnifiedModel):
         """Encode multiple frames to base64 strings using async pool."""
         return await self.encoder_pool.encode_frames(frames, convert_bgr_to_rgb=True)
 
-    def _encode_frames_sync(
-        self, frames: List[np.ndarray]
-    ) -> List[str]:
+    def _encode_frames_sync(self, frames: List[np.ndarray]) -> List[str]:
         """Synchronous fallback for frame encoding."""
         if len(frames) <= 4:
             return [self._encode_image(frame) for frame in frames]
 
         from concurrent.futures import ThreadPoolExecutor
+
         with ThreadPoolExecutor(max_workers=min(8, len(frames))) as executor:
             return list(executor.map(self._encode_image, frames))
 
@@ -245,7 +246,7 @@ class TeacherModel(UnifiedModel):
         prompt: Optional[str] = None,
         task: str = "fine_grained",
         temperature: float = 0.2,
-        **kwargs
+        **kwargs,
     ) -> GenerationResult:
         """Generate annotation using the configured model."""
         if frames is None and video_path is None:
@@ -312,7 +313,7 @@ class TeacherModel(UnifiedModel):
         system_prompt: str,
         temperature: float,
         start_time: float,
-        **kwargs
+        **kwargs,
     ) -> GenerationResult:
         """Annotate using OpenAI API."""
 
@@ -320,13 +321,15 @@ class TeacherModel(UnifiedModel):
 
         content = [{"type": "text", "text": system_prompt}]
         for encoded in encoded_frames:
-            content.append({
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{encoded}",
-                    "detail": "low" if len(encoded_frames) > 8 else "high"
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{encoded}",
+                        "detail": "low" if len(encoded_frames) > 8 else "high",
+                    },
                 }
-            })
+            )
 
         async with self.semaphore:
             response = await client.chat.completions.create(
@@ -334,13 +337,13 @@ class TeacherModel(UnifiedModel):
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are an expert video understanding AI specializing in robotic manipulation and egocentric vision."
+                        "content": "You are an expert video understanding AI specializing in robotic manipulation and egocentric vision.",
                     },
-                    {"role": "user", "content": content}
+                    {"role": "user", "content": content},
                 ],
                 temperature=temperature,
                 max_tokens=2048,
-                **kwargs
+                **kwargs,
             )
 
         latency_ms = (time.perf_counter() - start_time) * 1000
@@ -367,7 +370,7 @@ class TeacherModel(UnifiedModel):
         system_prompt: str,
         temperature: float,
         start_time: float,
-        **kwargs
+        **kwargs,
     ) -> GenerationResult:
         """Annotate using Anthropic API."""
 
@@ -375,14 +378,16 @@ class TeacherModel(UnifiedModel):
 
         content = []
         for encoded in encoded_frames:
-            content.append({
-                "type": "image",
-                "source": {
-                    "type": "base64",
-                    "media_type": "image/jpeg",
-                    "data": encoded,
+            content.append(
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/jpeg",
+                        "data": encoded,
+                    },
                 }
-            })
+            )
         content.append({"type": "text", "text": system_prompt})
 
         async with self.semaphore:
@@ -392,7 +397,7 @@ class TeacherModel(UnifiedModel):
                 temperature=temperature,
                 system="You are an expert video understanding AI specializing in robotic manipulation and egocentric vision.",
                 messages=[{"role": "user", "content": content}],
-                **kwargs
+                **kwargs,
             )
 
         latency_ms = (time.perf_counter() - start_time) * 1000
@@ -419,7 +424,7 @@ class TeacherModel(UnifiedModel):
         system_prompt: str,
         temperature: float,
         start_time: float,
-        **kwargs
+        **kwargs,
     ) -> GenerationResult:
         """Annotate using Together AI API."""
         from openai import AsyncOpenAI
@@ -437,13 +442,12 @@ class TeacherModel(UnifiedModel):
 
         content = [{"type": "text", "text": system_prompt}]
         for encoded in encoded_frames:
-            content.append({
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{encoded}",
-                    "detail": "low"
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{encoded}", "detail": "low"},
                 }
-            })
+            )
 
         async with self.semaphore:
             response = await client.chat.completions.create(
@@ -451,13 +455,13 @@ class TeacherModel(UnifiedModel):
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are an expert video understanding AI specializing in robotic manipulation and egocentric vision."
+                        "content": "You are an expert video understanding AI specializing in robotic manipulation and egocentric vision.",
                     },
-                    {"role": "user", "content": content}
+                    {"role": "user", "content": content},
                 ],
                 temperature=temperature,
                 max_tokens=2048,
-                **kwargs
+                **kwargs,
             )
 
         latency_ms = (time.perf_counter() - start_time) * 1000
@@ -479,10 +483,7 @@ class TeacherModel(UnifiedModel):
         )
 
     async def annotate_batch(
-        self,
-        items: List[Dict[str, Any]],
-        max_concurrent: Optional[int] = None,
-        **kwargs
+        self, items: List[Dict[str, Any]], max_concurrent: Optional[int] = None, **kwargs
     ) -> List[GenerationResult]:
         """Batch annotation with concurrency control."""
         sem = asyncio.Semaphore(max_concurrent or self._max_concurrent)
@@ -490,9 +491,7 @@ class TeacherModel(UnifiedModel):
         async def _annotate_one(item: Dict[str, Any]) -> GenerationResult:
             async with sem:
                 return await self.annotate(
-                    frames=item["frames"],
-                    prompt=item.get("prompt"),
-                    **kwargs
+                    frames=item["frames"], prompt=item.get("prompt"), **kwargs
                 )
 
         tasks = [_annotate_one(item) for item in items]
@@ -504,21 +503,13 @@ class TeacherModel(UnifiedModel):
         video_path: Optional[Path] = None,
         prompt: Optional[str] = None,
         task: str = "fine_grained",
-        **kwargs
+        **kwargs,
     ) -> GenerationResult:
         """UnifiedModel.generate implementation - delegates to annotate."""
         return await self.annotate(
-            video_path=video_path,
-            frames=frames,
-            prompt=prompt,
-            task=task,
-            **kwargs
+            video_path=video_path, frames=frames, prompt=prompt, task=task, **kwargs
         )
 
-    async def generate_batch(
-        self,
-        items: List[Dict[str, Any]],
-        **kwargs
-    ) -> List[GenerationResult]:
+    async def generate_batch(self, items: List[Dict[str, Any]], **kwargs) -> List[GenerationResult]:
         """UnifiedModel.generate_batch implementation - delegates to annotate_batch."""
         return await self.annotate_batch(items, **kwargs)

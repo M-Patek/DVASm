@@ -7,6 +7,7 @@ import numpy as np
 
 try:
     from rouge_score import rouge_scorer
+
     _ROUGE_AVAILABLE = True
 except ImportError:
     _ROUGE_AVAILABLE = False
@@ -19,8 +20,7 @@ class MetricsCalculator:
     def __init__(self):
         if _ROUGE_AVAILABLE and rouge_scorer is not None:
             self.rouge_scorer = rouge_scorer.RougeScorer(
-                ['rouge1', 'rouge2', 'rougeL'],
-                use_stemmer=True
+                ["rouge1", "rouge2", "rougeL"], use_stemmer=True
             )
         else:
             self.rouge_scorer = None
@@ -43,7 +43,7 @@ class MetricsCalculator:
         scores = {}
         for n in range(1, max_n + 1):
             score = self._bleu_n(ref_tokens, hyp_tokens, n)
-            scores[f'bleu_{n}'] = score
+            scores[f"bleu_{n}"] = score
 
         return scores
 
@@ -61,15 +61,18 @@ class MetricsCalculator:
 
         # Count matches
         matches = sum(
-            min(hyp_ngrams.get(ngram, 0), ref_ngrams.get(ngram, 0))
-            for ngram in hyp_ngrams
+            min(hyp_ngrams.get(ngram, 0), ref_ngrams.get(ngram, 0)) for ngram in hyp_ngrams
         )
 
         # Precision
         precision = matches / len(hyp_tokens) if hyp_tokens else 0.0
 
         # Brevity penalty
-        bp = 1.0 if len(hyp_tokens) > len(ref_tokens) else np.exp(1 - len(ref_tokens) / max(len(hyp_tokens), 1))
+        bp = (
+            1.0
+            if len(hyp_tokens) > len(ref_tokens)
+            else np.exp(1 - len(ref_tokens) / max(len(hyp_tokens), 1))
+        )
 
         return bp * precision
 
@@ -77,7 +80,7 @@ class MetricsCalculator:
         """Get n-gram counts from tokens."""
         ngrams = {}
         for i in range(len(tokens) - n + 1):
-            ngram = tuple(tokens[i:i + n])
+            ngram = tuple(tokens[i : i + n])
             ngrams[ngram] = ngrams.get(ngram, 0) + 1
         return ngrams
 
@@ -94,17 +97,13 @@ class MetricsCalculator:
         """
         scores = self.rouge_scorer.score(reference, hypothesis)
         return {
-            'rouge1_f': scores['rouge1'].fmeasure,
-            'rouge2_f': scores['rouge2'].fmeasure,
-            'rougeL_f': scores['rougeL'].fmeasure,
+            "rouge1_f": scores["rouge1"].fmeasure,
+            "rouge2_f": scores["rouge2"].fmeasure,
+            "rougeL_f": scores["rougeL"].fmeasure,
         }
 
     def cider(
-        self,
-        references: List[str],
-        hypothesis: str,
-        n: int = 4,
-        sigma: float = 6.0
+        self, references: List[str], hypothesis: str, n: int = 4, sigma: float = 6.0
     ) -> float:
         """
         Calculate CIDEr score (Consensus-based Image Description Evaluation).
@@ -157,8 +156,8 @@ class MetricsCalculator:
                 hyp_tfidf.get(ngram, 0) * ref_tfidf.get(ngram, 0)
                 for ngram in set(hyp_tfidf.keys()) & set(ref_tfidf.keys())
             )
-            hyp_norm = np.sqrt(sum(v ** 2 for v in hyp_tfidf.values()))
-            ref_norm = np.sqrt(sum(v ** 2 for v in ref_tfidf.values()))
+            hyp_norm = np.sqrt(sum(v**2 for v in hyp_tfidf.values()))
+            ref_norm = np.sqrt(sum(v**2 for v in ref_tfidf.values()))
 
             if hyp_norm > 0 and ref_norm > 0:
                 score += dot_product / (hyp_norm * ref_norm)
@@ -207,14 +206,11 @@ class MetricsCalculator:
         """Simple tokenization."""
         # Lowercase and extract words
         text = text.lower()
-        tokens = re.findall(r'\b\w+\b', text)
+        tokens = re.findall(r"\b\w+\b", text)
         return tokens
 
     def compute_all(
-        self,
-        reference: str,
-        hypothesis: str,
-        cider_references: Optional[List[str]] = None
+        self, reference: str, hypothesis: str, cider_references: Optional[List[str]] = None
     ) -> Dict[str, float]:
         """
         Compute all available metrics.
@@ -238,19 +234,17 @@ class MetricsCalculator:
         results.update(rouge_scores)
 
         # METEOR
-        results['meteor'] = self.meteor(reference, hypothesis)
+        results["meteor"] = self.meteor(reference, hypothesis)
 
         # CIDEr (if multiple references provided)
         if cider_references:
-            results['cider'] = self.cider(cider_references, hypothesis)
+            results["cider"] = self.cider(cider_references, hypothesis)
 
         return results
 
 
 def compare_annotations(
-    prediction: Dict,
-    reference: Dict,
-    metrics: Optional[List[str]] = None
+    prediction: Dict, reference: Dict, metrics: Optional[List[str]] = None
 ) -> Dict[str, float]:
     """
     Compare two annotations and compute metrics.
@@ -266,8 +260,8 @@ def compare_annotations(
     calc = MetricsCalculator()
 
     # Extract captions
-    pred_caption = prediction.get('caption', '')
-    ref_caption = reference.get('caption', '')
+    pred_caption = prediction.get("caption", "")
+    ref_caption = reference.get("caption", "")
 
     # Compute metrics
     results = calc.compute_all(ref_caption, pred_caption)

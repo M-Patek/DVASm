@@ -35,6 +35,7 @@ T = TypeVar("T")
 # Work-Stealing Thread Pool
 # ---------------------------------------------------------------------------
 
+
 class WorkStealingPool:
     """Thread pool with work-stealing for CPU-bound tasks.
 
@@ -122,6 +123,7 @@ class WorkStealingPool:
 # Async-to-Sync Bridge for Iterators
 # ---------------------------------------------------------------------------
 
+
 class AsyncIteratorBridge(Generic[T]):
     """Bridge that wraps a sync iterator for async consumption.
 
@@ -160,9 +162,7 @@ class AsyncIteratorBridge(Generic[T]):
         try:
             for item in self._iterator:
                 # Use asyncio.run_coroutine_threadsafe for thread-safe queue put
-                future = asyncio.run_coroutine_threadsafe(
-                    queue.put(item), loop
-                )
+                future = asyncio.run_coroutine_threadsafe(queue.put(item), loop)
                 try:
                     future.result(timeout=30.0)
                 except asyncio.TimeoutError:
@@ -172,7 +172,9 @@ class AsyncIteratorBridge(Generic[T]):
 
             # Signal completion
             try:
-                asyncio.run_coroutine_threadsafe(queue.put(self._sentinel), loop).result(timeout=5.0)
+                asyncio.run_coroutine_threadsafe(queue.put(self._sentinel), loop).result(
+                    timeout=5.0
+                )
                 sentinel_sent = True
             except Exception as e:
                 logger.error("failed_to_send_sentinel", error=str(e))
@@ -183,7 +185,9 @@ class AsyncIteratorBridge(Generic[T]):
             if not sentinel_sent:
                 # Last resort: try to send sentinel even after error
                 try:
-                    asyncio.run_coroutine_threadsafe(queue.put(self._sentinel), loop).result(timeout=1.0)
+                    asyncio.run_coroutine_threadsafe(queue.put(self._sentinel), loop).result(
+                        timeout=1.0
+                    )
                 except Exception:
                     pass  # Nothing more we can do
 
@@ -246,6 +250,7 @@ class AsyncIteratorBridge(Generic[T]):
 # Process Pool for CPU-Bound Tasks
 # ---------------------------------------------------------------------------
 
+
 class ProcessPoolWrapper:
     """Wrapper around ProcessPoolExecutor with proper lifecycle management.
 
@@ -305,6 +310,7 @@ class ProcessPoolWrapper:
 # Semaphore-based concurrency limiter with queue
 # ---------------------------------------------------------------------------
 
+
 class ConcurrencyLimiter:
     """Limit concurrent operations with a queue for backpressure.
 
@@ -357,6 +363,7 @@ class ConcurrencyLimiter:
 # ---------------------------------------------------------------------------
 # Batch processor with async support
 # ---------------------------------------------------------------------------
+
 
 class AsyncBatchProcessor(Generic[T]):
     """Process items in batches with controlled concurrency.
@@ -446,6 +453,7 @@ class AsyncBatchProcessor(Generic[T]):
 # Frame encoding pool (specialized for video frame processing)
 # ---------------------------------------------------------------------------
 
+
 class FrameEncoderPool:
     """Pool for parallel frame encoding operations.
 
@@ -467,7 +475,9 @@ class FrameEncoderPool:
         self._encoded_count = 0
         self._total_bytes = 0
 
-    def _encode_single(self, frame: np.ndarray, format: str = "JPEG", convert_bgr_to_rgb: bool = True) -> str:
+    def _encode_single(
+        self, frame: np.ndarray, format: str = "JPEG", convert_bgr_to_rgb: bool = True
+    ) -> str:
         """Encode a single frame to base64."""
         import base64
         import io
@@ -542,6 +552,7 @@ class FrameEncoderPool:
 # Global pool registry
 # ---------------------------------------------------------------------------
 
+
 class PoolRegistry:
     """Registry for managing global thread/process pools."""
 
@@ -594,15 +605,13 @@ class PoolRegistry:
     def stats(cls) -> Dict[str, Dict]:
         """Get statistics for all pools."""
         with cls._lock:
-            return {
-                name: getattr(pool, "stats", {})
-                for name, pool in cls._pools.items()
-            }
+            return {name: getattr(pool, "stats", {}) for name, pool in cls._pools.items()}
 
 
 # ---------------------------------------------------------------------------
 # Utility functions
 # ---------------------------------------------------------------------------
+
 
 def get_event_loop() -> asyncio.AbstractEventLoop:
     """Get the current event loop, creating one if necessary."""

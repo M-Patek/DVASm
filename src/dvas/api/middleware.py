@@ -22,6 +22,7 @@ logger = get_logger(__name__)
 # Rate Limiting
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class RateLimitConfig:
     """Configuration for rate limiting."""
@@ -131,6 +132,7 @@ class RateLimitExceeded(Exception):
 # Request/Response Compression
 # ---------------------------------------------------------------------------
 
+
 class CompressionMiddleware:
     """Middleware for request/response compression.
 
@@ -172,6 +174,7 @@ class CompressionMiddleware:
 # ---------------------------------------------------------------------------
 # Health Checks
 # ---------------------------------------------------------------------------
+
 
 class HealthStatus(Enum):
     """Health check status."""
@@ -286,6 +289,7 @@ class HealthChecker:
 # API Versioning
 # ---------------------------------------------------------------------------
 
+
 class APIVersion:
     """API version information."""
 
@@ -312,6 +316,7 @@ class APIVersion:
 # ---------------------------------------------------------------------------
 # Request ID Tracking
 # ---------------------------------------------------------------------------
+
 
 class RequestTracker:
     """Track API requests with unique IDs for distributed tracing.
@@ -392,6 +397,7 @@ class RequestTracker:
 # Input Validation
 # ---------------------------------------------------------------------------
 
+
 class InputValidator:
     """Validate and sanitize API inputs."""
 
@@ -436,6 +442,7 @@ class InputValidator:
 # ---------------------------------------------------------------------------
 # API Response Utilities
 # ---------------------------------------------------------------------------
+
 
 def api_response(
     data: Any = None,

@@ -55,9 +55,7 @@ class AnnotationPipeline:
         self.store = store or AnnotationStore()
         self.num_frames = num_frames
         self.segment_duration = segment_duration
-        self.checkpoint = (
-            CheckpointManager(checkpoint_path) if checkpoint_path else None
-        )
+        self.checkpoint = CheckpointManager(checkpoint_path) if checkpoint_path else None
         self.parser = StructuredParser()
         self.builder = AnnotationBuilder(
             model_version=getattr(teacher_model, "model_name", "unknown")
@@ -68,6 +66,7 @@ class AnnotationPipeline:
         """Lazy-load teacher model if not provided."""
         if self._teacher is None:
             from dvas.models.teacher.gpt55 import GPT55Teacher
+
             self._teacher = GPT55Teacher()
             self.builder.model_version = self._teacher.model_name
         return self._teacher
@@ -138,9 +137,7 @@ class AnnotationPipeline:
                         segment=i,
                         error=str(e),
                     )
-                    segments.append(
-                        self.builder.build_empty_segment(start, end, str(e))
-                    )
+                    segments.append(self.builder.build_empty_segment(start, end, str(e)))
 
         if not metadata:
             raise RuntimeError("Failed to extract video metadata")
@@ -198,9 +195,7 @@ class AnnotationPipeline:
             frames.append(frame)
 
         if not frames:
-            return self.builder.build_empty_segment(
-                start_time, end_time, "no_frames_extracted"
-            )
+            return self.builder.build_empty_segment(start_time, end_time, "no_frames_extracted")
 
         frame_arrays = [f.data for f in frames]
 
@@ -248,9 +243,7 @@ class AnnotationPipeline:
         max_delay=60.0,
         exceptions=(ConnectionError, TimeoutError, OSError),
     )
-    async def _call_teacher_with_retry(
-        self, frame_arrays: List[Any]
-    ) -> GenerationResult:
+    async def _call_teacher_with_retry(self, frame_arrays: List[Any]) -> GenerationResult:
         """Call teacher model with retry logic."""
         return await self.teacher.generate(frames=frame_arrays, task="fine_grained")
 
@@ -325,9 +318,7 @@ class AnnotationPipeline:
                     error=str(e),
                 )
                 if self.checkpoint:
-                    self.checkpoint.mark_failed(
-                        item.get("video_id", "unknown"), str(e)
-                    )
+                    self.checkpoint.mark_failed(item.get("video_id", "unknown"), str(e))
                 return None
 
         # Use AsyncBatchProcessor for controlled concurrency with backpressure
@@ -345,7 +336,9 @@ class AnnotationPipeline:
         # Collect results
         for i, result in enumerate(results):
             processed_count += 1
-            video_id = items_to_run[i].get("video_id", "unknown") if i < len(items_to_run) else "unknown"
+            video_id = (
+                items_to_run[i].get("video_id", "unknown") if i < len(items_to_run) else "unknown"
+            )
             if isinstance(result, Annotation):
                 successful.append(result)
                 # Mark the per-video checkpoint so resume skips it next run.
@@ -360,9 +353,7 @@ class AnnotationPipeline:
             elif result is None:
                 failed.append({"item": video_items[i], "error": "processing_failed"})
                 if batch_processor:
-                    batch_processor.mark_failed(
-                        f"item_{processed_count}", "processing_failed"
-                    )
+                    batch_processor.mark_failed(f"item_{processed_count}", "processing_failed")
 
             # Save checkpoint periodically
             if processed_count % checkpoint_every == 0 and self.checkpoint:
@@ -424,9 +415,7 @@ class EPICAnnotationPipeline(AnnotationPipeline):
         video_ids = df["video_id"].unique()[:max_videos]
 
         if self.checkpoint:
-            video_ids = [
-                vid for vid in video_ids if not self.checkpoint.is_processed(vid)
-            ]
+            video_ids = [vid for vid in video_ids if not self.checkpoint.is_processed(vid)]
             logger.info("filtered_processed_videos", remaining=len(video_ids))
 
         items = []
@@ -455,6 +444,7 @@ def create_training_data_from_gold(
                 data = ann.to_openai_format()
             else:
                 import json as _json
+
                 data = {
                     "messages": [
                         {
@@ -473,6 +463,7 @@ def create_training_data_from_gold(
                 }
 
             import json as _json
+
             f.write(_json.dumps(data, ensure_ascii=False) + "\n")
             count += 1
 

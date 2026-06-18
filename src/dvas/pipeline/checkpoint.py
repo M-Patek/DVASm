@@ -11,6 +11,7 @@ logger = get_logger(__name__)
 
 class CheckpointError(Exception):
     """Raised when checkpoint operations fail."""
+
     pass
 
 

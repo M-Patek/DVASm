@@ -28,6 +28,7 @@ logger = get_logger(__name__)
 # Data Structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(order=True)
 class ScoredFrame:
     """Frame with an importance score for priority queue operations."""
@@ -72,10 +73,15 @@ class MinMaxHeap:
         # max_heap can have at most 1 more element than min_heap
         if len(self._max_heap) > len(self._min_heap) + 1:
             _, _, val = heapq.heappop(self._max_heap)
-            heapq.heappush(self._min_heap, (-self._max_heap[-1][0] if self._max_heap else 0, self._counter, val))
+            heapq.heappush(
+                self._min_heap,
+                (-self._max_heap[-1][0] if self._max_heap else 0, self._counter, val),
+            )
         elif len(self._min_heap) > len(self._max_heap):
             _, _, val = heapq.heappop(self._min_heap)
-            heapq.heappush(self._max_heap, (-self._min_heap[0][0] if self._min_heap else 0, self._counter, val))
+            heapq.heappush(
+                self._max_heap, (-self._min_heap[0][0] if self._min_heap else 0, self._counter, val)
+            )
 
     def _evict(self) -> None:
         """Remove lowest scoring item when over capacity."""
@@ -156,6 +162,7 @@ class SlidingWindowBuffer:
 # Importance Metrics
 # ---------------------------------------------------------------------------
 
+
 class FrameImportanceMetric(ABC):
     """Abstract base for frame importance scoring."""
 
@@ -188,9 +195,7 @@ class MotionImportance(FrameImportanceMetric):
         prev_gray = cv2.cvtColor(self.prev_frame, cv2.COLOR_BGR2GRAY)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        flow = cv2.calcOpticalFlowFarneback(
-            prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0
-        )
+        flow = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
         magnitude = np.sqrt(flow[..., 0] ** 2 + flow[..., 1] ** 2)
         score = float(magnitude.mean())
 
@@ -267,6 +272,7 @@ class CompositeImportance(FrameImportanceMetric):
 # Adaptive Sampling
 # ---------------------------------------------------------------------------
 
+
 class AdaptiveSampler:
     """Adaptive frame sampling based on content complexity.
 
@@ -313,7 +319,9 @@ class AdaptiveSampler:
             return
 
         # Phase 1: Score frames using sliding window for efficiency
-        logger.info("adaptive_sampling_start", total_frames=total_frames, target_frames=self.num_frames)
+        logger.info(
+            "adaptive_sampling_start", total_frames=total_frames, target_frames=self.num_frames
+        )
 
         heap = MinMaxHeap(capacity=self.num_frames * 2)  # Oversample then refine
         window = SlidingWindowBuffer(self.window_size)
@@ -373,7 +381,9 @@ class AdaptiveSampler:
         logger.info(
             "adaptive_sampling_complete",
             selected_frames=len(selected),
-            avg_score=sum(f[0] for f in all_frames[:len(selected)]) / len(selected) if selected else 0,
+            avg_score=sum(f[0] for f in all_frames[: len(selected)]) / len(selected)
+            if selected
+            else 0,
         )
 
         for idx, ts, data in selected:
@@ -383,6 +393,7 @@ class AdaptiveSampler:
 # ---------------------------------------------------------------------------
 # Keyframe Extraction
 # ---------------------------------------------------------------------------
+
 
 class KeyframeExtractor:
     """Extract representative keyframes from video using multiple strategies.
@@ -465,7 +476,9 @@ class KeyframeExtractor:
         # Sort by frame index
         return sorted([entry[2] for entry in heap], key=lambda f: f.idx)
 
-    def _extract_entropy(self, reader: VideoReader, start_frame: int, end_frame: int) -> List[Frame]:
+    def _extract_entropy(
+        self, reader: VideoReader, start_frame: int, end_frame: int
+    ) -> List[Frame]:
         """Extract keyframes with highest entropy."""
         metric = HistogramEntropyImportance()
         heap: List[Tuple[float, int, Frame]] = []
@@ -574,6 +587,7 @@ class KeyframeExtractor:
 # Video Summarization
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class VideoSummary:
     """Result of video summarization."""
@@ -641,10 +655,7 @@ class VideoSummarizer:
         if not shots:
             # No shots detected, use uniform segmentation
             shot_duration = total_duration / self.num_segments
-            shots = [
-                (i * shot_duration, (i + 1) * shot_duration)
-                for i in range(self.num_segments)
-            ]
+            shots = [(i * shot_duration, (i + 1) * shot_duration) for i in range(self.num_segments)]
 
         # Score shots
         scored_shots = self._score_shots(reader, shots, fps)
@@ -682,7 +693,9 @@ class VideoSummarizer:
             if prev_hist is not None:
                 diff = cv2.compareHist(prev_hist, hist, cv2.HISTCMP_CHISQR)
                 if diff > 20.0:  # Threshold for scene change
-                    boundaries.append((shot_start / reader.metadata.fps, frame.idx / reader.metadata.fps))
+                    boundaries.append(
+                        (shot_start / reader.metadata.fps, frame.idx / reader.metadata.fps)
+                    )
                     shot_start = frame.idx
 
             prev_hist = hist
@@ -692,8 +705,7 @@ class VideoSummarizer:
 
         # Filter short shots
         return [
-            (start, end) for start, end in boundaries
-            if end - start >= self.min_segment_duration
+            (start, end) for start, end in boundaries if end - start >= self.min_segment_duration
         ]
 
     def _score_shots(
@@ -776,6 +788,7 @@ class VideoSummarizer:
 # Semantic-Aware Processing
 # ---------------------------------------------------------------------------
 
+
 class SemanticSegmenter:
     """Segment video based on semantic content changes.
 
@@ -836,8 +849,7 @@ class SemanticSegmenter:
             duration = (end_time or meta.duration) - (start_time or 0)
             seg_duration = duration / self.num_segments
             return [
-                (i * seg_duration, (i + 1) * seg_duration, 1.0)
-                for i in range(self.num_segments)
+                (i * seg_duration, (i + 1) * seg_duration, 1.0) for i in range(self.num_segments)
             ]
 
         # Find peaks in feature distance (semantic boundaries)
@@ -873,9 +885,7 @@ class SemanticSegmenter:
         # Motion features
         motion = 0.0
         if prev_gray is not None:
-            flow = cv2.calcOpticalFlowFarneback(
-                prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0
-            )
+            flow = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
             magnitude = np.sqrt(flow[..., 0] ** 2 + flow[..., 1] ** 2)
             motion = float(magnitude.mean())
 
@@ -885,9 +895,7 @@ class SemanticSegmenter:
             "motion": motion,
         }
 
-    def _feature_distance(
-        self, f1: Dict[str, float], f2: Dict[str, float]
-    ) -> Dict[str, float]:
+    def _feature_distance(self, f1: Dict[str, float], f2: Dict[str, float]) -> Dict[str, float]:
         """Calculate weighted distance between feature vectors."""
         distance = {}
         for key in self.feature_weights:
@@ -925,7 +933,7 @@ class SemanticSegmenter:
 
         # Sort by peak height and take top N
         peaks.sort(key=lambda x: x[1], reverse=True)
-        top_peaks = peaks[:num_boundaries - 1]
+        top_peaks = peaks[: num_boundaries - 1]
 
         # Sort by frame index
         top_peaks.sort(key=lambda x: x[0])
@@ -935,6 +943,7 @@ class SemanticSegmenter:
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
+
 
 class AlgorithmRegistry:
     """Registry for algorithm implementations."""

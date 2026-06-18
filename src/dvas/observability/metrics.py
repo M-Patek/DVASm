@@ -23,6 +23,7 @@ T = TypeVar("T")
 # Metrics Collection
 # ---------------------------------------------------------------------------
 
+
 class MetricsCollector:
     """Simple metrics collector (Prometheus-compatible).
 
@@ -79,7 +80,7 @@ class MetricsCollector:
         if not labels:
             return name
         label_str = ",".join(f'{k}="{v}"' for k, v in sorted(labels.items()))
-        return f'{name}{{{label_str}}}'
+        return f"{name}{{{label_str}}}"
 
     def get_counter(self, name: str, labels: Optional[Dict[str, str]] = None) -> int:
         """Get counter value."""
@@ -137,10 +138,7 @@ class MetricsCollector:
         return {
             "counters": {k: v["value"] for k, v in self._counters.items()},
             "gauges": {k: v["value"] for k, v in self._gauges.items()},
-            "histograms": {
-                k: self.get_histogram(k.split("{")[0])
-                for k in self._histograms.keys()
-            },
+            "histograms": {k: self.get_histogram(k.split("{")[0]) for k in self._histograms.keys()},
         }
 
 
@@ -166,6 +164,7 @@ def reset_metrics() -> None:
 # Timing Decorator
 # ---------------------------------------------------------------------------
 
+
 def timed(metric_name: Optional[str] = None, labels: Optional[Dict[str, str]] = None):
     """Decorator to time function execution.
 
@@ -175,6 +174,7 @@ def timed(metric_name: Optional[str] = None, labels: Optional[Dict[str, str]] = 
         async def process_video(video_path):
             ...
     """
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> T:
@@ -197,15 +197,18 @@ def timed(metric_name: Optional[str] = None, labels: Optional[Dict[str, str]] = 
                 get_metrics().observe(name, duration, labels)
 
         import inspect
+
         if inspect.iscoroutinefunction(func):
             return async_wrapper
         return wrapper
+
     return decorator
 
 
 # ---------------------------------------------------------------------------
 # Counter Decorator
 # ---------------------------------------------------------------------------
+
 
 def counted(metric_name: Optional[str] = None, labels: Optional[Dict[str, str]] = None):
     """Decorator to count function calls.
@@ -216,6 +219,7 @@ def counted(metric_name: Optional[str] = None, labels: Optional[Dict[str, str]] 
         async def generate_annotation(video_path):
             ...
     """
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> T:
@@ -230,15 +234,18 @@ def counted(metric_name: Optional[str] = None, labels: Optional[Dict[str, str]] 
             return await func(*args, **kwargs)
 
         import inspect
+
         if inspect.iscoroutinefunction(func):
             return async_wrapper
         return wrapper
+
     return decorator
 
 
 # ---------------------------------------------------------------------------
 # Distributed Tracing (simplified)
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class Span:
@@ -338,6 +345,7 @@ def get_tracer() -> Tracer:
 # Context manager for tracing
 # ---------------------------------------------------------------------------
 
+
 @contextmanager
 def trace_span(name: str, **tags: str):
     """Context manager for tracing a span.
@@ -368,6 +376,7 @@ def trace_span(name: str, **tags: str):
 # Performance Monitoring
 # ---------------------------------------------------------------------------
 
+
 class PerformanceMonitor:
     """Monitor application performance.
 
@@ -382,28 +391,32 @@ class PerformanceMonitor:
 
     def record_request(self, name: str, duration_ms: float, status: str = "success") -> None:
         """Record a request."""
-        self._requests.append({
-            "name": name,
-            "duration_ms": duration_ms,
-            "status": status,
-            "timestamp": time.time(),
-        })
+        self._requests.append(
+            {
+                "name": name,
+                "duration_ms": duration_ms,
+                "status": status,
+                "timestamp": time.time(),
+            }
+        )
 
         # Keep only last window_size requests
         if len(self._requests) > self.window_size:
-            self._requests = self._requests[-self.window_size:]
+            self._requests = self._requests[-self.window_size :]
 
     def record_error(self, name: str, error: str) -> None:
         """Record an error."""
-        self._errors.append({
-            "name": name,
-            "error": error,
-            "timestamp": time.time(),
-        })
+        self._errors.append(
+            {
+                "name": name,
+                "error": error,
+                "timestamp": time.time(),
+            }
+        )
 
         # Keep only last window_size errors
         if len(self._errors) > self.window_size:
-            self._errors = self._errors[-self.window_size:]
+            self._errors = self._errors[-self.window_size :]
 
     def get_stats(self) -> Dict[str, Any]:
         """Get performance statistics."""

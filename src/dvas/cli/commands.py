@@ -40,6 +40,7 @@ console = Console()
 # Development Mode
 # ---------------------------------------------------------------------------
 
+
 class DevModeWatcher:
     """File watcher for development hot reload."""
 
@@ -109,7 +110,9 @@ class DevModeWatcher:
 def dev(
     server: bool = typer.Option(True, "--server/--no-server", help="Run API server"),
     port: int = typer.Option(8000, "--port", "-p", help="Server port"),
-    watch_paths: Optional[List[str]] = typer.Option(None, "--watch", "-w", help="Additional paths to watch"),
+    watch_paths: Optional[List[str]] = typer.Option(
+        None, "--watch", "-w", help="Additional paths to watch"
+    ),
     interval: float = typer.Option(1.0, "--interval", "-i", help="Check interval in seconds"),
 ) -> None:
     """Run DVAS in development mode with hot reload."""
@@ -120,10 +123,7 @@ def dev(
     def reload_callback() -> None:
         """Callback when files change."""
         # Clear module cache for dvas modules
-        modules_to_remove = [
-            name for name in sys.modules
-            if name.startswith("dvas.")
-        ]
+        modules_to_remove = [name for name in sys.modules if name.startswith("dvas.")]
         for name in modules_to_remove:
             del sys.modules[name]
 
@@ -155,6 +155,7 @@ def dev(
 # ---------------------------------------------------------------------------
 # Code Scaffolding
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class ScaffoldTemplate:
@@ -400,6 +401,7 @@ def scaffold_list() -> None:
 # Database Migrations
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Migration:
     """Database migration record."""
@@ -439,12 +441,9 @@ class MigrationManager:
         import sqlite3
 
         conn = sqlite3.connect(str(self.db_path))
-        cursor = conn.execute(
-            "SELECT version, name, applied_at FROM _migrations ORDER BY version"
-        )
+        cursor = conn.execute("SELECT version, name, applied_at FROM _migrations ORDER BY version")
         migrations = [
-            Migration(version=row[0], name=row[1], applied_at=row[2])
-            for row in cursor.fetchall()
+            Migration(version=row[0], name=row[1], applied_at=row[2]) for row in cursor.fetchall()
         ]
         conn.close()
         return migrations
@@ -567,6 +566,7 @@ def migrate(
 # Documentation Generation
 # ---------------------------------------------------------------------------
 
+
 @app.command()
 def docs(
     output: Path = typer.Option("docs/api", "--output", "-o", help="Output directory"),
@@ -592,11 +592,13 @@ def docs(
 
         for route in api_app.routes:
             if hasattr(route, "methods"):
-                docs_data["endpoints"].append({
-                    "path": route.path,
-                    "methods": list(route.methods),
-                    "name": route.name,
-                })
+                docs_data["endpoints"].append(
+                    {
+                        "path": route.path,
+                        "methods": list(route.methods),
+                        "name": route.name,
+                    }
+                )
     except ImportError:
         console.print("[yellow]Could not import API app[/yellow]")
 
@@ -655,6 +657,7 @@ def docs(
 # ---------------------------------------------------------------------------
 # Lint & Format
 # ---------------------------------------------------------------------------
+
 
 @app.command()
 def lint(
@@ -717,6 +720,7 @@ def lint(
 # Test Runner
 # ---------------------------------------------------------------------------
 
+
 @app.command()
 def test(
     path: Optional[str] = typer.Option(None, "--path", "-p", help="Test path"),
@@ -759,6 +763,7 @@ def test(
 # Benchmark Runner
 # ---------------------------------------------------------------------------
 
+
 @app.command()
 def benchmark(
     suite: Optional[str] = typer.Option(None, "--suite", "-s", help="Benchmark suite"),
@@ -775,6 +780,7 @@ def benchmark(
 
     try:
         from tests.test_load import TestBenchmarking
+
         suite_instance = TestBenchmarking()
 
         # Run specific or all benchmarks
@@ -821,9 +827,12 @@ def benchmark(
 # Configuration Validation
 # ---------------------------------------------------------------------------
 
+
 @app.command()
 def validate(
-    config_file: Optional[Path] = typer.Option(None, "--config", "-c", help="Config file to validate"),
+    config_file: Optional[Path] = typer.Option(
+        None, "--config", "-c", help="Config file to validate"
+    ),
     strict: bool = typer.Option(False, "--strict", help="Strict validation"),
 ) -> None:
     """Validate configuration and environment."""
@@ -867,6 +876,7 @@ def validate(
     # Check GPU availability
     try:
         import torch
+
         if torch.cuda.is_available():
             console.print(f"[green]GPU available:[/green] {torch.cuda.get_device_name(0)}")
         else:
@@ -901,6 +911,7 @@ def validate(
 # Project Info
 # ---------------------------------------------------------------------------
 
+
 @app.command()
 def info() -> None:
     """Show project information."""
@@ -910,7 +921,10 @@ def info() -> None:
 
     table.add_row("Project Root", str(settings.PROJECT_ROOT))
     table.add_row("Data Root", str(settings.DATA_ROOT))
-    table.add_row("Python Version", f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+    table.add_row(
+        "Python Version",
+        f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+    )
     table.add_row("Debug Mode", str(settings.DEBUG))
     table.add_row("Log Level", settings.LOG_LEVEL)
     table.add_row("Default Teacher", settings.DEFAULT_TEACHER_MODEL)
@@ -935,6 +949,7 @@ def info() -> None:
 # ---------------------------------------------------------------------------
 # Main entry
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     """Main CLI entry point."""

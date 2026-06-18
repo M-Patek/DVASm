@@ -157,9 +157,7 @@ Caption: """,
         self, category: VideoCategory, complexity: Optional[ComplexityLevel] = None
     ) -> List[PromptTemplate]:
         """Get templates for category."""
-        templates = [
-            t for t in self.TEMPLATES.values() if t.category == category
-        ]
+        templates = [t for t in self.TEMPLATES.values() if t.category == category]
 
         if complexity:
             templates = [t for t in templates if t.complexity == complexity]
@@ -365,9 +363,7 @@ class AdaptivePromptEngine:
 
         # Update moving average
         n = template.example_count
-        template.avg_quality_score = (
-            template.avg_quality_score * n + quality_score
-        ) / (n + 1)
+        template.avg_quality_score = (template.avg_quality_score * n + quality_score) / (n + 1)
         template.example_count += 1
 
         logger.info(
@@ -391,12 +387,14 @@ class DynamicPromptOptimizer:
         metrics: Dict[str, float],
     ) -> None:
         """Record prompt performance."""
-        self.performance_log.append({
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "prompt_hash": hash(prompt) % 10000,
-            "category": video_category.value,
-            "metrics": metrics,
-        })
+        self.performance_log.append(
+            {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "prompt_hash": hash(prompt) % 10000,
+                "category": video_category.value,
+                "metrics": metrics,
+            }
+        )
 
     def suggest_improvements(self) -> List[Dict]:
         """Suggest prompt improvements based on data."""
@@ -418,11 +416,13 @@ class DynamicPromptOptimizer:
         for cat, scores in by_category.items():
             avg_score = sum(scores) / len(scores)
             if avg_score < 0.7:
-                suggestions.append({
-                    "category": cat,
-                    "current_avg_score": avg_score,
-                    "suggestion": f"Consider adding more specific guidance for {cat} videos",
-                    "priority": "high" if avg_score < 0.5 else "medium",
-                })
+                suggestions.append(
+                    {
+                        "category": cat,
+                        "current_avg_score": avg_score,
+                        "suggestion": f"Consider adding more specific guidance for {cat} videos",
+                        "priority": "high" if avg_score < 0.5 else "medium",
+                    }
+                )
 
         return suggestions

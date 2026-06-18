@@ -145,10 +145,7 @@ class ABTestManager:
                     outcomes_b.append(record["metrics"])
 
         # Check sample size
-        if (
-            len(outcomes_a) < config.min_sample_size
-            or len(outcomes_b) < config.min_sample_size
-        ):
+        if len(outcomes_a) < config.min_sample_size or len(outcomes_b) < config.min_sample_size:
             logger.info(
                 "insufficient_sample_size",
                 test_id=test_id,
@@ -168,9 +165,7 @@ class ABTestManager:
         t_stat, p_value = stats.ttest_ind(values_a, values_b)
 
         # Effect size (Cohen's d)
-        pooled_std = np.sqrt(
-            (np.std(values_a) ** 2 + np.std(values_b) ** 2) / 2
-        )
+        pooled_std = np.sqrt((np.std(values_a) ** 2 + np.std(values_b) ** 2) / 2)
         effect_size = (np.mean(values_b) - np.mean(values_a)) / (pooled_std + 1e-10)
 
         # Confidence interval
@@ -256,9 +251,7 @@ class ABTestManager:
 
         total_n = n_a + n_b
         if total_n >= config.max_sample_size:
-            recommendations.append(
-                "Maximum sample size reached. Test should be concluded."
-            )
+            recommendations.append("Maximum sample size reached. Test should be concluded.")
 
         return recommendations
 
@@ -342,9 +335,7 @@ class DriftDetector:
             "avg_segments": np.mean(segment_counts) if segment_counts else 0,
         }
 
-    def detect_drift(
-        self, new_annotations: List[Annotation], threshold: float = 0.1
-    ) -> Dict:
+    def detect_drift(self, new_annotations: List[Annotation], threshold: float = 0.1) -> Dict:
         """Detect drift between reference and new data."""
         if not self.reference_stats:
             return {"drift_detected": False, "reason": "No reference data"}
@@ -440,11 +431,13 @@ class PerformanceMonitor:
                 z_score = abs(latest - mean) / std
 
                 if z_score > threshold_std:
-                    anomalies.append({
-                        "metric": metric_name,
-                        "value": latest,
-                        "z_score": float(z_score),
-                        "expected_range": (float(mean - std), float(mean + std)),
-                    })
+                    anomalies.append(
+                        {
+                            "metric": metric_name,
+                            "value": latest,
+                            "z_score": float(z_score),
+                            "expected_range": (float(mean - std), float(mean + std)),
+                        }
+                    )
 
         return anomalies

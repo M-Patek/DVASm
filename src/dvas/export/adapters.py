@@ -42,19 +42,22 @@ class ShareGPTAdapter(ExportAdapter):
         for ann in annotations:
             conversations = []
             for seg in ann.segments:
-                conversations.append({
-                    "from": "human",
-                    "value": f"<video>\n{ann.video_path}\nDescribe this video."
-                })
-                conversations.append({
-                    "from": "gpt",
-                    "value": seg.caption,
-                })
-            results.append({
-                "id": ann.id,
-                "video": ann.video_path,
-                "conversations": conversations,
-            })
+                conversations.append(
+                    {"from": "human", "value": f"<video>\n{ann.video_path}\nDescribe this video."}
+                )
+                conversations.append(
+                    {
+                        "from": "gpt",
+                        "value": seg.caption,
+                    }
+                )
+            results.append(
+                {
+                    "id": ann.id,
+                    "video": ann.video_path,
+                    "conversations": conversations,
+                }
+            )
         return results
 
 

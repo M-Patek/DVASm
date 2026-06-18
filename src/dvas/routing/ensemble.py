@@ -78,9 +78,7 @@ class ConsensusMethods:
         return top1.response
 
     @staticmethod
-    def best_of_n_with_threshold(
-        votes: List[TeacherVote], threshold: float = 0.7
-    ) -> Optional[str]:
+    def best_of_n_with_threshold(votes: List[TeacherVote], threshold: float = 0.7) -> Optional[str]:
         """Return best if it exceeds threshold, otherwise None."""
         best = max(votes, key=lambda v: v.confidence)
         if best.confidence >= threshold:
@@ -140,9 +138,7 @@ class MultiTeacherEnsemble:
             teacher_id = teacher.__class__.__name__
 
             try:
-                result = await teacher.annotate(
-                    frames=frames, prompt=prompt, task=task
-                )
+                result = await teacher.annotate(frames=frames, prompt=prompt, task=task)
 
                 latency = (time.time() - start_time) * 1000
                 cost = self._estimate_cost(teacher_id, frames)
@@ -192,9 +188,7 @@ class MultiTeacherEnsemble:
             # Find dissenting opinions
             avg_conf = np.mean([v.confidence for v in valid_votes])
             dissenting = [
-                (v.teacher_id, v.response)
-                for v in valid_votes
-                if v.confidence < avg_conf * 0.8
+                (v.teacher_id, v.response) for v in valid_votes if v.confidence < avg_conf * 0.8
             ]
 
         result = EnsembleResult(
@@ -344,9 +338,7 @@ class DisagreementResolver:
     def _conservative_merge(self, votes: List[TeacherVote]) -> str:
         """Merge responses conservatively."""
         # Include common elements only
-        common_words = set.intersection(
-            *[set(v.response.lower().split()) for v in votes]
-        )
+        common_words = set.intersection(*[set(v.response.lower().split()) for v in votes])
         return " ".join(sorted(common_words)) if common_words else votes[0].response
 
 

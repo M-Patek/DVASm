@@ -26,7 +26,9 @@ app.add_typer(dev_app, name="dev", help="Developer tools")
 @app.command()
 def annotate(
     video_path: Path = typer.Argument(..., help="Path to video file"),
-    video_id: str = typer.Option(None, "--video-id", "-v", help="Video ID (auto-generated if not provided)"),
+    video_id: str = typer.Option(
+        None, "--video-id", "-v", help="Video ID (auto-generated if not provided)"
+    ),
     teacher_model: str = typer.Option("gpt-5.5", "--model", "-m", help="Teacher model to use"),
     num_frames: int = typer.Option(16, "--frames", "-f", help="Number of frames to sample"),
     output: Path = typer.Option(None, "--output", "-o", help="Output path for annotation"),
@@ -56,6 +58,7 @@ def annotate(
             output.parent.mkdir(parents=True, exist_ok=True)
             with open(output, "w", encoding="utf-8") as f:
                 import json
+
                 f.write(json.dumps(annotation.model_dump(), ensure_ascii=False, indent=2))
             console.print(f"[green]Saved to: {output}[/green]")
 
@@ -123,6 +126,7 @@ def export(
             else:
                 data = ann.model_dump()
             import json
+
             f.write(json.dumps(data, ensure_ascii=False) + "\n")
             count += 1
 

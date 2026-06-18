@@ -58,6 +58,7 @@ compression = CompressionMiddleware(min_size=1024)
 # Health checks
 # ---------------------------------------------------------------------------
 
+
 def check_storage():
     """Check storage health."""
     try:
@@ -67,12 +68,16 @@ def check_storage():
     except Exception:
         pass
 
-    return type("HealthCheck", (), {
-        "name": "storage",
-        "status": HealthStatus.HEALTHY,
-        "message": "Storage accessible",
-        "latency_ms": 0.0,
-    })()
+    return type(
+        "HealthCheck",
+        (),
+        {
+            "name": "storage",
+            "status": HealthStatus.HEALTHY,
+            "message": "Storage accessible",
+            "latency_ms": 0.0,
+        },
+    )()
 
 
 def check_disk_space():
@@ -81,22 +86,30 @@ def check_disk_space():
 
     try:
         total, used, free = shutil.disk_usage(str(settings.DATA_ROOT))
-        free_gb = free / (1024 ** 3)
+        free_gb = free / (1024**3)
         status = HealthStatus.HEALTHY if free_gb > 1.0 else HealthStatus.DEGRADED
 
-        return type("HealthCheck", (), {
-            "name": "disk_space",
-            "status": status,
-            "message": f"{free_gb:.1f}GB free",
-            "latency_ms": 0.0,
-        })()
+        return type(
+            "HealthCheck",
+            (),
+            {
+                "name": "disk_space",
+                "status": status,
+                "message": f"{free_gb:.1f}GB free",
+                "latency_ms": 0.0,
+            },
+        )()
     except Exception as e:
-        return type("HealthCheck", (), {
-            "name": "disk_space",
-            "status": HealthStatus.UNHEALTHY,
-            "message": f"Failed to check disk: {e}",
-            "latency_ms": 0.0,
-        })()
+        return type(
+            "HealthCheck",
+            (),
+            {
+                "name": "disk_space",
+                "status": HealthStatus.UNHEALTHY,
+                "message": f"Failed to check disk: {e}",
+                "latency_ms": 0.0,
+            },
+        )()
 
 
 # Register health checks
@@ -107,6 +120,7 @@ health_checker.register("disk_space", lambda: check_disk_space())
 # ---------------------------------------------------------------------------
 # Pydantic models
 # ---------------------------------------------------------------------------
+
 
 class VideoUploadResponse(BaseModel):
     """Response from video upload."""
@@ -157,6 +171,7 @@ class ExportRequest(BaseModel):
 # FastAPI app
 # ---------------------------------------------------------------------------
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
     """Application lifespan manager."""
@@ -195,6 +210,7 @@ app.add_middleware(
 # Middleware
 # ---------------------------------------------------------------------------
 
+
 @app.middleware("http")
 async def add_request_tracking(request: Request, call_next):
     """Track requests with timing and rate limiting."""
@@ -203,7 +219,9 @@ async def add_request_tracking(request: Request, call_next):
         return await call_next(request)
 
     # Rate limiting
-    client_ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "unknown")
+    client_ip = request.headers.get(
+        "X-Forwarded-For", request.client.host if request.client else "unknown"
+    )
     if not rate_limiter.allow_request(client_ip, request.url.path):
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -237,6 +255,7 @@ async def add_request_tracking(request: Request, call_next):
 # ---------------------------------------------------------------------------
 # Health endpoints
 # ---------------------------------------------------------------------------
+
 
 @app.get("/health")
 async def health_check() -> Dict[str, Any]:
@@ -615,6 +634,7 @@ async def search_annotations(
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
+
 
 def main():
     """Run API server."""

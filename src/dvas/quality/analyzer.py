@@ -161,9 +161,7 @@ class DataQualityAnalyzer:
 
         return metrics, distribution
 
-    def _compute_quality_metrics(
-        self, annotations: List[Annotation]
-    ) -> DatasetQualityMetrics:
+    def _compute_quality_metrics(self, annotations: List[Annotation]) -> DatasetQualityMetrics:
         """Compute comprehensive quality metrics."""
         total = len(annotations)
 
@@ -205,25 +203,17 @@ class DataQualityAnalyzer:
         if verb_counts:
             probs = np.array(list(verb_counts.values())) / sum(verb_counts.values())
             entropy = -np.sum(probs * np.log(probs + 1e-10))
-            balance_score = min(
-                entropy / np.log(len(verb_counts) + 1), 1.0
-            )  # Normalize
+            balance_score = min(entropy / np.log(len(verb_counts) + 1), 1.0)  # Normalize
         else:
             balance_score = 0
 
         # Temporal coverage
-        total_duration = sum(
-            ann.metadata.duration for ann in annotations if ann.metadata
-        )
+        total_duration = sum(ann.metadata.duration for ann in annotations if ann.metadata)
         annotated_duration = sum(ann.get_total_duration() for ann in annotations)
-        temporal_coverage = (
-            annotated_duration / total_duration if total_duration > 0 else 0
-        )
+        temporal_coverage = annotated_duration / total_duration if total_duration > 0 else 0
 
         # QA pairs
-        qa_counts = [
-            len(seg.qa_pairs) for ann in annotations for seg in ann.segments
-        ]
+        qa_counts = [len(seg.qa_pairs) for ann in annotations for seg in ann.segments]
         avg_qa = np.mean(qa_counts) if qa_counts else 0
 
         # Missing fields
@@ -335,9 +325,7 @@ class DataQualityAnalyzer:
             source_distribution={},
         )
 
-    def generate_quality_report(
-        self, output_path: Path, source: str = "gold"
-    ) -> Path:
+    def generate_quality_report(self, output_path: Path, source: str = "gold") -> Path:
         """Generate comprehensive HTML quality report."""
         metrics, distribution = self.analyze_dataset(source)
 
@@ -350,9 +338,7 @@ class DataQualityAnalyzer:
             "source": source,
             "metrics": asdict(metrics),
             "distribution": asdict(distribution),
-            "duplicates": [
-                {"id1": d[0], "id2": d[1], "similarity": d[2]} for d in duplicates
-            ],
+            "duplicates": [{"id1": d[0], "id2": d[1], "similarity": d[2]} for d in duplicates],
             "recommendations": self._generate_recommendations(metrics, distribution),
         }
 
@@ -371,36 +357,44 @@ class DataQualityAnalyzer:
         recommendations = []
 
         if metrics.missing_fields_rate > 0.1:
-            recommendations.append({
-                "type": "warning",
-                "issue": "High missing field rate",
-                "value": f"{metrics.missing_fields_rate:.1%}",
-                "action": "Review annotation pipeline for incomplete outputs",
-            })
+            recommendations.append(
+                {
+                    "type": "warning",
+                    "issue": "High missing field rate",
+                    "value": f"{metrics.missing_fields_rate:.1%}",
+                    "action": "Review annotation pipeline for incomplete outputs",
+                }
+            )
 
         if metrics.action_balance_score < 0.5:
-            recommendations.append({
-                "type": "warning",
-                "issue": "Unbalanced action distribution",
-                "value": f"{metrics.action_balance_score:.2f}",
-                "action": "Collect more diverse training data",
-            })
+            recommendations.append(
+                {
+                    "type": "warning",
+                    "issue": "Unbalanced action distribution",
+                    "value": f"{metrics.action_balance_score:.2f}",
+                    "action": "Collect more diverse training data",
+                }
+            )
 
         if len(metrics.outlier_annotations) > metrics.total_annotations * 0.05:
-            recommendations.append({
-                "type": "alert",
-                "issue": "High outlier rate",
-                "value": f"{len(metrics.outlier_annotations)} outliers",
-                "action": "Review outlier annotations for quality issues",
-            })
+            recommendations.append(
+                {
+                    "type": "alert",
+                    "issue": "High outlier rate",
+                    "value": f"{len(metrics.outlier_annotations)} outliers",
+                    "action": "Review outlier annotations for quality issues",
+                }
+            )
 
         if metrics.vocabulary_size < 100:
-            recommendations.append({
-                "type": "info",
-                "issue": "Limited vocabulary diversity",
-                "value": f"{metrics.vocabulary_size} words",
-                "action": "Consider collecting more varied data",
-            })
+            recommendations.append(
+                {
+                    "type": "info",
+                    "issue": "Limited vocabulary diversity",
+                    "value": f"{metrics.vocabulary_size} words",
+                    "action": "Consider collecting more varied data",
+                }
+            )
 
         return recommendations
 

@@ -105,8 +105,7 @@ class CircuitBreaker:
             if self._state == CircuitState.OPEN:
                 self._stats["rejected_calls"] += 1
                 raise CircuitBreakerOpen(
-                    f"Circuit '{self.name}' is OPEN. "
-                    f"Last failure: {self._last_failure_time}"
+                    f"Circuit '{self.name}' is OPEN. Last failure: {self._last_failure_time}"
                 )
 
             if self._state == CircuitState.HALF_OPEN:
@@ -247,6 +246,7 @@ class CircuitBreakerRegistry:
 # Exceptions
 # ---------------------------------------------------------------------------
 
+
 class CircuitBreakerOpen(Exception):
     """Raised when the circuit breaker is open."""
 
@@ -262,6 +262,7 @@ class CircuitBreakerTimeout(Exception):
 # ---------------------------------------------------------------------------
 # Decorator
 # ---------------------------------------------------------------------------
+
 
 def circuit_breaker(
     name: str,

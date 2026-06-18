@@ -195,12 +195,14 @@ class BatchProcessor:
 
     def mark_failed(self, item_id: str, error: str, details: Optional[Dict] = None) -> None:
         """Mark an item as failed."""
-        self.checkpoint.failed_items.append({
-            "item_id": item_id,
-            "error": error,
-            "details": details or {},
-            "timestamp": time.time(),
-        })
+        self.checkpoint.failed_items.append(
+            {
+                "item_id": item_id,
+                "error": error,
+                "details": details or {},
+                "timestamp": time.time(),
+            }
+        )
         self.checkpoint.processed_count += 1
 
     def is_processed(self, item_id: str) -> bool:

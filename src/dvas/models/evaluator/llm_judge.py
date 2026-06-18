@@ -14,11 +14,11 @@ class LLMJudge:
 
     # Quality dimensions to evaluate
     DIMENSIONS = [
-        "accuracy",      # Factual correctness
+        "accuracy",  # Factual correctness
         "completeness",  # Coverage of important aspects
-        "clarity",       # Clear and understandable
-        "relevance",     # Relevant to the video content
-        "structure",     # Well-organized and logical
+        "clarity",  # Clear and understandable
+        "relevance",  # Relevant to the video content
+        "structure",  # Well-organized and logical
     ]
 
     def __init__(
@@ -173,40 +173,30 @@ Suggestions for Improvement:
         }
 
         # Extract overall score
-        overall_match = __import__('re').search(
-            r'Overall Score:\s*(\d+(?:\.\d+)?)/10',
-            text
-        )
+        overall_match = __import__("re").search(r"Overall Score:\s*(\d+(?:\.\d+)?)/10", text)
         if overall_match:
             result["overall_score"] = float(overall_match.group(1))
 
         # Extract dimension scores
         for dim in self.DIMENSIONS:
-            pattern = rf'- {dim}:\s*(\d+(?:\.\d+)?)/10'
-            match = __import__('re').search(pattern, text, __import__('re').IGNORECASE)
+            pattern = rf"- {dim}:\s*(\d+(?:\.\d+)?)/10"
+            match = __import__("re").search(pattern, text, __import__("re").IGNORECASE)
             if match:
                 result["dimension_scores"][dim] = float(match.group(1))
 
         # Extract justification
-        just_match = __import__('re').search(
-            r'Justification:\s*(.+?)(?=Suggestions|$)',
-            text,
-            __import__('re').DOTALL
+        just_match = __import__("re").search(
+            r"Justification:\s*(.+?)(?=Suggestions|$)", text, __import__("re").DOTALL
         )
         if just_match:
             result["justification"] = just_match.group(1).strip()
 
         # Extract suggestions
-        sugg_section = __import__('re').search(
-            r'Suggestions for Improvement:(.+?)(?=```|$)',
-            text,
-            __import__('re').DOTALL
+        sugg_section = __import__("re").search(
+            r"Suggestions for Improvement:(.+?)(?=```|$)", text, __import__("re").DOTALL
         )
         if sugg_section:
-            suggestions = __import__('re').findall(
-                r'-\s*(.+)',
-                sugg_section.group(1)
-            )
+            suggestions = __import__("re").findall(r"-\s*(.+)", sugg_section.group(1))
             result["suggestions"] = [s.strip() for s in suggestions]
 
         return result
@@ -216,7 +206,9 @@ class ConsistencyChecker:
     """Check temporal and semantic consistency across segments."""
 
     def __init__(self):
-        self.metrics = __import__('dvas.models.evaluator.metrics', fromlist=['MetricsCalculator']).MetricsCalculator()
+        self.metrics = __import__(
+            "dvas.models.evaluator.metrics", fromlist=["MetricsCalculator"]
+        ).MetricsCalculator()
 
     def check_temporal_consistency(
         self,
@@ -242,8 +234,8 @@ class ConsistencyChecker:
             next_seg = segments[i + 1]
 
             # Check for temporal overlap
-            if curr.get("end_time", 0) > next_seg.get("start_time", float('inf')):
-                issues.append(f"Temporal overlap between segments {i} and {i+1}")
+            if curr.get("end_time", 0) > next_seg.get("start_time", float("inf")):
+                issues.append(f"Temporal overlap between segments {i} and {i + 1}")
 
             # Check semantic continuity
             curr_caption = curr.get("caption", "")

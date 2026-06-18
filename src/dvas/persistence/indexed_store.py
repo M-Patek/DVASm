@@ -27,6 +27,7 @@ logger = get_logger(__name__)
 # Configuration
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class IndexStoreConfig:
     """Configuration for the indexed store."""
@@ -43,6 +44,7 @@ class IndexStoreConfig:
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class AnnotationIndex:
@@ -107,6 +109,7 @@ class AnnotationQuery:
 # Index Store
 # ---------------------------------------------------------------------------
 
+
 class IndexStore:
     """SQLite-backed annotation index with full-text search.
 
@@ -147,7 +150,7 @@ class IndexStore:
             return self._connection
 
         # Thread-local storage for non-main threads
-        if not hasattr(self._local, 'connection') or self._local.connection is None:
+        if not hasattr(self._local, "connection") or self._local.connection is None:
             self._local.connection = sqlite3.connect(
                 str(self._db_path),
                 check_same_thread=True,  # Now we enforce same thread
@@ -224,9 +227,7 @@ class IndexStore:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_quality ON annotations(quality_score)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_created ON annotations(created_at)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_parent ON annotations(parent_id)")
-        conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_video_source ON annotations(video_id, source)"
-        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_video_source ON annotations(video_id, source)")
 
         # Full-text search virtual table (FTS5)
         if self.config.enable_fts:
@@ -426,8 +427,7 @@ class IndexStore:
 
             rows = conn.execute(sql, params).fetchall()
             annotations = [
-                Annotation.model_validate(orjson.loads(row["json_data"]))
-                for row in rows
+                Annotation.model_validate(orjson.loads(row["json_data"])) for row in rows
             ]
 
             return annotations, total
@@ -567,9 +567,7 @@ class IndexStore:
                     annotation_ids,
                 ).fetchall()
             else:
-                rows = conn.execute(
-                    "SELECT id, json_data FROM annotations"
-                ).fetchall()
+                rows = conn.execute("SELECT id, json_data FROM annotations").fetchall()
 
             # Insert version
             conn.execute(
@@ -649,9 +647,7 @@ class IndexStore:
         """List all versions."""
         with self._lock:
             conn = self._get_connection()
-            rows = conn.execute(
-                "SELECT * FROM versions ORDER BY created_at DESC"
-            ).fetchall()
+            rows = conn.execute("SELECT * FROM versions ORDER BY created_at DESC").fetchall()
 
             return [
                 VersionInfo(
@@ -702,9 +698,7 @@ class IndexStore:
             conn = self._get_connection()
 
             # Start sync log
-            cursor = conn.execute(
-                "INSERT INTO sync_log (status) VALUES ('running')"
-            )
+            cursor = conn.execute("INSERT INTO sync_log (status) VALUES ('running')")
             sync_id = cursor.lastrowid
 
             synced = 0

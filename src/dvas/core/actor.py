@@ -24,6 +24,7 @@ T = TypeVar("T")
 # Actor types
 # ---------------------------------------------------------------------------
 
+
 class ActorStatus(Enum):
     """Status of an actor."""
 
@@ -203,6 +204,7 @@ class ActorSystem:
 # ---------------------------------------------------------------------------
 # Pre-built actors for annotation pipeline
 # ---------------------------------------------------------------------------
+
 
 class VideoLoaderActor(Actor):
     """Actor for loading videos."""

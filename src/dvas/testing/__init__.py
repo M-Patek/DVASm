@@ -20,6 +20,7 @@ T = TypeVar("T")
 # Property-Based Testing Support
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ArbitraryValue:
     """Generate arbitrary values for property-based testing.
@@ -46,7 +47,9 @@ class ArbitraryValue:
         self._generator = lambda: self._random.uniform(min_value, max_value)
         return self
 
-    def strings(self, min_length: int = 0, max_length: int = 100, alphabet: str = "") -> "ArbitraryValue":
+    def strings(
+        self, min_length: int = 0, max_length: int = 100, alphabet: str = ""
+    ) -> "ArbitraryValue":
         """Generate random strings."""
         if not alphabet:
             alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -58,8 +61,11 @@ class ArbitraryValue:
         self._generator = _gen
         return self
 
-    def lists(self, element_gen: Callable[[], T], min_length: int = 0, max_length: int = 100) -> "ArbitraryValue":
+    def lists(
+        self, element_gen: Callable[[], T], min_length: int = 0, max_length: int = 100
+    ) -> "ArbitraryValue":
         """Generate random lists."""
+
         def _gen():
             length = self._random.randint(min_length, max_length)
             return [element_gen() for _ in range(length)]
@@ -75,6 +81,7 @@ class ArbitraryValue:
         max_length: int = 100,
     ) -> "ArbitraryValue":
         """Generate random dictionaries."""
+
         def _gen():
             length = self._random.randint(min_length, max_length)
             return {key_gen(): value_gen() for _ in range(length)}
@@ -101,6 +108,7 @@ def for_all(**strategies: Callable[[], Any]):
         def test_addition_commutative(x, y):
             assert x + y == y + x
     """
+
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> None:
@@ -116,6 +124,7 @@ def for_all(**strategies: Callable[[], Any]):
             return func(*args, **generated, **kwargs)
 
         return wrapper
+
     return decorator
 
 
@@ -128,15 +137,18 @@ def given(**strategies: Callable[[], Any]) -> Callable:
             for x in gen.take(100):
                 assert x >= 0 and x <= 100
     """
+
     # This is a simplified version - in practice you'd use hypothesis
     def decorator(func: Callable) -> Callable:
         return for_all(**strategies)(func)
+
     return decorator
 
 
 # ---------------------------------------------------------------------------
 # Contract Testing
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class Contract:
@@ -195,8 +207,7 @@ class ContractStore:
                 actual = response.headers.get(header)
                 if actual != expected_value:
                     errors.append(
-                        f"Header '{header}' mismatch: expected '{expected_value}', "
-                        f"got '{actual}'"
+                        f"Header '{header}' mismatch: expected '{expected_value}', got '{actual}'"
                     )
 
         return errors
@@ -218,6 +229,7 @@ def contract_test(
             response = client.get("/api/v1/annotations/123")
             return response
     """
+
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -241,6 +253,7 @@ def contract_test(
         wrapper._is_contract_test = True  # type: ignore
         wrapper._contract_name = name  # type: ignore
         return wrapper
+
     return decorator
 
 
@@ -274,6 +287,7 @@ def _validate_schema(data: Any, schema: Dict[str, Any], path: str = "") -> List[
 # ---------------------------------------------------------------------------
 # Snapshot Testing
 # ---------------------------------------------------------------------------
+
 
 class SnapshotStore:
     """Store and compare snapshots for regression testing.
@@ -334,9 +348,7 @@ class SnapshotStore:
 
         if expected != actual:
             raise AssertionError(
-                f"Snapshot mismatch for '{name}':\n"
-                f"Expected:\n{expected}\n\n"
-                f"Actual:\n{actual}"
+                f"Snapshot mismatch for '{name}':\nExpected:\n{expected}\n\nActual:\n{actual}"
             )
 
     def exists(self, name: str) -> bool:
@@ -353,6 +365,7 @@ class SnapshotStore:
 # ---------------------------------------------------------------------------
 # Load Testing
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class LoadTestResult:
@@ -517,6 +530,7 @@ class LoadTester:
 # Mutation Testing Concepts
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Mutation:
     """Represents a code mutation for mutation testing."""
@@ -660,6 +674,7 @@ class MutationResult:
 # Test Fixtures and Helpers
 # ---------------------------------------------------------------------------
 
+
 def create_test_video_metadata(
     fps: float = 30.0,
     resolution: Optional[List[int]] = None,
@@ -686,17 +701,19 @@ def create_test_annotation(
     for i in range(num_segments):
         start_time = i * 5.0
         end_time = (i + 1) * 5.0
-        segments.append({
-            "start_time": start_time,
-            "end_time": end_time,
-            "caption": f"Segment {i + 1}",
-            "actions": [
-                {"verb": "cut", "noun": "vegetables", "hand": "right"},
-            ],
-            "objects": [
-                {"name": "knife", "confidence": 0.95},
-            ],
-        })
+        segments.append(
+            {
+                "start_time": start_time,
+                "end_time": end_time,
+                "caption": f"Segment {i + 1}",
+                "actions": [
+                    {"verb": "cut", "noun": "vegetables", "hand": "right"},
+                ],
+                "objects": [
+                    {"name": "knife", "confidence": 0.95},
+                ],
+            }
+        )
 
     return {
         "id": f"ann_{video_id}",
@@ -748,6 +765,7 @@ def assert_dict_subset(actual: Dict[str, Any], expected: Dict[str, Any], path: s
 # ---------------------------------------------------------------------------
 # Performance Benchmarking
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class BenchmarkResult:
@@ -804,6 +822,7 @@ def benchmark(func: Callable, *args: Any, iterations: int = 100, **kwargs: Any) 
 # ---------------------------------------------------------------------------
 # Fuzz Testing Utilities
 # ---------------------------------------------------------------------------
+
 
 def fuzz_string(
     min_length: int = 0,
@@ -869,6 +888,7 @@ def fuzz_dict(
 # Integration with pytest
 # ---------------------------------------------------------------------------
 
+
 def pytest_fixture_factory(factory_func: Callable) -> Callable:
     """Create a pytest fixture from a factory function.
 
@@ -883,6 +903,7 @@ def pytest_fixture_factory(factory_func: Callable) -> Callable:
             ann = annotation_factory(video_id="custom")
             ...
     """
+
     @functools.wraps(factory_func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         return factory_func(*args, **kwargs)

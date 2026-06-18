@@ -238,6 +238,7 @@ class PoolRegistry:
 # Context manager for automatic pool management
 # ---------------------------------------------------------------------------
 
+
 class PooledObject:
     """Context manager for automatic pool acquire/release.
 

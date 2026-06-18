@@ -23,7 +23,6 @@ class ModelType(str, Enum):
     TEACHER_GPT4V = "gpt-5.5"
 
 
-
 class GenerationStatus(str, Enum):
     """Status of a generation request."""
 
@@ -171,7 +170,7 @@ class UnifiedModel(ABC):
         video_path: Optional[Path] = None,
         prompt: Optional[str] = None,
         task: str = "fine_grained",
-        **kwargs
+        **kwargs,
     ) -> GenerationResult:
         """Generate annotation.
 
@@ -188,11 +187,7 @@ class UnifiedModel(ABC):
         pass
 
     @abstractmethod
-    async def generate_batch(
-        self,
-        items: List[Dict[str, Any]],
-        **kwargs
-    ) -> List[GenerationResult]:
+    async def generate_batch(self, items: List[Dict[str, Any]], **kwargs) -> List[GenerationResult]:
         """Batch generation.
 
         Args:

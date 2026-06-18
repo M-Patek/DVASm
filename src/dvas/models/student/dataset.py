@@ -168,8 +168,7 @@ def collate_fn(batch: List[Dict], tokenizer: Any) -> Dict[str, Any]:
             else:
                 # Simple concatenation
                 text = "\n".join(
-                    f"{m.get('role', 'user')}: {m.get('content', '')}"
-                    for m in item["messages"]
+                    f"{m.get('role', 'user')}: {m.get('content', '')}" for m in item["messages"]
                 )
             texts.append(text)
         elif "text" in item:

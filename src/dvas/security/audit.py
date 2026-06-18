@@ -27,6 +27,7 @@ logger = get_logger(__name__)
 # Input Validation and Sanitization
 # ---------------------------------------------------------------------------
 
+
 class InputValidator:
     """Validate and sanitize user inputs.
 
@@ -214,6 +215,7 @@ class InputValidator:
 # Audit Logging
 # ---------------------------------------------------------------------------
 
+
 class AuditEventType(str, Enum):
     """Types of audit events."""
 
@@ -291,7 +293,7 @@ class AuditLogger:
 
         # Keep only last N events in memory
         if len(self._events) > self._max_memory_events:
-            self._events = self._events[-self._max_memory_events:]
+            self._events = self._events[-self._max_memory_events :]
 
         # Write to file if configured
         if self.log_dir:
@@ -314,6 +316,7 @@ class AuditLogger:
 
         # Use daily log files
         from datetime import datetime
+
         date_str = datetime.fromtimestamp(event.timestamp).strftime("%Y-%m-%d")
         log_file = self.log_dir / f"audit_{date_str}.jsonl"
 
@@ -364,6 +367,7 @@ class AuditLogger:
 # Data Encryption
 # ---------------------------------------------------------------------------
 
+
 class DataEncryptor:
     """Simple data encryption using Fernet (from cryptography).
 
@@ -383,7 +387,9 @@ class DataEncryptor:
         try:
             from cryptography.fernet import Fernet
         except ImportError:
-            raise ImportError("cryptography package required. Install with: pip install cryptography")
+            raise ImportError(
+                "cryptography package required. Install with: pip install cryptography"
+            )
 
         if key is None:
             key = Fernet.generate_key()
@@ -395,6 +401,7 @@ class DataEncryptor:
     def generate_key(cls) -> bytes:
         """Generate a new encryption key."""
         from cryptography.fernet import Fernet
+
         return Fernet.generate_key()
 
     def encrypt(self, data: str) -> str:
@@ -429,6 +436,7 @@ class DataEncryptor:
 # Password Hashing
 # ---------------------------------------------------------------------------
 
+
 class PasswordHasher:
     """Secure password hashing using bcrypt.
 
@@ -453,12 +461,14 @@ class PasswordHasher:
         """
         try:
             import bcrypt
+
             password_bytes = password.encode("utf-8")
             salt = bcrypt.gensalt(rounds=self.rounds)
             return bcrypt.hashpw(password_bytes, salt).decode("utf-8")
         except ImportError:
             # Fallback to simple hash (NOT for production)
             import hashlib
+
             salt = secrets.token_hex(16)
             hash_value = hashlib.pbkdf2_hmac(
                 "sha256",
@@ -480,6 +490,7 @@ class PasswordHasher:
         """
         if hashed.startswith("fallback:"):
             import hashlib
+
             parts = hashed.split(":")
             if len(parts) != 3:
                 return False
@@ -495,6 +506,7 @@ class PasswordHasher:
 
         try:
             import bcrypt
+
             password_bytes = password.encode("utf-8")
             hashed_bytes = hashed.encode("utf-8")
             return bcrypt.checkpw(password_bytes, hashed_bytes)
@@ -505,6 +517,7 @@ class PasswordHasher:
 # ---------------------------------------------------------------------------
 # CSRF Protection
 # ---------------------------------------------------------------------------
+
 
 class CSRFProtection:
     """CSRF token generation and validation.
@@ -575,6 +588,7 @@ class CSRFProtection:
 # Rate Limiting (Token Bucket)
 # ---------------------------------------------------------------------------
 
+
 class RateLimiter:
     """Rate limiter for API endpoints.
 
@@ -638,6 +652,7 @@ class RateLimiter:
 # Content Security Policy
 # ---------------------------------------------------------------------------
 
+
 class ContentSecurityPolicy:
     """Content Security Policy builder.
 
@@ -689,6 +704,7 @@ class ContentSecurityPolicy:
 # Security Headers
 # ---------------------------------------------------------------------------
 
+
 class SecurityHeaders:
     """Security headers for HTTP responses.
 
@@ -726,6 +742,7 @@ class SecurityHeaders:
 # ---------------------------------------------------------------------------
 # API Key Management
 # ---------------------------------------------------------------------------
+
 
 class APIKeyManager:
     """Manage API keys for authentication.
@@ -784,6 +801,7 @@ class APIKeyManager:
 # ---------------------------------------------------------------------------
 # Secure Random
 # ---------------------------------------------------------------------------
+
 
 def secure_token(length: int = 32) -> str:
     """Generate a secure random token.

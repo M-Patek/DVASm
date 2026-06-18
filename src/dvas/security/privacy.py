@@ -45,11 +45,13 @@ class PIIDetector:
         for pii_type, pattern in self.PATTERNS.items():
             matches = re.finditer(pattern, text)
             for match in matches:
-                findings.append({
-                    "type": pii_type,
-                    "value": match.group(),
-                    "position": (match.start(), match.end()),
-                })
+                findings.append(
+                    {
+                        "type": pii_type,
+                        "value": match.group(),
+                        "position": (match.start(), match.end()),
+                    }
+                )
 
         return findings
 
@@ -79,9 +81,7 @@ class DataAnonymizer:
 
     def hash_id(self, original_id: str) -> str:
         """Create consistent hash of ID."""
-        return hashlib.sha256(
-            f"{original_id}{self.salt}".encode()
-        ).hexdigest()[:16]
+        return hashlib.sha256(f"{original_id}{self.salt}".encode()).hexdigest()[:16]
 
     def anonymize_annotation(self, annotation: Annotation) -> Annotation:
         """Create anonymized version of annotation."""
@@ -160,9 +160,7 @@ class SecurityAuditor:
             user=user_id,
         )
 
-    def get_access_history(
-        self, resource_id: str, limit: int = 100
-    ) -> List[Dict]:
+    def get_access_history(self, resource_id: str, limit: int = 100) -> List[Dict]:
         """Get access history for a resource."""
         history = []
 
@@ -252,9 +250,7 @@ class AccessControl:
         """Set resource owner."""
         self.resource_owners[resource_id] = user_id
 
-    def has_permission(
-        self, user_id: str, resource_id: str, action: str
-    ) -> bool:
+    def has_permission(self, user_id: str, resource_id: str, action: str) -> bool:
         """Check if user has permission for action."""
         # Owner always has full access
         if self.resource_owners.get(resource_id) == user_id:
@@ -268,6 +264,7 @@ class AccessControl:
 
     def require_permission(self, user_id: str, resource_id: str, action: str):
         """Decorator to require permission."""
+
         def decorator(func):
             def wrapper(*args, **kwargs):
                 if not self.has_permission(user_id, resource_id, action):
@@ -275,5 +272,7 @@ class AccessControl:
                         f"User {user_id} lacks permission {action} for {resource_id}"
                     )
                 return func(*args, **kwargs)
+
             return wrapper
+
         return decorator

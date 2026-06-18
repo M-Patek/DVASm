@@ -209,13 +209,15 @@ class SmartRouter:
             decision = self._route_adaptive(complexity, video_path)
 
         # Log decision
-        self.routing_history.append({
-            "video": str(video_path),
-            "complexity": complexity_score,
-            "strategy": self.strategy.value,
-            "decision": decision.model_type.value,
-            "reasoning": decision.reasoning,
-        })
+        self.routing_history.append(
+            {
+                "video": str(video_path),
+                "complexity": complexity_score,
+                "strategy": self.strategy.value,
+                "decision": decision.model_type.value,
+                "reasoning": decision.reasoning,
+            }
+        )
 
         logger.info(
             "routing_decision",
@@ -375,16 +377,14 @@ class SmartRouter:
         # Calculate savings from student usage
         teacher_cost = self.COST_TABLE[ModelType.TEACHER_GPT55] * total
         actual_cost = sum(
-            self.COST_TABLE[ModelType(m)]
-            for m in [e["decision"] for e in self.routing_history]
+            self.COST_TABLE[ModelType(m)] for m in [e["decision"] for e in self.routing_history]
         )
         savings_pct = (1 - actual_cost / teacher_cost) * 100 if teacher_cost > 0 else 0
 
         return {
             "total_videos": total,
             "model_distribution": {
-                k: {"count": v, "percentage": v / total * 100}
-                for k, v in model_counts.items()
+                k: {"count": v, "percentage": v / total * 100} for k, v in model_counts.items()
             },
             "average_complexity": avg_complexity,
             "estimated_savings_percent": savings_pct,

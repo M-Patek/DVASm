@@ -123,6 +123,7 @@ class PipelineStageCompletedEvent(Event):
 # Middleware
 # ---------------------------------------------------------------------------
 
+
 class EventMiddleware(ABC):
     """Base class for event middleware."""
 
@@ -173,6 +174,7 @@ class MetricsMiddleware(EventMiddleware):
 # ---------------------------------------------------------------------------
 # Event Bus
 # ---------------------------------------------------------------------------
+
 
 class EventBus:
     """Central event bus for decoupled communication.

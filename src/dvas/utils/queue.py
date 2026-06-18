@@ -74,7 +74,7 @@ class TaskQueue:
             # Add to sorted set with priority as score
             await client.zadd(
                 "task_queue",
-                {task_data: -task.priority}  # Higher priority = lower score
+                {task_data: -task.priority},  # Higher priority = lower score
             )
 
             # Add to task lookup
@@ -228,7 +228,7 @@ class CeleryTaskQueue:
                 logger.error("celery_task_failed", video_id=video_id, error=str(e))
 
                 # Retry with exponential backoff
-                countdown = 2 ** self.request.retries
+                countdown = 2**self.request.retries
                 raise self.retry(exc=e, countdown=countdown)
 
         self.annotate_video_task = annotate_video_task

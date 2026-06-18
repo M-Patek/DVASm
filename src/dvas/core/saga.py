@@ -25,6 +25,7 @@ T = TypeVar("T")
 # Saga types
 # ---------------------------------------------------------------------------
 
+
 class SagaStatus(Enum):
     """Status of a saga execution."""
 
@@ -78,6 +79,7 @@ class SagaContext:
 # Saga Step
 # ---------------------------------------------------------------------------
 
+
 class SagaStep(ABC):
     """Abstract base for a saga step.
 
@@ -124,6 +126,7 @@ class FunctionSagaStep(SagaStep):
 # Saga Definition
 # ---------------------------------------------------------------------------
 
+
 class Saga:
     """A saga defines a sequence of steps that form a distributed transaction.
 
@@ -155,6 +158,7 @@ class Saga:
 # ---------------------------------------------------------------------------
 # Saga Orchestrator
 # ---------------------------------------------------------------------------
+
 
 class SagaOrchestrator:
     """Orchestrates saga execution with compensation support.
@@ -343,6 +347,7 @@ class SagaOrchestrator:
 # Exceptions
 # ---------------------------------------------------------------------------
 
+
 class SagaExecutionError(Exception):
     """Raised when saga execution fails."""
 
@@ -360,6 +365,7 @@ class SagaExecutionError(Exception):
 # ---------------------------------------------------------------------------
 # Annotation Pipeline Saga Builder
 # ---------------------------------------------------------------------------
+
 
 class AnnotationSagaBuilder:
     """Builder for creating annotation pipeline sagas.
