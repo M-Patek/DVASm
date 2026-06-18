@@ -98,7 +98,7 @@ jobs:
       run: python scripts/check_doc_anchors.py
 
     - name: Validate status.yaml
-      run: python -c "import yaml; yaml.safe_load(open('docs/_machine/status.yaml'))"
+      run: python -c "import yaml; yaml.safe_load(open('docs/_machine/status.yaml', encoding='utf-8'))"
 
   security:
     runs-on: ubuntu-latest
