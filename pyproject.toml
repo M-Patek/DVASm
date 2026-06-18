@@ -79,6 +79,7 @@ dev = [
 api = [
     "fastapi>=0.111.0",
     "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.9",
 ]
 train = [
     "transformers>=4.42.0",

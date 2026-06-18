@@ -52,7 +52,9 @@ jobs:
         pip install -e ".[dev,api,train]"
 
     - name: Run tests
-      run: pytest tests/ -v --tb=short --ignore=tests/test_student_sft_dryrun.py --ignore=tests/test_student_inference.py --basetemp=./tmp/pytest
+      run: |
+        mkdir -p tmp/pytest
+        pytest tests/ -v --tb=short --ignore=tests/test_student_sft_dryrun.py --ignore=tests/test_student_inference.py --basetemp=./tmp/pytest
 
     - name: Upload coverage
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
@@ -78,7 +80,9 @@ jobs:
         pip install -e "." --no-deps
 
     - name: Run student SFT dry-run tests
-      run: pytest tests/test_student_sft_dryrun.py -v --tb=short --basetemp=./tmp/pytest
+      run: |
+        mkdir -p tmp/pytest
+        pytest tests/test_student_sft_dryrun.py -v --tb=short --basetemp=./tmp/pytest
 
   docs-validation:
     runs-on: ubuntu-latest
