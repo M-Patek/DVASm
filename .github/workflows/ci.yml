@@ -106,9 +106,9 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Run Bandit security linter
-      uses: PyCQA/bandit@main
-      with:
-        args: "-r src/dvas -f json -o bandit-report.json || true"
+      run: |
+        pip install bandit
+        bandit -r src/dvas -f json -o bandit-report.json || true
 
     - name: Upload security report
       uses: actions/upload-artifact@v4
