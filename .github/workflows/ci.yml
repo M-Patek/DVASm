@@ -74,7 +74,7 @@ jobs:
     - name: Install minimal dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pydantic pytest structlog datasets pyyaml
+        pip install pydantic pytest structlog datasets pyyaml pillow
         pip install -e "." --no-deps
 
     - name: Run student SFT dry-run tests

@@ -32,10 +32,18 @@ def check_anchor(project_root: Path, anchor: str) -> tuple[bool, str]:
         return False, f"Invalid format: {anchor}"
 
     file_path, symbol = anchor.split(':', 1)
+    # Normalize path separators for cross-platform compatibility
+    file_path = file_path.replace('\\', '/')
     full_path = project_root / file_path
 
     if not full_path.exists():
-        return False, f"File not found: {file_path}"
+        # Debug: print what's actually there
+        parent = full_path.parent
+        if parent.exists():
+            files = list(parent.iterdir())
+            return False, f"File not found: {file_path} (parent contains: {[f.name for f in files]})"
+        else:
+            return False, f"File not found: {file_path} (parent missing: {parent})
 
     content = full_path.read_text(encoding='utf-8')
 
