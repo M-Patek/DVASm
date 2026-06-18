@@ -42,8 +42,8 @@ def check_anchor(project_root: Path, anchor: str) -> tuple[bool, str]:
     if symbol[0].isupper():
         pattern = rf'^class\s+{re.escape(symbol)}\b'
     else:
-        # Function or method
-        pattern = rf'^def\s+{re.escape(symbol)}\b'
+        # Function or method (including async)
+        pattern = rf'^(?:async\s+)?def\s+{re.escape(symbol)}\b'
 
     if re.search(pattern, content, re.MULTILINE):
         return True, "OK"

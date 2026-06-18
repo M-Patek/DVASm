@@ -6,9 +6,6 @@ applies_to:
   - "src/dvas/models/teacher/**"
 code_anchors:
   - "src/dvas/models/teacher/base.py:TeacherModel"
-  - "src/dvas/models/teacher/gpt4v.py:GPT4VTeacher"
-  - "src/dvas/models/teacher/claude.py:ClaudeTeacher"
-  - "src/dvas/models/teacher/together.py:TogetherTeacher"
 agent_hints:
   - "WARNING: Always use async annotate()—batch processing uses asyncio.gather"
   - "WARNING: GPT-5.5 supports 32 frames max—sampler will downsample if more provided"
