@@ -132,7 +132,10 @@ testpaths = ["tests"]
 markers = [
     "slow: marks tests as slow (deselect with '-m not slow')",
     "integration: marks tests as integration tests",
+    "e2e: marks tests as end-to-end tests",
     "gpu: marks tests that require GPU",
+    "windows: marks tests that have known issues on Windows",
+    "snapshot: marks snapshot comparison tests",
 ]
 
 [tool.coverage.run]

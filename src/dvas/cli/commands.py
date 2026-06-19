@@ -29,9 +29,9 @@ console = Console()
 # Import subcommands from specialized modules
 from dvas.cli.dev import DevModeWatcher
 from dvas.cli.docs_info import app as docs_app, info as info_cmd
-from dvas.cli.migrate import app as migrate_app
+from dvas.cli.migrate import MigrationManager, app as migrate_app
 from dvas.cli.quality import app as quality_app
-from dvas.cli.scaffold import app as scaffold_app
+from dvas.cli.scaffold import SCAFFOLD_TEMPLATES, ScaffoldTemplate, app as scaffold_app
 
 # Register subcommands
 app.add_typer(scaffold_app, name="scaffold")
