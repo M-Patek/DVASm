@@ -2,7 +2,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-500%2B%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-900%2B%20passing-brightgreen.svg)]()
 
 > AI-powered video annotation platform with teacher-student distillation for robotic manipulation and egocentric vision.
 
@@ -18,9 +18,12 @@ DVAS generates high-quality temporal annotations for videos using a **teacher-st
 
 - **Streaming Video Processing** — Async frame streaming with `asyncio.Queue`, no full video load
 - **Performance Optimized** — Frame seeking, min-heap sampling, concurrent encoding, metadata caching
-- **Adaptive Prompts** — Video-type classification with specialized prompt templates
+- **Teacher-Student Distillation** — GPT/Claude → fine-tuned Qwen2-VL for cost-efficient inference
+- **Quality Loop** — 9-dimension analysis (factuality, grounding, temporal consistency) with LLM-as-judge
+- **VLA/Robot Data** — Hand pose, gripper state, affordance, counterfactual annotations for robotics
+- **World Model** — State prediction, dynamics annotation, causal relation extraction
+- **Multi-Format Export** — LLaVA, OpenAI, ShareGPT, Open X-Embodiment, RLDS, Ego4D formats
 - **Fault Tolerance** — Retry with exponential backoff, checkpoint persistence, batch recovery
-- **Multi-Format Export** — LLaVA, OpenAI, ShareGPT training formats
 - **Security** — PII detection, data anonymization, watermarking, RBAC
 - **Developer Experience** — Hot reload, code scaffolding, DB migrations, lint/test runners
 - **Advanced Algorithms** — Adaptive sampling, keyframe extraction, video summarization, semantic segmentation
@@ -110,16 +113,32 @@ python examples/export_training.py --output data/training/sft.jsonl --format lla
 ```
 DVAS
 ├── Teacher Models      (GPT-5.5, Claude, Together API - Unified Interface)
-│   └── Unified TeacherModel with auto-provider detection
+│   ├── Unified TeacherModel with auto-provider detection
+│   ├── Model/Provider Registry with capabilities & pricing
+│   ├── Quota Manager & Rate Limit Scheduler
+│   └── Multi-teacher Consensus & Adaptive Fallback Chains
 ├── Pipeline            (Scene detection → Frame sampling → Annotation)
 │   ├── Checkpoint persistence for resumable processing
 │   ├── Saga pattern for distributed transactions
+│   ├── Quality Gates (factuality, grounding, temporal consistency)
+│   ├── Parser with confidence scoring & fallback audit
 │   └── Batch processing with concurrency control
-├── Student Models      (Qwen2-VL fine-tuning)
-│   └── SFT/DPO training on distilled annotations
-├── Evaluation          (BLEU, ROUGE, CIDEr, LLM-as-Judge)
-├── Smart Routing       (Adaptive model selection by video complexity)
-├── Export              (LLaVA, OpenAI, ShareGPT formats)
+├── Quality Loop        (Automatic quality analysis & feedback)
+│   ├── Automatic Quality Analyzer (9 quality dimensions)
+│   ├── LLM-as-Judge Pipeline for quality evaluation
+│   ├── Human Review & Disagreement Queues
+│   └── Acceptance Criteria & Trend Dashboard
+├── Student Models      (Qwen2-VL fine-tuning with closed-loop evaluation)
+│   ├── LoRA Adapter Registry with data version binding
+│   ├── SFT/DPO training on distilled annotations
+│   ├── Confidence Calibration & Active Learning
+│   └── Teacher vs Student Evaluation & Regression Benchmark
+├── World Model         (State prediction & dynamics annotation)
+│   ├── State before/after generation
+│   ├── Physical dynamics annotation (mass, friction, contact)
+│   ├── Causal relation extraction
+│   └── Counterfactual generation & training export
+├── Export              (LLaVA, OpenAI, ShareGPT, Open X-Embodiment, RLDS)
 ├── API                 (FastAPI REST endpoints with auth)
 └── Security            (PII detection, anonymization, RBAC)
 ```
@@ -128,24 +147,24 @@ DVAS
 
 | ID | Subsystem | Status | Description |
 |----|-----------|--------|-------------|
-| 01 | [Data Layer](docs/subsystems/01-data.md) | ✅ Stable | Video loading, preprocessing, storage (Schema v2.0) |
-| 02 | [Teacher Models](docs/subsystems/02-teacher.md) | ✅ Stable | Unified interface for GPT-5.5, Claude, Together |
-| 03 | [Student (VLA)](docs/subsystems/03-student.md) | ✅ Stable | Qwen2-VL fine-tuning (SFT/DPO) for VLA |
+| 01 | [Data Layer](docs/subsystems/01-data.md) | ✅ Enhanced | Pluggable backends (LocalFS/SQLite/PostgreSQL/S3), index management |
+| 02 | [Teacher Models](docs/subsystems/02-teacher.md) | ✅ Enhanced | Registry, capabilities, pricing, quota, consensus, fallback chains |
+| 03 | [Student (VLA)](docs/subsystems/03-student.md) | ✅ Enhanced | LoRA registry, calibration, active learning, evaluation, benchmark |
 | 04 | [Pipeline](docs/subsystems/04-pipeline.md) | ✅ Stable | Annotation pipeline with Saga pattern & checkpointing |
 | 05 | [Evaluation](docs/subsystems/05-evaluation.md) | ✅ Stable | BLEU/CIDEr + LLM-as-Judge |
-| 06 | [Export](docs/subsystems/06-export.md) | ✅ Stable | Multi-format training data export (VLA + World Model) |
+| 06 | [Export](docs/subsystems/06-export.md) | ✅ Enhanced | Multi-format: LLaVA, OpenAI, Open X-Embodiment, RLDS, Ego4D |
 | 07 | [API](docs/subsystems/07-api.md) | ✅ Stable | FastAPI REST endpoints with auth |
 | 08 | [Routing](docs/subsystems/08-routing.md) | ✅ Stable | Smart router with complexity-based model selection |
-| 09 | [Quality](docs/subsystems/09-quality.md) | ✅ Stable | Data quality analysis, anomaly detection, augmentation |
+| 09 | [Quality Loop](docs/subsystems/09-quality.md) | ✅ Enhanced | Auto analysis, LLM-as-judge, review queues, acceptance criteria |
 | 10 | [Lineage](docs/subsystems/10-lineage.md) | ✅ Stable | Schema version management, data provenance tracking |
 | 11 | [Prompts](docs/subsystems/13-prompts.md) | ✅ Stable | Adaptive prompt engineering, video classification |
 | 12 | [Security](docs/subsystems/12-security.md) | ✅ Stable | PII detection, anonymization, watermarking, RBAC |
 | 13 | [Monitoring](docs/subsystems/11-monitoring.md) | ✅ Stable | A/B testing, drift detection, performance monitoring |
-| 14 | [World Model](docs/subsystems/14-world-model.md) | 📝 Draft | State prediction, dynamics annotation (placeholder) |
+| 14 | [World Model](docs/subsystems/14-world-model.md) | ✅ Enhanced | State prediction, dynamics annotation, causal extraction, benchmarks |
 | 15 | [Infrastructure](docs/subsystems/15-infrastructure.md) | 📝 Draft | Data platform deployment, ops |
 | 16 | [Governance](docs/subsystems/16-governance.md) | ✅ Stable | Annotation standard management, multi-standard adapters |
 
-**Test Coverage:** 500+ tests passing (~90% pass rate, failures are Windows/env-specific)
+**Test Coverage:** 900+ tests passing (~95% pass rate, failures are Windows/env-specific)
 
 ## Development
 
@@ -185,29 +204,39 @@ DVASm/
 │   ├── config/            # Settings, prompts, constants
 │   ├── core/              # Event bus, circuit breaker, algorithms, actors, Saga
 │   ├── data/              # Video loading, schemas, storage
+│   │   └── robot_schemas/ # VLA/Robot annotations (hand pose, affordance, counterfactual)
 │   ├── models/            # Teacher & student models
 │   │   ├── teacher/base.py    # Unified TeacherModel (all providers)
-│   │   ├── student/           # SFT trainer, DPO trainer, inference
+│   │   ├── teacher/           # Registry, capabilities, pricing, quota, consensus
+│   │   ├── student/           # LoRA registry, SFT/DPO, calibration, selection
 │   │   └── evaluator/         # Metrics & LLM-as-Judge
+│   ├── persistence/       # Pluggable backends (LocalFS, SQLite, PostgreSQL, S3)
 │   ├── pipeline/          # Annotation pipeline
 │   │   ├── core.py        # Main orchestrator
 │   │   ├── builder.py     # Annotation construction
 │   │   ├── checkpoint.py  # Resume persistence
-│   │   └── parser.py      # Response parsing
-│   ├── prompts/           # Adaptive prompt engineering  
+│   │   ├── parser.py      # Response parsing
+│   │   ├── quality_gate.py    # Quality validation gates
+│   │   └── state_machine.py   # Annotation lifecycle management
+│   ├── prompts/           # Adaptive prompt engineering
+│   ├── quality/           # Quality loop (analyzer, llm_judge, review_queue, trend_dashboard)
 │   ├── routing/           # SmartRouter, Ensemble, CostOptimizer
 │   ├── security/          # Privacy & access control, audit logging
+│   ├── world_model/       # State prediction, dynamics, causal extraction, training export
 │   └── utils/             # Logging, retry, caching, observability
-├── tests/                 # Test suite (550+ tests)
+├── tests/                 # Test suite (900+ tests)
 ├── examples/              # Usage examples
 │   ├── annotate_epic.py
 │   ├── download_epic.py
 │   ├── create_mini_dataset.py
-│   └── export_training.py
+│   ├── export_training.py
+│   ├── train_student_sft.py     # Student SFT training
+│   ├── train_student_dpo.py     # Student DPO training
+│   └── eval_teacher_vs_student.py  # Teacher vs Student evaluation
 ├── scripts/               # Utility scripts
 ├── benchmarks/            # Performance benchmarks
 └── docs/                  # Documentation
-    ├── subsystems/        # Per-subsystem docs (14 subsystems)
+    ├── subsystems/        # Per-subsystem docs (16 subsystems)
     ├── architecture/      # Design docs & constitution
     └── _machine/          # Status & tech debt tracking
 ```
