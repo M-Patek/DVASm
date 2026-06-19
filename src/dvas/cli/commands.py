@@ -14,24 +14,22 @@ Commands:
 from __future__ import annotations
 
 import sys
-from typing import Any, Callable, Dict, List, Optional
+from typing import List, Optional
 
 import typer
 from rich.console import Console
 
+from dvas.cli.dev import DevModeWatcher
+from dvas.cli.docs_info import app as docs_app, info as info_cmd
+from dvas.cli.migrate import MigrationManager, app as migrate_app  # noqa: F401
+from dvas.cli.quality import app as quality_app
+from dvas.cli.scaffold import SCAFFOLD_TEMPLATES, ScaffoldTemplate, app as scaffold_app  # noqa: F401
 from dvas.utils.logging import get_logger, setup_logging
 
 logger = get_logger(__name__)
 app = typer.Typer(help="DVAS Developer Tools")
 console = Console()
 
-
-# Import subcommands from specialized modules
-from dvas.cli.dev import DevModeWatcher
-from dvas.cli.docs_info import app as docs_app, info as info_cmd
-from dvas.cli.migrate import MigrationManager, app as migrate_app
-from dvas.cli.quality import app as quality_app
-from dvas.cli.scaffold import SCAFFOLD_TEMPLATES, ScaffoldTemplate, app as scaffold_app
 
 # Register subcommands
 app.add_typer(scaffold_app, name="scaffold")

@@ -80,9 +80,7 @@ class RateLimiter:
 
         if self.config.max_buckets > 0 and len(self._buckets) > self.config.max_buckets:
             overflow = len(self._buckets) - self.config.max_buckets
-            oldest_keys = sorted(self._bucket_last_seen, key=self._bucket_last_seen.get)[
-                :overflow
-            ]
+            oldest_keys = sorted(self._bucket_last_seen, key=self._bucket_last_seen.get)[:overflow]
             for key in oldest_keys:
                 self._buckets.pop(key, None)
                 self._bucket_last_seen.pop(key, None)
@@ -484,10 +482,10 @@ class RequestTracker:
         base_stats.update(
             {
                 "response_time_ms": {
-                "p50": sorted_times[n // 2],
-                "p95": sorted_times[int(n * 0.95)],
-                "p99": sorted_times[int(n * 0.99)],
-                "max": sorted_times[-1],
+                    "p50": sorted_times[n // 2],
+                    "p95": sorted_times[int(n * 0.95)],
+                    "p99": sorted_times[int(n * 0.99)],
+                    "max": sorted_times[-1],
                 },
             }
         )

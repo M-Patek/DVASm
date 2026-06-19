@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from dvas.data.schemas import Annotation, AnnotationStandard
+from dvas.data.schemas import Annotation
 
 
 class SchemaVersion(str, Enum):
@@ -124,9 +124,7 @@ class LineageTracker:
         errors = []
 
         if not compatible:
-            errors.append(
-                f"Schema {source_version} -> {target_version} is not supported"
-            )
+            errors.append(f"Schema {source_version} -> {target_version} is not supported")
             return SchemaCompatibility(
                 compatible=False,
                 source_version=source_version,
@@ -137,9 +135,7 @@ class LineageTracker:
         # v1.0 -> v2.0: warn about missing enhanced fields
         if source_version == "1.0" and target_version == "2.0":
             if not annotation.is_v2_enhanced():
-                warnings.append(
-                    "v1.0 annotation loaded as v2.0 — enhanced fields will be empty"
-                )
+                warnings.append("v1.0 annotation loaded as v2.0 — enhanced fields will be empty")
 
         # v2.0 -> v1.0: error if enhanced fields are populated
         if source_version == "2.0" and target_version == "1.0":

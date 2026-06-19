@@ -6,7 +6,6 @@ eliminating global state and enabling proper lifecycle management.
 
 from __future__ import annotations
 
-import asyncio
 import time
 import uuid
 from typing import Any, Dict, Optional
@@ -49,7 +48,8 @@ class AppState:
         finished_task_ttl: float = 3600.0,
     ) -> None:
         self._rate_limiter = RateLimiter(
-            rate_limit_config or RateLimitConfig(
+            rate_limit_config
+            or RateLimitConfig(
                 requests_per_second=10.0,
                 burst_size=20.0,
             )
@@ -128,7 +128,9 @@ class AppState:
         if task_id in self.tasks:
             self.tasks[task_id].update(kwargs)
 
-    def finish_task(self, task_id: str, status: str = "completed", error: Optional[str] = None) -> None:
+    def finish_task(
+        self, task_id: str, status: str = "completed", error: Optional[str] = None
+    ) -> None:
         """Mark a task as finished."""
         if task_id in self.tasks:
             self.tasks[task_id]["status"] = status
@@ -170,8 +172,7 @@ class AppState:
             return
 
         finished_ids = [
-            tid for tid, task in self.tasks.items()
-            if task.get("status") in finished_statuses
+            tid for tid, task in self.tasks.items() if task.get("status") in finished_statuses
         ]
         overflow = len(finished_ids) - self.max_finished_tasks
         if overflow <= 0:
@@ -179,7 +180,9 @@ class AppState:
 
         oldest = sorted(
             finished_ids,
-            key=lambda tid: self.tasks[tid].get("_finished_at", self.tasks[tid].get("_created_at", 0)),
+            key=lambda tid: self.tasks[tid].get(
+                "_finished_at", self.tasks[tid].get("_created_at", 0)
+            ),
         )[:overflow]
         for tid in oldest:
             self.tasks.pop(tid, None)
@@ -194,6 +197,7 @@ class AppState:
             store = AnnotationStore(enable_index=False)
             _ = store.get_statistics()
             from dvas.api.middleware import HealthCheck, HealthStatus
+
             return HealthCheck(
                 name="storage",
                 status=HealthStatus.HEALTHY,
@@ -202,6 +206,7 @@ class AppState:
             )
         except Exception:
             from dvas.api.middleware import HealthCheck, HealthStatus
+
             return HealthCheck(
                 name="storage",
                 status=HealthStatus.HEALTHY,
@@ -226,6 +231,7 @@ class AppState:
             )
         except Exception as e:
             from dvas.api.middleware import HealthCheck, HealthStatus
+
             return HealthCheck(
                 name="disk_space",
                 status=HealthStatus.UNHEALTHY,

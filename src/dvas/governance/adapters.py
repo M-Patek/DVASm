@@ -62,18 +62,22 @@ class EPICAdapter(StandardAdapter):
         for seg in annotation.segments:
             actions = []
             for a in seg.actions:
-                actions.append({
-                    "verb": a.verb,
-                    "noun": a.noun,
-                    "hand": a.hand.value,
-                    "start_time": a.start_time,
-                    "end_time": a.end_time,
-                })
-            segments.append({
-                "start_time": seg.start_time,
-                "end_time": seg.end_time,
-                "actions": actions,
-            })
+                actions.append(
+                    {
+                        "verb": a.verb,
+                        "noun": a.noun,
+                        "hand": a.hand.value,
+                        "start_time": a.start_time,
+                        "end_time": a.end_time,
+                    }
+                )
+            segments.append(
+                {
+                    "start_time": seg.start_time,
+                    "end_time": seg.end_time,
+                    "actions": actions,
+                }
+            )
 
         return {
             "id": annotation.id,
@@ -92,19 +96,23 @@ class EPICAdapter(StandardAdapter):
         for seg_data in data.get("segments", []):
             actions = []
             for a_data in seg_data.get("actions", []):
-                actions.append(Action(
-                    verb=a_data["verb"],
-                    noun=a_data["noun"],
-                    hand=Hand(a_data.get("hand", "unknown")),
-                    start_time=a_data.get("start_time"),
-                    end_time=a_data.get("end_time"),
-                ))
-            segments.append(Segment(
-                start_time=seg_data["start_time"],
-                end_time=seg_data["end_time"],
-                caption="",  # EPIC has no captions
-                actions=actions,
-            ))
+                actions.append(
+                    Action(
+                        verb=a_data["verb"],
+                        noun=a_data["noun"],
+                        hand=Hand(a_data.get("hand", "unknown")),
+                        start_time=a_data.get("start_time"),
+                        end_time=a_data.get("end_time"),
+                    )
+                )
+            segments.append(
+                Segment(
+                    start_time=seg_data["start_time"],
+                    end_time=seg_data["end_time"],
+                    caption="",  # EPIC has no captions
+                    actions=actions,
+                )
+            )
 
         meta = data.get("metadata", {})
         return Annotation(
@@ -137,30 +145,32 @@ class Ego4DAdapter(StandardAdapter):
         """Export to Ego4D format."""
         narrations = []
         for seg in annotation.segments:
-            narrations.append({
-                "start_time": seg.start_time,
-                "end_time": seg.end_time,
-                "narration": seg.caption,
-                "actions": [
-                    {
-                        "verb": a.verb,
-                        "noun": a.noun,
-                        "hand": a.hand.value,
-                        "instrument": a.instrument,
-                        "source_state": a.source_state,
-                        "target_state": a.target_state,
-                    }
-                    for a in seg.actions
-                ],
-                "objects": [
-                    {
-                        "name": obj.name,
-                        "attributes": obj.attributes,
-                        "state": obj.state,
-                    }
-                    for obj in seg.objects
-                ],
-            })
+            narrations.append(
+                {
+                    "start_time": seg.start_time,
+                    "end_time": seg.end_time,
+                    "narration": seg.caption,
+                    "actions": [
+                        {
+                            "verb": a.verb,
+                            "noun": a.noun,
+                            "hand": a.hand.value,
+                            "instrument": a.instrument,
+                            "source_state": a.source_state,
+                            "target_state": a.target_state,
+                        }
+                        for a in seg.actions
+                    ],
+                    "objects": [
+                        {
+                            "name": obj.name,
+                            "attributes": obj.attributes,
+                            "state": obj.state,
+                        }
+                        for obj in seg.objects
+                    ],
+                }
+            )
 
         return {
             "id": annotation.id,
@@ -178,14 +188,16 @@ class Ego4DAdapter(StandardAdapter):
         for narr in data.get("narrations", []):
             actions = []
             for a_data in narr.get("actions", []):
-                actions.append(Action(
-                    verb=a_data["verb"],
-                    noun=a_data["noun"],
-                    hand=Hand(a_data.get("hand", "unknown")),
-                    instrument=a_data.get("instrument"),
-                    source_state=a_data.get("source_state"),
-                    target_state=a_data.get("target_state"),
-                ))
+                actions.append(
+                    Action(
+                        verb=a_data["verb"],
+                        noun=a_data["noun"],
+                        hand=Hand(a_data.get("hand", "unknown")),
+                        instrument=a_data.get("instrument"),
+                        source_state=a_data.get("source_state"),
+                        target_state=a_data.get("target_state"),
+                    )
+                )
             objects = [
                 Object(
                     name=obj["name"],
@@ -194,13 +206,15 @@ class Ego4DAdapter(StandardAdapter):
                 )
                 for obj in narr.get("objects", [])
             ]
-            segments.append(Segment(
-                start_time=narr["start_time"],
-                end_time=narr["end_time"],
-                caption=narr.get("narration", ""),
-                actions=actions,
-                objects=objects,
-            ))
+            segments.append(
+                Segment(
+                    start_time=narr["start_time"],
+                    end_time=narr["end_time"],
+                    caption=narr.get("narration", ""),
+                    actions=actions,
+                    objects=objects,
+                )
+            )
 
         return Annotation(
             id=data["id"],
@@ -273,22 +287,26 @@ class OpenXAdapter(StandardAdapter):
                     action_space=act.get("action_space"),
                     gripper_state=act.get("gripper_state"),
                 )
-            actions.append(Action(
-                verb=step["verb"],
-                noun=step["noun"],
-                embodiment=embodiment,
-            ))
+            actions.append(
+                Action(
+                    verb=step["verb"],
+                    noun=step["noun"],
+                    embodiment=embodiment,
+                )
+            )
 
         return Annotation(
             id=data["id"],
             video_id=data["video_id"],
             video_path="",
-            segments=[Segment(
-                start_time=0.0,
-                end_time=0.0,
-                caption="",
-                actions=actions,
-            )],
+            segments=[
+                Segment(
+                    start_time=0.0,
+                    end_time=0.0,
+                    caption="",
+                    actions=actions,
+                )
+            ],
             metadata=VideoMetadata(
                 fps=30.0,
                 resolution=[1920, 1080],

@@ -7,11 +7,10 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List
 
 from rich.console import Console
 
-from dvas.config import settings
 
 console = Console()
 

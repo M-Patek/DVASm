@@ -9,9 +9,8 @@ import importlib
 import json
 import subprocess
 import sys
-import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import typer
 from rich.console import Console

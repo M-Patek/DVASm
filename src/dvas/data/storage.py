@@ -13,7 +13,7 @@ from dvas.data.schemas import Annotation
 from dvas.utils.logging import get_logger
 
 if TYPE_CHECKING:
-    from dvas.persistence.indexed_store import AnnotationQuery, IndexStore, IndexStoreConfig
+    from dvas.persistence.indexed_store import IndexStore
 
 logger = get_logger(__name__)
 
@@ -57,9 +57,7 @@ class AnnotationStore:
             self._index_store.create_index()
         return self._index_store
 
-    def _get_storage_path(
-        self, annotation_id: str, source: str = "model"
-    ) -> Path:
+    def _get_storage_path(self, annotation_id: str, source: str = "model") -> Path:
         """Get storage path for an annotation."""
         if source in ("gold", "teacher"):
             base_path = self.gold_path
@@ -90,7 +88,9 @@ class AnnotationStore:
 
         # Save using orjson for speed
         with open(storage_path, "w", encoding="utf-8") as f:
-            f.write(orjson.dumps(annotation.model_dump(), option=orjson.OPT_INDENT_2).decode("utf-8"))
+            f.write(
+                orjson.dumps(annotation.model_dump(), option=orjson.OPT_INDENT_2).decode("utf-8")
+            )
 
         # Index the annotation
         if self._enable_index and self.index_store:
@@ -154,7 +154,10 @@ class AnnotationStore:
             except (orjson.JSONDecodeError, OSError, PermissionError) as e:
                 # Log error but continue processing other files
                 import logging
-                logging.getLogger(__name__).warning("Failed to load annotation", file=str(json_file), error=str(e))
+
+                logging.getLogger(__name__).warning(
+                    "Failed to load annotation", file=str(json_file), error=str(e)
+                )
 
     def _get_source_path(self, source: str) -> Path:
         """Get base path for a source."""
@@ -200,9 +203,7 @@ class AnnotationStore:
             if path.exists():
                 json_files = list(path.rglob("*.json"))
                 stats[source]["count"] = len(json_files)
-                stats[source]["size_mb"] = sum(
-                    f.stat().st_size for f in json_files
-                ) / (1024 * 1024)
+                stats[source]["size_mb"] = sum(f.stat().st_size for f in json_files) / (1024 * 1024)
 
         return stats
 
@@ -248,7 +249,6 @@ class AnnotationStore:
             logger.warning("index_not_enabled")
             return []
 
-        from dvas.persistence.indexed_store import SearchResult
 
         results = self.index_store.search(query_text, limit=limit)
         return [

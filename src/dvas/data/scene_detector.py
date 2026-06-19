@@ -2,12 +2,12 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Iterator, List, Optional, Tuple
+from typing import List, Optional
 
 import cv2
 import numpy as np
 
-from dvas.data.video_reader import Frame, VideoReader
+from dvas.data.video_reader import VideoReader
 
 
 @dataclass
@@ -81,9 +81,7 @@ class HistogramSceneDetector(SceneDetector):
         prev_hist: Optional[np.ndarray] = None
 
         for frame in reader.read_frames(start_frame, end_frame, sample_step):
-            hist = cv2.calcHist(
-                [frame.data], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256]
-            )
+            hist = cv2.calcHist([frame.data], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
             hist = cv2.normalize(hist, hist).flatten()
 
             if prev_hist is not None:
@@ -118,7 +116,11 @@ class HistogramSceneDetector(SceneDetector):
                 )
             )
 
-        return scenes if scenes else [SceneBoundary(start_time=start_time or 0.0, end_time=final_end, method=self.name)]
+        return (
+            scenes
+            if scenes
+            else [SceneBoundary(start_time=start_time or 0.0, end_time=final_end, method=self.name)]
+        )
 
 
 class OpticalFlowSceneDetector(SceneDetector):
@@ -159,9 +161,7 @@ class OpticalFlowSceneDetector(SceneDetector):
 
             if prev_gray is not None:
                 # Compute optical flow
-                flow = cv2.calcOpticalFlowFarneback(
-                    prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0
-                )
+                flow = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
                 magnitude = np.sqrt(flow[..., 0] ** 2 + flow[..., 1] ** 2)
                 avg_motion = magnitude.mean()
 
@@ -194,7 +194,11 @@ class OpticalFlowSceneDetector(SceneDetector):
                 )
             )
 
-        return scenes if scenes else [SceneBoundary(start_time=start_time or 0.0, end_time=final_end, method=self.name)]
+        return (
+            scenes
+            if scenes
+            else [SceneBoundary(start_time=start_time or 0.0, end_time=final_end, method=self.name)]
+        )
 
 
 class SceneDetectorRegistry:
@@ -209,9 +213,7 @@ class SceneDetectorRegistry:
     def get(cls, name: str) -> type:
         """Get detector class by name."""
         if name not in cls._strategies:
-            raise ValueError(
-                f"Unknown detector: {name}. Available: {list(cls._strategies.keys())}"
-            )
+            raise ValueError(f"Unknown detector: {name}. Available: {list(cls._strategies.keys())}")
         return cls._strategies[name]
 
     @classmethod

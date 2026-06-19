@@ -9,7 +9,7 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import typer
 from rich.console import Console

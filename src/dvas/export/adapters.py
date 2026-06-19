@@ -116,13 +116,15 @@ class WorldModelAdapter(ExportAdapter):
                         "expected_change": ann.state_predictions.expected_state_change,
                     }
 
-                episodes.append({
-                    "observation": observation,
-                    "actions": actions,
-                    "next_observation": next_observation,
-                    "start_time": seg.start_time,
-                    "end_time": seg.end_time,
-                })
+                episodes.append(
+                    {
+                        "observation": observation,
+                        "actions": actions,
+                        "next_observation": next_observation,
+                        "start_time": seg.start_time,
+                        "end_time": seg.end_time,
+                    }
+                )
 
             # World model metadata
             dynamics = None
@@ -132,19 +134,21 @@ class WorldModelAdapter(ExportAdapter):
                     "causal_links": ann.dynamics.causal_links,
                 }
 
-            results.append({
-                "id": ann.id,
-                "video_id": ann.video_id,
-                "video_path": ann.video_path,
-                "episodes": episodes,
-                "dynamics": dynamics,
-                "metadata": {
-                    "schema_version": ann.schema_version,
-                    "annotation_standard": ann.annotation_standard.value,
-                    "camera_type": ann.metadata.camera_type,
-                    "environment": ann.metadata.environment,
-                },
-            })
+            results.append(
+                {
+                    "id": ann.id,
+                    "video_id": ann.video_id,
+                    "video_path": ann.video_path,
+                    "episodes": episodes,
+                    "dynamics": dynamics,
+                    "metadata": {
+                        "schema_version": ann.schema_version,
+                        "annotation_standard": ann.annotation_standard.value,
+                        "camera_type": ann.metadata.camera_type,
+                        "environment": ann.metadata.environment,
+                    },
+                }
+            )
 
         return results
 

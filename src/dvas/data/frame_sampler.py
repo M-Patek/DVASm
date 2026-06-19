@@ -45,6 +45,7 @@ class FrameSampler(ABC):
         """Resize frame if resize config is set."""
         if self.config.resize:
             import cv2
+
             resized = cv2.resize(frame.data, self.config.resize)
             return Frame(idx=frame.idx, timestamp=frame.timestamp, data=resized)
         return frame
@@ -72,7 +73,6 @@ class UniformSampler(FrameSampler):
         """Sample frames uniformly across time range."""
         meta = reader.metadata
         fps = meta.fps
-        duration = (end_time or meta.duration) - (start_time or 0)
 
         start_frame = int((start_time or 0) * fps)
         end_frame = int((end_time or meta.duration) * fps)
@@ -216,15 +216,11 @@ class FrameSamplerRegistry:
     def get(cls, name: str) -> type:
         """Get sampler class by name."""
         if name not in cls._strategies:
-            raise ValueError(
-                f"Unknown sampler: {name}. Available: {list(cls._strategies.keys())}"
-            )
+            raise ValueError(f"Unknown sampler: {name}. Available: {list(cls._strategies.keys())}")
         return cls._strategies[name]
 
     @classmethod
-    def create(
-        cls, name: str, config: Optional[SamplerConfig] = None, **kwargs
-    ) -> FrameSampler:
+    def create(cls, name: str, config: Optional[SamplerConfig] = None, **kwargs) -> FrameSampler:
         """Create sampler instance by name."""
         sampler_cls = cls.get(name)
         return sampler_cls(config=config, **kwargs)

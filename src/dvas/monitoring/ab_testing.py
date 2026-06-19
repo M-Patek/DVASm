@@ -12,7 +12,6 @@ import numpy as np
 from scipy import stats
 
 from dvas.data.schemas import Annotation
-from dvas.observability.metrics import PerformanceMonitor
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)

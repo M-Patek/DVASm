@@ -283,17 +283,24 @@ class Annotation(BaseModel):
         messages = []
 
         for segment in self.segments:
-            messages.append({
-                "role": "user",
-                "content": [
-                    {"type": "video", "video": self.video_path},
-                    {"type": "text", "text": f"描述这个视频片段（{segment.start_time:.1f}s - {segment.end_time:.1f}s）"},
-                ],
-            })
-            messages.append({
-                "role": "assistant",
-                "content": segment.caption,
-            })
+            messages.append(
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "video", "video": self.video_path},
+                        {
+                            "type": "text",
+                            "text": f"描述这个视频片段（{segment.start_time:.1f}s - {segment.end_time:.1f}s）",
+                        },
+                    ],
+                }
+            )
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": segment.caption,
+                }
+            )
 
         return {
             "id": self.id,
@@ -337,11 +344,13 @@ class Annotation(BaseModel):
         for seg in self.segments:
             for action in seg.actions:
                 if action.physical:
-                    result.append({
-                        "verb": action.verb,
-                        "noun": action.noun,
-                        "physical": action.physical.model_dump(exclude_none=True),
-                    })
+                    result.append(
+                        {
+                            "verb": action.verb,
+                            "noun": action.noun,
+                            "physical": action.physical.model_dump(exclude_none=True),
+                        }
+                    )
         return result
 
     def is_v2_enhanced(self) -> bool:

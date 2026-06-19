@@ -22,6 +22,35 @@
 
 ---
 
+### Session — P1: Main Engineering Quality Improvements
+
+- **Type**: T5
+- **Goal**: Establish unified development environment, CI alignment, and code quality baselines
+- **Done**:
+  - Fixed duplicate 09-quality entry in status.yaml
+  - Created Makefile for Unix/Linux/WSL development workflow
+  - Created justfile for just command runner support
+  - Created scripts/dvas-dev.ps1 PowerShell module for Windows development
+  - Updated CI workflow to use pytest markers (not slow, not gpu)
+  - Added CI job for integration tests
+  - Fixed all ruff linting issues (unused imports, formatting)
+  - Fixed all mypy type checking issues
+  - Established clean code quality baseline: ruff clean, mypy clean
+- **Files**:
+  - Makefile (new)
+  - justfile (new)
+  - scripts/dvas-dev.ps1 (new)
+  - .github/workflows/ci.yml (updated)
+  - docs/_machine/status.yaml (fixed duplicate entry)
+  - src/dvas/api/dependencies.py (fixed imports)
+  - src/dvas/api/main.py (fixed imports)
+  - src/dvas/cli/commands.py (fixed import order)
+  - Multiple source files (ruff auto-fixes)
+- **Validation**: V2 — ruff check src/dvas → pass; mypy src/dvas → pass
+- **Left for next time**: None — P1 complete
+
+---
+
 ### Session ? Fixed cross-subsystem runtime contract regressions
 
 - **Type**: T3

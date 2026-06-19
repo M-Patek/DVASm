@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator, Optional, Tuple, Union
+from typing import Iterator, Optional, Union
 
 import cv2
 import numpy as np

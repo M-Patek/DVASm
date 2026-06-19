@@ -211,26 +211,6 @@ subsystems:
       method: "unit-tests"
       evidence: "pytest tests/test_quality.py plus AST validation"
 
-  - id: 09-quality
-    title: "Data Quality - analysis and reports"
-    status: stable
-    health: green
-    code_root: "src/dvas/quality/"
-    doc: "docs/subsystems/09-quality.md"
-    notable_recent_changes:
-      - "2026-06-19: DataQualityAnalyzer materializes AnnotationStore.load_all() before len/sample/duplicate passes"
-    known_gaps:
-      - title: "Semantic duplicate detection"
-        opened: "2024-06-17"
-        severity: low
-        next_review: "2026-07-19"
-        notes: "Current duplicate detection uses Jaccard similarity; embeddings would improve semantic coverage."
-    last_validated:
-      date: "2026-06-19"
-      by: "codex"
-      method: "unit-tests"
-      evidence: "pytest tests/test_quality.py plus AST validation"
-
   - id: 10-lineage
     title: "Lineage - schema version and data provenance"
     status: stable

@@ -443,9 +443,7 @@ class BatchProcessor:
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(
             None,
-            lambda: self.checkpoint_path.write_text(
-                json.dumps(data, indent=2), encoding="utf-8"
-            ),
+            lambda: self.checkpoint_path.write_text(json.dumps(data, indent=2), encoding="utf-8"),
         )
 
     async def mark_processed_async(self, item_id: str) -> None:

@@ -7,7 +7,7 @@ from typing import List, Optional
 import cv2
 import numpy as np
 
-from dvas.data.video_reader import Frame, VideoReader
+from dvas.data.video_reader import VideoReader
 
 
 @dataclass

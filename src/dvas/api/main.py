@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import asyncio
 import tempfile
-import time
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -30,10 +29,7 @@ from dvas.api.auth import get_auth_status, require_auth, require_auth_strict
 from dvas.api.dependencies import AppState
 from dvas.api.middleware import (
     APIVersion,
-    CompressionMiddleware,
     HealthChecker,
-    HealthStatus,
-    RateLimitConfig,
     RateLimiter,
     RequestTracker,
     api_error,
@@ -362,9 +358,7 @@ async def create_annotation_task(
     )
 
     # Start annotation in background
-    asyncio.create_task(
-        run_annotation_task(state, task_id, task_request)
-    )
+    asyncio.create_task(run_annotation_task(state, task_id, task_request))
 
     logger.info(
         "task_created",

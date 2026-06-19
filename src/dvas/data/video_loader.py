@@ -7,11 +7,7 @@ Components:
 - MotionEstimator: motion intensity estimation
 """
 
-import asyncio
 import logging
-import threading
-import weakref
-from functools import lru_cache
 from pathlib import Path
 from typing import (
     Any,
@@ -25,7 +21,6 @@ from typing import (
 )
 
 import cv2
-import numpy as np
 
 from dvas.config import settings
 from dvas.data.frame_sampler import (
@@ -58,6 +53,7 @@ def _lazy_import_pandas():
     """Lazy import pandas to reduce startup time."""
     try:
         import pandas as pd
+
         return pd
     except ImportError:
         return None
@@ -250,9 +246,7 @@ class VideoLoader:
 
         For backward compatibility. New code should use MotionEstimator directly.
         """
-        result = self._motion_estimator.estimate(
-            self._reader, start_time, end_time, sample_frames
-        )
+        result = self._motion_estimator.estimate(self._reader, start_time, end_time, sample_frames)
         return result.score
 
     # --- Async streaming ---
@@ -415,12 +409,16 @@ class EPICKitchensLoader:
         # Ordered by likelihood for EPIC-KITCHENS. Each entry can have
         # a case variant because some sources mix casing.
         for ext in [
-            ".MP4", ".mp4",
-            ".mov", ".MOV",
+            ".MP4",
+            ".mp4",
+            ".mov",
+            ".MOV",
             ".avi",
-            ".mkv", ".MKV",
+            ".mkv",
+            ".MKV",
             ".webm",
-            ".m4v", ".M4V",
+            ".m4v",
+            ".M4V",
         ]:
             path = base_path.with_suffix(ext)
             if path.exists():
