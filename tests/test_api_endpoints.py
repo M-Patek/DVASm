@@ -29,20 +29,16 @@ def client_no_auth():
         mock_settings.API_KEY = None
         mock_settings.ALLOW_UNAUTHENTICATED = True
 
-        # Patch rate limiter to always allow requests
-        with patch("dvas.api.main.rate_limiter") as mock_limiter:
-            mock_limiter.allow_request.return_value = True
+        # Patch rate limiter to always allow requests via AppState
+        with patch("dvas.api.dependencies.RateLimiter") as mock_limiter_cls:
+            mock_limiter = MagicMock()
+            mock_limiter.try_acquire.return_value = True
+            mock_limiter_cls.return_value = mock_limiter
 
-            from dvas.api.main import app, tasks
-
-            # Clear tasks before each test
-            tasks.clear()
+            from dvas.api.main import app
 
             with TestClient(app) as client:
                 yield client
-
-            # Cleanup: clear uploaded test files
-            tasks.clear()
 
 
 @pytest.fixture
@@ -53,18 +49,16 @@ def client_with_auth():
         mock_settings.API_KEY_HEADER = "X-API-Key"
         mock_settings.ALLOW_UNAUTHENTICATED = False
 
-        # Patch rate limiter to always allow requests
-        with patch("dvas.api.main.rate_limiter") as mock_limiter:
-            mock_limiter.allow_request.return_value = True
+        # Patch rate limiter to always allow requests via AppState
+        with patch("dvas.api.dependencies.RateLimiter") as mock_limiter_cls:
+            mock_limiter = MagicMock()
+            mock_limiter.try_acquire.return_value = True
+            mock_limiter_cls.return_value = mock_limiter
 
-            from dvas.api.main import app, tasks
-
-            tasks.clear()
+            from dvas.api.main import app
 
             with TestClient(app) as client:
                 yield client
-
-        tasks.clear()
 
 
 class TestHealthEndpoints:

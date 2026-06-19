@@ -126,6 +126,7 @@ target-version = "py310"
 
 [tool.pytest.ini_options]
 minversion = "8.0"
+pythonpath = ["src"]
 addopts = "-ra -q --strict-markers --tb=short"
 testpaths = ["tests"]
 markers = [

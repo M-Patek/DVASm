@@ -183,11 +183,11 @@ async def add_request_tracking(request: Request, call_next):
     # Get app state from request
     state: AppState = request.app.state.dvas
 
-    # Rate limiting
+    # Rate limiting - atomic check-and-consume
     client_ip = request.headers.get(
         "X-Forwarded-For", request.client.host if request.client else "unknown"
     )
-    if not state.rate_limiter.allow_request(client_ip, request.url.path):
+    if not state.rate_limiter.try_acquire(client_ip, request.url.path):
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             content=api_error(
@@ -196,8 +196,6 @@ async def add_request_tracking(request: Request, call_next):
                 status_code=429,
             ),
         )
-
-    state.rate_limiter.consume(client_ip)
 
     # Track request
     request_id = state.request_tracker.start_request(request.method, request.url.path)

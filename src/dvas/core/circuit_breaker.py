@@ -7,6 +7,7 @@ to a failing service, allowing it time to recover.
 from __future__ import annotations
 
 import asyncio
+import threading
 import time
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -211,12 +212,12 @@ class CircuitBreakerRegistry:
     """Registry for managing multiple circuit breakers with explicit lifecycle."""
 
     _breakers: Dict[str, CircuitBreaker] = {}
-    _lock = asyncio.Lock()
+    _lock = threading.Lock()
 
     @classmethod
-    async def shutdown(cls) -> None:
+    def shutdown(cls) -> None:
         """Clear all registered circuit breakers."""
-        async with cls._lock:
+        with cls._lock:
             cls._breakers.clear()
             logger.info("circuit_breaker_registry_shutdown")
 
@@ -227,27 +228,31 @@ class CircuitBreakerRegistry:
         config: Optional[CircuitBreakerConfig] = None,
     ) -> CircuitBreaker:
         """Get or create a circuit breaker."""
-        if name not in cls._breakers:
-            cls._breakers[name] = CircuitBreaker(name, config or CircuitBreakerConfig())
-        return cls._breakers[name]
+        with cls._lock:
+            if name not in cls._breakers:
+                cls._breakers[name] = CircuitBreaker(name, config or CircuitBreakerConfig())
+            return cls._breakers[name]
 
     @classmethod
     def get(cls, name: str) -> Optional[CircuitBreaker]:
         """Get a circuit breaker by name."""
-        return cls._breakers.get(name)
+        with cls._lock:
+            return cls._breakers.get(name)
 
     @classmethod
     def remove(cls, name: str) -> bool:
         """Remove a circuit breaker."""
-        if name in cls._breakers:
-            del cls._breakers[name]
-            return True
-        return False
+        with cls._lock:
+            if name in cls._breakers:
+                del cls._breakers[name]
+                return True
+            return False
 
     @classmethod
     def get_all_stats(cls) -> Dict[str, Dict]:
         """Get statistics for all circuit breakers."""
-        return {name: breaker.stats for name, breaker in cls._breakers.items()}
+        with cls._lock:
+            return {name: breaker.stats for name, breaker in cls._breakers.items()}
 
 
 # ---------------------------------------------------------------------------

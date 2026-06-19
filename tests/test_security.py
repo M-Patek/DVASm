@@ -271,20 +271,19 @@ class TestRateLimiter:
     def test_allow_request_within_limit(self):
         """Test request within rate limit."""
         limiter = RateLimiter(RateLimitConfig(requests_per_second=10, burst_size=5))
-        assert limiter.allow_request("client_001", "/api/test")
+        assert limiter.try_acquire("client_001", "/api/test")
 
     def test_allow_request_exceeds_limit(self):
         """Test request exceeds rate limit."""
         limiter = RateLimiter(RateLimitConfig(requests_per_second=1, burst_size=1))
-        assert limiter.allow_request("client_001", "/api/test")
-        assert limiter.consume("client_001")  # consume the token
-        assert not limiter.allow_request("client_001", "/api/test")
+        assert limiter.try_acquire("client_001", "/api/test")
+        assert not limiter.try_acquire("client_001", "/api/test")
 
     def test_different_clients_independent(self):
         """Test rate limits are per-client."""
         limiter = RateLimiter(RateLimitConfig(requests_per_second=1, burst_size=1))
-        assert limiter.allow_request("client_001", "/api/test")
-        assert limiter.allow_request("client_002", "/api/test")
+        assert limiter.try_acquire("client_001", "/api/test")
+        assert limiter.try_acquire("client_002", "/api/test")
 
     def test_get_remaining(self):
         """Test getting remaining tokens."""

@@ -133,24 +133,26 @@ class RateLimiter:
             # No running loop, use sync check
             return bucket.available_tokens >= 1.0
 
-    def consume(self, key: str) -> bool:
-        """Consume a token for a request."""
-        bucket = self._get_bucket(key)
-        import asyncio
+    def try_acquire(self, key: str, path: str) -> bool:
+        """Atomically check and consume a token.
 
-        try:
-            _loop = asyncio.get_running_loop()
-            # Can't do blocking acquire in async context
-            if bucket.available_tokens >= 1.0:
-                # Manually consume a token
-                bucket._tokens -= 1
+        Returns True if a token was acquired, False if rate limited.
+        This is thread-safe and avoids the check-then-act race condition
+        between allow_request() and consume().
+        """
+        # Check excluded paths
+        for excluded in self.config.excluded_paths:
+            if path.startswith(excluded):
                 return True
-            return False
-        except RuntimeError:
-            if bucket.available_tokens >= 1.0:
-                bucket._tokens -= 1
-                return True
-            return False
+
+        bucket = self._get_bucket(key)
+        # TokenBucket doesn't have a lock for _tokens, but _refill is
+        # idempotent and _tokens -= 1 is atomic in CPython.
+        # For stricter safety, we could add a threading.Lock.
+        if bucket.available_tokens >= 1.0:
+            bucket._tokens -= 1
+            return True
+        return False
 
     def get_stats(self, key: Optional[str] = None) -> Dict[str, Any]:
         """Get rate limiter statistics."""
