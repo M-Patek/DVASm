@@ -68,6 +68,8 @@ Register in `ADAPTERS` dict.
 
 ### Behavior 3: Format Details
 
+Programmatic exports should use `export_annotations()`. CLI/API callers materialize `AnnotationStore.load_all()` generators before emptiness checks or statistics; targeted exports resolve direct annotation IDs, `{video_id}_annotated`, and `video_id` filters.
+
 **LLaVA format**:
 ```json
 {
@@ -91,10 +93,30 @@ Register in `ADAPTERS` dict.
 }
 ```
 
+**World Model format** (v2.0):
+```json
+{
+  "id": "...",
+  "video_id": "...",
+  "episodes": [
+    {
+      "observation": {...},
+      "actions": [...],
+      "next_observation": {...}
+    }
+  ],
+  "dynamics": {
+    "physical_constraints": [...],
+    "causal_links": [...]
+  }
+}
+```
+
 ## §4 — Integration with other subsystems
 
 - **Upstream**: Consumes `Annotation` objects from `01-data`
-- **Downstream**: Training frameworks (LLaVA, OpenAI, etc.)
+- **Downstream**: Training frameworks (LLaVA, OpenAI, World Model)
+- **Cross-cutting**: Uses `16-governance` adapters for standard-specific export
 
 ## §5 — Current state & known gaps
 
@@ -104,7 +126,8 @@ Register in `ADAPTERS` dict.
 | LLaVA format | Complete | Conversations schema |
 | OpenAI format | Complete | Messages schema |
 | ShareGPT format | Complete | Vicuna compatible |
-| CLI tool | Complete | Full-featured |
+| World Model format | Complete | Observation-action-next_observation tuples |
+| CLI tool | Complete | Full-featured; handles generator-backed stores and targeted video IDs |
 | Custom formats | Easy to add | Just implement adapter |
 
 **Active known_gaps**: none
@@ -127,4 +150,4 @@ python -m dvas.export.cli stats
 
 ---
 
-*Subsystem doc: 06-export | Updated: 2024-06-17*
+*Subsystem doc: 06-export | Updated: 2026-06-19*

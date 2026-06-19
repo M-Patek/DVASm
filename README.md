@@ -128,20 +128,22 @@ DVAS
 
 | ID | Subsystem | Status | Description |
 |----|-----------|--------|-------------|
-| 01 | [Data Layer](docs/subsystems/01-data.md) | ✅ Stable | Video loading, preprocessing, storage |
+| 01 | [Data Layer](docs/subsystems/01-data.md) | ✅ Stable | Video loading, preprocessing, storage (Schema v2.0) |
 | 02 | [Teacher Models](docs/subsystems/02-teacher.md) | ✅ Stable | Unified interface for GPT-5.5, Claude, Together |
-| 03 | [Student Models](docs/subsystems/03-student.md) | ✅ Stable | Qwen2-VL fine-tuning (SFT/DPO) |
+| 03 | [Student (VLA)](docs/subsystems/03-student.md) | ✅ Stable | Qwen2-VL fine-tuning (SFT/DPO) for VLA |
 | 04 | [Pipeline](docs/subsystems/04-pipeline.md) | ✅ Stable | Annotation pipeline with Saga pattern & checkpointing |
 | 05 | [Evaluation](docs/subsystems/05-evaluation.md) | ✅ Stable | BLEU/CIDEr + LLM-as-Judge |
-| 06 | [Export](docs/subsystems/06-export.md) | ✅ Stable | Multi-format training data export |
+| 06 | [Export](docs/subsystems/06-export.md) | ✅ Stable | Multi-format training data export (VLA + World Model) |
 | 07 | [API](docs/subsystems/07-api.md) | ✅ Stable | FastAPI REST endpoints with auth |
 | 08 | [Routing](docs/subsystems/08-routing.md) | ✅ Stable | Smart router with complexity-based model selection |
 | 09 | [Quality](docs/subsystems/09-quality.md) | ✅ Stable | Data quality analysis, anomaly detection, augmentation |
-| 10 | [Explainability](docs/subsystems/10-explainability.md) | ✅ Stable | Visualization, attention heatmaps, keyframe extraction |
-| 11 | [Monitoring](docs/subsystems/11-monitoring.md) | ✅ Stable | A/B testing, drift detection, performance monitoring |
+| 10 | [Lineage](docs/subsystems/10-lineage.md) | ✅ Stable | Schema version management, data provenance tracking |
+| 11 | [Prompts](docs/subsystems/13-prompts.md) | ✅ Stable | Adaptive prompt engineering, video classification |
 | 12 | [Security](docs/subsystems/12-security.md) | ✅ Stable | PII detection, anonymization, watermarking, RBAC |
-| 13 | [Prompts](docs/subsystems/13-prompts.md) | ✅ Stable | Adaptive prompt engineering, video classification |
-| 14 | [Deployment](docs/subsystems/14-deployment.md) | 📝 Draft | ONNX export, TensorRT optimization, edge inference |
+| 13 | [Monitoring](docs/subsystems/11-monitoring.md) | ✅ Stable | A/B testing, drift detection, performance monitoring |
+| 14 | [World Model](docs/subsystems/14-world-model.md) | 📝 Draft | State prediction, dynamics annotation (placeholder) |
+| 15 | [Infrastructure](docs/subsystems/15-infrastructure.md) | 📝 Draft | Data platform deployment, ops |
+| 16 | [Governance](docs/subsystems/16-governance.md) | ✅ Stable | Annotation standard management, multi-standard adapters |
 
 **Test Coverage:** 500+ tests passing (~90% pass rate, failures are Windows/env-specific)
 

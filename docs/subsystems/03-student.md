@@ -1,6 +1,6 @@
 ---
 id: 03-student
-title: "03-Student — Qwen2-VL Fine-tuning"
+title: "03-Student (VLA) — Qwen2-VL Fine-tuning"
 status: stable
 applies_to:
   - "src/dvas/models/student/**"
@@ -15,15 +15,15 @@ agent_hints:
   - "WARNING: vLLM inference requires separate installation"
 ---
 
-# §03 Student Model Training
+# §03 Student Model Training (VLA)
 
-Fine-tune Qwen2-VL-7B on teacher-generated data using SFT + DPO pipeline.
+Fine-tune Qwen2-VL-7B on teacher-generated data using SFT + DPO pipeline for **VLA (Vision-Language-Action)** training.
 
 ---
 
 ## §0 — One-liner
 
-SFT/DPO training pipeline for Qwen2-VL-7B with LoRA quantization, exporting to multiple inference formats.
+SFT/DPO training pipeline for Qwen2-VL-7B with LoRA quantization, exporting to multiple inference formats for VLA applications.
 
 ## §1 — Core concepts
 
@@ -73,6 +73,7 @@ StudentTeacherBridge routes low-confidence predictions to teacher model.
 - **Upstream**: Consumes LLaVA/OpenAI formatted data from `06-export`
 - **Downstream**: Replaces teacher in `04-pipeline` for cost reduction
 - **Usage**: Can be called from `07-api` endpoints
+- **Related**: Model deployment (ONNX/TensorRT) is a model-side concern, not data platform — see `15-infrastructure` for data platform deployment
 
 ## §5 — Current state & known gaps
 
@@ -83,6 +84,7 @@ StudentTeacherBridge routes low-confidence predictions to teacher model.
 | Inference engine | Complete | HF + vLLM support |
 | Teacher fallback | Complete | Confidence-based routing |
 | Distributed training | Missing | Requires DeepSpeed |
+| World Model training | Missing | See `14-world-model` (placeholder) |
 
 ## §6 — Testing
 
@@ -103,4 +105,4 @@ print(result)
 
 ---
 
-*Subsystem doc: 03-student | Updated: 2024-06-17*
+*Subsystem doc: 03-student | Updated: 2026-06-19*

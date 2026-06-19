@@ -35,10 +35,11 @@ Load videos, extract frames, store annotations in structured format with multi-f
 
 - **Annotation**: Root document for a video. Contains metadata, segments, quality scores.
 - **Segment**: Temporal slice of video (start_time, end_time) with caption, QA pairs, objects, actions.
-- **Action**: Verb-noun pair with hand (left/right) for robotic manipulation tracking.
+- **Action**: Verb-noun pair with hand (left/right) for robotic manipulation tracking. **v2.0 adds**: instrument, source/target state, physical properties, embodiment action space.
 - **VideoLoader**: Context-managed video reader with frame sampling and scene detection.
 - **EPICKitchensLoader**: Specialized loader for EPIC-KITCHENS dataset with action label mapping.
 - **AnnotationStore**: File-based storage with version control and format export.
+- **Schema v2.0**: Backward compatible with v1.0 (EPIC). All new fields are Optional.
 
 ## §2 — Entry points (`code_anchors:` quick reference)
 
@@ -77,7 +78,22 @@ data/annotations/
 
 - IDs are sharded: first 2 chars become subdirectory (e.g., `ab123` → `ab/ab123.json`)
 - Uses orjson for fast serialization
-- Supports LLaVA and OpenAI format export via `to_llava_format()`, `to_openai_format()`
+- Supports LLaVA, OpenAI, and **World Model** format export
+
+- `AnnotationStore.load_all()` returns a generator; convert to `list(...)` before using `len()`, sampling, duplicate detection, or repeated iteration.
+- Storage source aliases: `gold` and `teacher` both map to the gold annotation directory; `reviewed` and `human` both map to reviewed annotations.
+
+### Behavior 4: Schema v2.0 Compatibility
+
+All v2.0 fields are **Optional** — existing v1.0 data loads without migration:
+
+| Layer | Fields | Status |
+|-------|--------|--------|
+| EPIC v1.0 | verb, noun, hand | Stable |
+| VLA v2.0 | instrument, physical, source_state, target_state, embodiment | Optional |
+| WM v2.0 | state_predictions, dynamics | Optional, placeholder |
+
+Use `annotation.is_v2_enhanced()` to check if v2.0 fields are populated.
 
 ### Behavior 4: Cross-Cutting Schema Changes
 
@@ -123,4 +139,4 @@ pytest tests/test_data_integration.py -v
 
 ---
 
-*Subsystem doc: 01-data | Updated: 2026-06-18*
+*Subsystem doc: 01-data | Updated: 2026-06-19*

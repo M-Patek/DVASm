@@ -40,18 +40,19 @@ subsystems:
       - "2024-06-17: Migrated to AGENT-friendly structure"
       - "2026-06-18: Multi-format support (MP4/MOV/AVI/MKV/WebM/M4V) + SUPPORTED_VIDEO_FORMATS constant + format validation"
       - "2026-06-18: Metadata cache LRU eviction (max 1000 entries) to prevent memory leaks"
+      - "2026-06-19: Fixed gold/teacher and reviewed/human storage source aliases"
     known_gaps:
       - title: "No distributed video processing"
         opened: "2024-06-17"
         severity: low
         next_review: "2024-07-17"
         notes: "Current implementation is single-process. Consider Dask/Ray for scale."
-    last_validated:
-      date: "2026-06-18"
-      by: "claude"
-      method: "unit-tests"
-      evidence: "test_video_loader.py::TestVideoFormatSupport: 17 tests pass (format acceptance, rejection, EPIC loader resolution, MP4 preference)"
 
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "targeted-smoke"
+      evidence: "AnnotationStore source alias behavior covered by targeted export/API tests and E2E smoke"
   - id: 02-teacher
     title: "Teacher Models — GPT-4V, Claude, Together API wrappers"
     status: stable
@@ -109,13 +110,16 @@ subsystems:
       - "2026-06-18: Fixed checkpoint-storage consistency (atomic save + inconsistency detection)"
       - "2026-06-18: Added AnnotationBuilder type conversion (dict→Object/Action/QAPair)"
       - "2026-06-18: AsyncIteratorBridge timeout + error propagation fixes"
+      - "2026-06-19: Lazy default teacher now uses unified TeacherModel instead of deleted gpt55 module"
+      - "2026-06-19: Batch failure attribution now uses filtered items_to_run list"
+      - "2026-06-19: scripts/run_e2e.py restored with inline MockTeacher"
     known_gaps: []
-    last_validated:
-      date: "2026-06-18"
-      by: "claude"
-      method: "unit-tests"
-      evidence: "test_pipeline.py: 5 passed (2 env errors unrelated to code); test_saga.py: 20 passed; test_actor.py: 16 passed"
 
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "targeted-tests"
+      evidence: "AST validation plus targeted pytest; E2E script restored for no-key pipeline smoke"
   - id: 05-evaluation
     title: "Quality Evaluation — BLEU/CIDEr + LLM-as-Judge"
     status: stable
@@ -125,8 +129,14 @@ subsystems:
     notable_recent_changes:
       - "2024-06-17: Implemented metrics.py with BLEU, ROUGE, CIDEr, METEOR"
       - "2024-06-17: Implemented llm_judge.py with LLM-as-Judge and ConsistencyChecker"
+      - "2026-06-19: LLMJudge consumes GenerationResult.text instead of dict access"
     known_gaps: []
 
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "unit-tests"
+      evidence: "pytest tests/test_evaluator.py::TestLLMJudge"
   - id: 06-export
     title: "Export & Formatting — LLaVA, OpenAI, custom formats"
     status: stable
@@ -136,8 +146,14 @@ subsystems:
     notable_recent_changes:
       - "2024-06-17: Implemented adapters for LLaVA, OpenAI, ShareGPT formats"
       - "2024-06-17: Added CLI with export, stats, inspect commands"
+      - "2026-06-19: CLI/API targeted exports materialize generators and honor requested video_ids"
     known_gaps: []
 
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "unit-tests"
+      evidence: "pytest tests/test_export_adapters.py and tests/test_api_endpoints.py::TestExport"
   - id: 07-api
     title: "API Service — FastAPI REST endpoints"
     status: stable
@@ -146,23 +162,203 @@ subsystems:
     doc: "docs/subsystems/07-api.md"
     notable_recent_changes:
       - "2024-06-17: Implemented FastAPI with upload, annotate, status, export endpoints"
+      - "2026-06-18: Added API key authentication via src/dvas/api/auth.py"
+      - "2026-06-19: Export endpoint now writes filtered annotations via export adapters"
     known_gaps:
       - title: "In-memory task storage"
         opened: "2024-06-17"
         severity: medium
         next_review: "2024-06-24"
         notes: "Replace with Redis + Celery for production scale"
-      - title: "~~No authentication~~ RESOLVED 2026-06-18"
-        opened: "2024-06-17"
-        resolved: "2026-06-18"
-        severity: medium
-        next_review: "N/A"
-        notes: "Added API key auth via src/dvas/api/auth.py. Configure via API_KEY, API_KEY_HEADER, ALLOW_UNAUTHENTICATED env vars. 6 tests added."
     last_validated:
-      date: "2024-06-17"
-      by: "claude"
+      date: "2026-06-19"
+      by: "codex"
+      method: "unit-tests"
+      evidence: "pytest tests/test_api_endpoints.py::TestExport"
+
+  - id: 08-routing
+    title: "Smart Routing - adaptive model selection"
+    status: stable
+    health: green
+    code_root: "src/dvas/routing/"
+    doc: "docs/subsystems/08-routing.md"
+    notable_recent_changes:
+      - "2026-06-19: Routing/ensemble paths consume GenerationResult.text and Frame.data contracts"
+    known_gaps: []
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "unit-tests"
+      evidence: "pytest tests/test_routing.py plus AST validation"
+
+  - id: 09-quality
+    title: "Data Quality - analysis and reports"
+    status: stable
+    health: green
+    code_root: "src/dvas/quality/"
+    doc: "docs/subsystems/09-quality.md"
+    notable_recent_changes:
+      - "2026-06-19: DataQualityAnalyzer materializes AnnotationStore.load_all() before len/sample/duplicate passes"
+    known_gaps:
+      - title: "Semantic duplicate detection"
+        opened: "2024-06-17"
+        severity: low
+        next_review: "2026-07-19"
+        notes: "Current duplicate detection uses Jaccard similarity; embeddings would improve semantic coverage."
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "unit-tests"
+      evidence: "pytest tests/test_quality.py plus AST validation"
+
+  - id: 09-quality
+    title: "Data Quality - analysis and reports"
+    status: stable
+    health: green
+    code_root: "src/dvas/quality/"
+    doc: "docs/subsystems/09-quality.md"
+    notable_recent_changes:
+      - "2026-06-19: DataQualityAnalyzer materializes AnnotationStore.load_all() before len/sample/duplicate passes"
+    known_gaps:
+      - title: "Semantic duplicate detection"
+        opened: "2024-06-17"
+        severity: low
+        next_review: "2026-07-19"
+        notes: "Current duplicate detection uses Jaccard similarity; embeddings would improve semantic coverage."
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "unit-tests"
+      evidence: "pytest tests/test_quality.py plus AST validation"
+
+  - id: 10-lineage
+    title: "Lineage - schema version and data provenance"
+    status: stable
+    health: green
+    code_root: "src/dvas/lineage/"
+    doc: "docs/subsystems/10-lineage.md"
+    notable_recent_changes:
+      - "2026-06-19: Added LineageTracker, SchemaVersion, and compatibility checks"
+    known_gaps:
+      - title: "Persistence layer for lineage data"
+        opened: "2026-06-19"
+        severity: low
+        next_review: "2026-07-19"
+        notes: "LineageTracker is in-memory only; needs SQLite/Redis persistence for production."
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
       method: "code-review"
-      evidence: "API structure validated"
+      evidence: "New module, AST validated"
+
+  - id: 11-prompts
+    title: "Adaptive Prompts - prompt selection and optimization"
+    status: stable
+    health: green
+    code_root: "src/dvas/prompts/"
+    doc: "docs/subsystems/11-prompts.md"
+    notable_recent_changes:
+      - "2026-06-19: VideoTypeClassifier consumes Frame.data from VideoLoader.read_frames()"
+    known_gaps:
+      - title: "Semantic retrieval for examples"
+        opened: "2024-06-17"
+        severity: low
+        next_review: "2026-07-19"
+        notes: "Few-shot examples are still static; dynamic retrieval remains future work."
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "AST-validation"
+      evidence: "python -B AST parse over touched modules"
+
+  - id: 12-security
+    title: "Security - PII detection, anonymization, RBAC"
+    status: stable
+    health: green
+    code_root: "src/dvas/security/"
+    doc: "docs/subsystems/12-security.md"
+    notable_recent_changes: []
+    known_gaps: []
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "AST-validation"
+      evidence: "python -B AST parse over touched modules"
+
+  - id: 13-monitoring
+    title: "Monitoring - A/B testing, drift detection, performance"
+    status: stable
+    health: green
+    code_root: "src/dvas/monitoring/"
+    doc: "docs/subsystems/13-monitoring.md"
+    notable_recent_changes: []
+    known_gaps: []
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "AST-validation"
+      evidence: "python -B AST parse over touched modules"
+
+  - id: 14-world-model
+    title: "World Model - state prediction and dynamics (placeholder)"
+    status: draft
+    health: yellow
+    code_root: "src/dvas/world_model/"
+    doc: "docs/subsystems/14-world-model.md"
+    notable_recent_changes:
+      - "2026-06-19: Placeholder module created with interfaces defined"
+    known_gaps:
+      - title: "Full world model integration"
+        opened: "2026-06-19"
+        severity: medium
+        next_review: "2026-07-19"
+        notes: "Currently returns placeholder data. Needs world model for next-frame prediction."
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "code-review"
+      evidence: "Placeholder module, AST validated"
+
+  - id: 15-infrastructure
+    title: "Infrastructure - data platform deployment and ops"
+    status: draft
+    health: yellow
+    code_root: "src/dvas/infrastructure/"
+    doc: "docs/subsystems/15-infrastructure.md"
+    notable_recent_changes:
+      - "2026-06-19: Replaced 14-Deployment with data platform focused infrastructure"
+    known_gaps:
+      - title: "Docker/K8s packaging"
+        opened: "2026-06-19"
+        severity: medium
+        next_review: "2026-07-19"
+        notes: "Needs Dockerfile, Helm chart, and CI/CD pipeline for data platform deployment."
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "code-review"
+      evidence: "Documentation only, no code yet"
+
+  - id: 16-governance
+    title: "Governance - annotation standard management"
+    status: stable
+    health: green
+    code_root: "src/dvas/governance/"
+    doc: "docs/subsystems/16-governance.md"
+    notable_recent_changes:
+      - "2026-06-19: Added EPIC, Ego4D, Open X-Embodiment adapters"
+    known_gaps:
+      - title: "Additional standard adapters"
+        opened: "2026-06-19"
+        severity: low
+        next_review: "2026-07-19"
+        notes: "Could add adapters for more standards (e.g., Something-Something, AVA)."
+    last_validated:
+      date: "2026-06-19"
+      by: "codex"
+      method: "code-review"
+      evidence: "New module, AST validated"
+
 
 # ── Deliverables (Runnable Demos / Entry Points) ──────────────────────────
 deliverables:
