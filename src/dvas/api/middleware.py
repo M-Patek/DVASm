@@ -31,6 +31,9 @@ class RateLimitConfig:
     burst_size: float = 20.0
     key_func: Optional[Callable[..., str]] = None
     excluded_paths: List[str] = field(default_factory=list)
+    max_buckets: int = 10000
+    bucket_ttl_seconds: float = 3600.0
+    prune_interval_seconds: float = 60.0
 
 
 class RateLimiter:
@@ -46,18 +49,65 @@ class RateLimiter:
     def __init__(self, config: RateLimitConfig) -> None:
         self.config = config
         self._buckets: Dict[str, TokenBucket] = {}
+        self._bucket_last_seen: Dict[str, float] = {}
+        self._last_prune = time.monotonic()
         self._default_bucket = TokenBucket(
             rate=config.requests_per_second,
             capacity=config.burst_size,
         )
 
+    def _prune_stale_buckets(self, *, force: bool = False) -> None:
+        """Remove idle or excess buckets to keep client-key state bounded."""
+        now = time.monotonic()
+        if (
+            not force
+            and self.config.prune_interval_seconds > 0
+            and now - self._last_prune < self.config.prune_interval_seconds
+        ):
+            return
+
+        self._last_prune = now
+
+        if self.config.bucket_ttl_seconds > 0:
+            stale_keys = [
+                key
+                for key, last_seen in self._bucket_last_seen.items()
+                if now - last_seen > self.config.bucket_ttl_seconds
+            ]
+            for key in stale_keys:
+                self._buckets.pop(key, None)
+                self._bucket_last_seen.pop(key, None)
+
+        if self.config.max_buckets > 0 and len(self._buckets) > self.config.max_buckets:
+            overflow = len(self._buckets) - self.config.max_buckets
+            oldest_keys = sorted(self._bucket_last_seen, key=self._bucket_last_seen.get)[
+                :overflow
+            ]
+            for key in oldest_keys:
+                self._buckets.pop(key, None)
+                self._bucket_last_seen.pop(key, None)
+
     def _get_bucket(self, key: str) -> TokenBucket:
         """Get or create a token bucket for a key."""
+        self._prune_stale_buckets()
+
+        if (
+            key not in self._buckets
+            and self.config.max_buckets > 0
+            and len(self._buckets) >= self.config.max_buckets
+        ):
+            self._prune_stale_buckets(force=True)
+            while len(self._buckets) >= self.config.max_buckets and self._bucket_last_seen:
+                oldest_key = min(self._bucket_last_seen, key=self._bucket_last_seen.get)
+                self._buckets.pop(oldest_key, None)
+                self._bucket_last_seen.pop(oldest_key, None)
+
         if key not in self._buckets:
             self._buckets[key] = TokenBucket(
                 rate=self.config.requests_per_second,
                 capacity=self.config.burst_size,
             )
+        self._bucket_last_seen[key] = time.monotonic()
         return self._buckets[key]
 
     def allow_request(self, key: str, path: str) -> bool:
@@ -104,6 +154,7 @@ class RateLimiter:
 
     def get_stats(self, key: Optional[str] = None) -> Dict[str, Any]:
         """Get rate limiter statistics."""
+        self._prune_stale_buckets()
         if key:
             bucket = self._get_bucket(key)
             return {
@@ -115,6 +166,8 @@ class RateLimiter:
 
         return {
             "total_buckets": len(self._buckets),
+            "max_buckets": self.config.max_buckets,
+            "bucket_ttl_seconds": self.config.bucket_ttl_seconds,
             "default_rate": self.config.requests_per_second,
             "default_capacity": self.config.burst_size,
         }
@@ -329,68 +382,114 @@ class RequestTracker:
         tracker.end_request(request_id, status_code=200)
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        max_response_times: int = 1000,
+        max_active_requests: int = 10000,
+        active_request_ttl_seconds: float = 3600.0,
+    ) -> None:
+        self.max_response_times = max_response_times
+        self.max_active_requests = max_active_requests
+        self.active_request_ttl_seconds = active_request_ttl_seconds
         self._requests: Dict[str, Dict[str, Any]] = {}
         self._total_requests = 0
         self._total_errors = 0
+        self._dropped_active_requests = 0
         self._response_times: List[float] = []
+
+    def _prune_stale_active_requests(self) -> None:
+        """Bound active-request bookkeeping if requests never finish."""
+        if not self._requests:
+            return
+
+        now = time.monotonic()
+
+        if self.active_request_ttl_seconds > 0:
+            stale_ids = [
+                request_id
+                for request_id, request in self._requests.items()
+                if now - request["start_time"] > self.active_request_ttl_seconds
+            ]
+            for request_id in stale_ids:
+                self._requests.pop(request_id, None)
+            self._dropped_active_requests += len(stale_ids)
+
+        if self.max_active_requests > 0 and len(self._requests) > self.max_active_requests:
+            overflow = len(self._requests) - self.max_active_requests
+            oldest_ids = sorted(
+                self._requests,
+                key=lambda request_id: self._requests[request_id]["start_time"],
+            )[:overflow]
+            for request_id in oldest_ids:
+                self._requests.pop(request_id, None)
+            self._dropped_active_requests += len(oldest_ids)
 
     def start_request(self, method: str, path: str) -> str:
         """Start tracking a request."""
         import uuid
 
+        self._prune_stale_active_requests()
         request_id = str(uuid.uuid4())[:12]
         self._requests[request_id] = {
             "id": request_id,
             "method": method,
             "path": path,
-            "start_time": time.time(),
+            "start_time": time.monotonic(),
             "status_code": None,
         }
         self._total_requests += 1
+        self._prune_stale_active_requests()
         return request_id
 
     def end_request(self, request_id: str, status_code: int) -> None:
         """End tracking a request."""
-        if request_id not in self._requests:
+        req = self._requests.pop(request_id, None)
+        if req is None:
             return
 
-        req = self._requests[request_id]
         req["status_code"] = status_code
-        req["duration_ms"] = (time.time() - req["start_time"]) * 1000
+        req["duration_ms"] = (time.monotonic() - req["start_time"]) * 1000
 
         self._response_times.append(req["duration_ms"])
 
-        # Keep only last 1000 response times
-        if len(self._response_times) > 1000:
-            self._response_times = self._response_times[-1000:]
+        # Keep only the most recent response times.
+        if self.max_response_times > 0 and len(self._response_times) > self.max_response_times:
+            self._response_times = self._response_times[-self.max_response_times :]
+        elif self.max_response_times == 0:
+            self._response_times = []
 
         if status_code >= 400:
             self._total_errors += 1
 
     def get_stats(self) -> Dict[str, Any]:
         """Get request statistics."""
+        self._prune_stale_active_requests()
+        base_stats = {
+            "total_requests": self._total_requests,
+            "total_errors": self._total_errors,
+            "error_rate": self._total_errors / max(self._total_requests, 1),
+            "active_requests": len(self._requests),
+            "dropped_active_requests": self._dropped_active_requests,
+            "tracked_response_times": len(self._response_times),
+        }
+
         if not self._response_times:
-            return {
-                "total_requests": self._total_requests,
-                "total_errors": self._total_errors,
-                "error_rate": 0.0,
-            }
+            return base_stats
 
         sorted_times = sorted(self._response_times)
         n = len(sorted_times)
 
-        return {
-            "total_requests": self._total_requests,
-            "total_errors": self._total_errors,
-            "error_rate": self._total_errors / max(self._total_requests, 1),
-            "response_time_ms": {
+        base_stats.update(
+            {
+                "response_time_ms": {
                 "p50": sorted_times[n // 2],
                 "p95": sorted_times[int(n * 0.95)],
                 "p99": sorted_times[int(n * 0.99)],
                 "max": sorted_times[-1],
-            },
-        }
+                },
+            }
+        )
+        return base_stats
 
 
 # ---------------------------------------------------------------------------

@@ -121,7 +121,7 @@ class VideoComplexityAnalyzer:
 
                 # Estimate object density (placeholder for actual detection)
                 # In production, use YOLO or similar
-                frame_variance = np.var(frames[0][1])
+                frame_variance = np.var(frames[0].data)
                 object_densities.append(min(frame_variance / 10000, 1.0))
 
                 # Estimate hand interaction (based on lower frame region activity)
@@ -429,7 +429,7 @@ async def route_and_annotate(
                                 frames=[],  # Would need to load frames
                                 task="fine_grained",
                             )
-                            annotation_text = result.get("text", "")
+                            annotation_text = result.text
 
             except Exception as e:
                 logger.error("student_inference_failed", error=str(e))

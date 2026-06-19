@@ -215,9 +215,9 @@ class VideoTypeClassifier:
         # Analyze first few seconds
         with VideoLoader(video_path) as loader:
             frames = []
-            for _, frame in loader.read_frames(end_time=2.0, num_frames=5):
+            for frame in loader.read_frames(end_time=2.0, num_frames=5):
                 # Simple color analysis for scene type
-                avg_color = frame.mean(axis=(0, 1))
+                avg_color = frame.data.mean(axis=(0, 1))
                 frames.append(avg_color)
 
             # Motion analysis

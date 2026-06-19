@@ -61,9 +61,9 @@ class AnnotationStore:
         self, annotation_id: str, source: str = "model"
     ) -> Path:
         """Get storage path for an annotation."""
-        if source == "teacher":
+        if source in ("gold", "teacher"):
             base_path = self.gold_path
-        elif source == "reviewed":
+        elif source in ("reviewed", "human"):
             base_path = self.reviewed_path
         else:
             base_path = self.model_path
@@ -158,9 +158,9 @@ class AnnotationStore:
 
     def _get_source_path(self, source: str) -> Path:
         """Get base path for a source."""
-        if source == "teacher":
+        if source in ("gold", "teacher"):
             return self.gold_path
-        elif source == "reviewed":
+        elif source in ("reviewed", "human"):
             return self.reviewed_path
         return self.model_path
 

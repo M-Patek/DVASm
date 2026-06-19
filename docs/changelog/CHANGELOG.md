@@ -22,6 +22,41 @@
 
 ---
 
+### Session ? Fixed cross-subsystem runtime contract regressions
+
+- **Type**: T3
+- **Goal**: Restore runnable pipeline/export/evaluation/routing paths after stale imports, wrong default paths, and interface contract drift.
+- **Done**:
+  - Fixed default project root resolution and ignored accidental `/src/data/` runtime output.
+  - Replaced stale lazy teacher/E2E mock imports with the unified `TeacherModel` and an inline no-key E2E mock.
+  - Updated evaluation/routing paths to read `GenerationResult.text` and prompt/routing paths to use `Frame.data`.
+  - Materialized generator-backed `load_all()` results where length, sampling, duplicate detection, or CLI emptiness checks require lists.
+  - Made API/CLI targeted exports honor `video_ids` and use export adapters for already-filtered annotations.
+  - Fixed storage source aliases so `gold`/`teacher` map to gold and `reviewed`/`human` map to reviewed.
+  - Added regression coverage for filtered API export and updated LLM judge tests to use `GenerationResult` mocks.
+  - Updated affected subsystem docs plus `bugs.yaml` and `status.yaml`.
+- **Files**:
+  - `.gitignore`
+  - `src/dvas/config/settings.py`
+  - `src/dvas/data/storage.py`
+  - `src/dvas/pipeline/core.py`
+  - `src/dvas/models/evaluator/llm_judge.py`
+  - `src/dvas/routing/ensemble.py`
+  - `src/dvas/routing/smart_router.py`
+  - `src/dvas/prompts/adaptive.py`
+  - `src/dvas/quality/analyzer.py`
+  - `src/dvas/api/main.py`
+  - `src/dvas/export/cli.py`
+  - `scripts/run_e2e.py`
+  - `tests/test_api_endpoints.py`
+  - `tests/test_evaluator.py`
+  - `docs/subsystems/01-data.md`, `02-teacher.md`, `04-pipeline.md`, `05-evaluation.md`, `06-export.md`, `07-api.md`, `08-routing.md`, `09-quality.md`, `13-prompts.md`
+  - `docs/_machine/bugs.yaml`, `docs/_machine/status.yaml`
+- **Validation**: V3 ? doc anchors pass; 21 targeted tests pass; no-key synthetic E2E pipeline run passes.
+- **Left for next time**: Full test suite still not run in this session; pytest cache/pycache writes report Windows permission warnings.
+
+---
+
 ### Session — Deleted deprecated code, increased test coverage to 53%
 
 - **Type**: T5

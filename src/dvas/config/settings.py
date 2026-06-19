@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     # Paths
-    PROJECT_ROOT: Path = Path(__file__).parent.parent.parent
+    PROJECT_ROOT: Path = Path(__file__).resolve().parents[3]
     DATA_ROOT: Path = Field(default=PROJECT_ROOT / "data")
 
     # API Keys for Teacher Models

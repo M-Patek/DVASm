@@ -49,7 +49,7 @@ Analyze annotation quality, detect anomalies/duplicates, and augment training da
 
 ```python
 analyzer = DataQualityAnalyzer()
-metrics, distribution = analyzer.analyze_dataset(source="gold")
+metrics, distribution = analyzer.analyze_dataset(source="gold")  # load_all() is materialized internally
 
 # Key metrics:
 # - vocabulary_size: Unique words
@@ -106,9 +106,9 @@ report_path = analyzer.generate_quality_report(
 
 | Aspect | Status | Notes |
 |--------|--------|-------|
-| Statistical analysis | Complete | 10+ metrics |
+| Statistical analysis | Complete | 10+ metrics; safely materializes store generators for len/sample |
 | Anomaly detection | Complete | Z-score + duplicates |
-| Report generation | Complete | JSON format |
+| Report generation | Complete | JSON format; duplicate detection uses a materialized annotation list |
 | Data augmentation | Partial | Placeholder implementations |
 | Semantic duplicate detection | Missing | Needs embeddings |
 | Visual quality checks | Missing | Future enhancement |
@@ -131,4 +131,4 @@ print(f'Action balance: {metrics.action_balance_score:.2f}')
 
 ---
 
-*Subsystem doc: 09-quality | Updated: 2024-06-17*
+*Subsystem doc: 09-quality | Updated: 2026-06-19*

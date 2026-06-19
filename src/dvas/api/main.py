@@ -11,6 +11,7 @@ Features:
 
 import asyncio
 import tempfile
+import time
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -36,6 +37,7 @@ from dvas.api.middleware import (
 )
 from dvas.config import settings
 from dvas.data.storage import AnnotationStore
+from dvas.export.adapters import export_annotations as export_annotations_to_file
 from dvas.models.teacher import TeacherModel
 from dvas.pipeline.core import AnnotationPipeline
 from dvas.utils.logging import get_logger
@@ -48,10 +50,49 @@ logger = get_logger(__name__)
 
 # In-memory task storage (replace with Redis in production)
 tasks: Dict[str, Dict] = {}
+MAX_FINISHED_TASKS = 1000
+FINISHED_TASK_TTL_SECONDS = 3600.0
 rate_limiter = RateLimiter(RateLimitConfig(requests_per_second=10.0, burst_size=20.0))
 request_tracker = RequestTracker()
 health_checker = HealthChecker()
 compression = CompressionMiddleware(min_size=1024)
+
+
+def _prune_finished_tasks(now: Optional[float] = None) -> None:
+    """Keep in-memory task storage bounded while preserving active work."""
+    if not tasks:
+        return
+
+    now = now if now is not None else time.monotonic()
+    finished_statuses = {"completed", "failed"}
+
+    if FINISHED_TASK_TTL_SECONDS > 0:
+        expired_task_ids = [
+            task_id
+            for task_id, task in tasks.items()
+            if task.get("status") in finished_statuses
+            and task.get("_finished_at") is not None
+            and now - task["_finished_at"] > FINISHED_TASK_TTL_SECONDS
+        ]
+        for task_id in expired_task_ids:
+            tasks.pop(task_id, None)
+
+    if MAX_FINISHED_TASKS <= 0:
+        return
+
+    finished_task_ids = [
+        task_id for task_id, task in tasks.items() if task.get("status") in finished_statuses
+    ]
+    overflow = len(finished_task_ids) - MAX_FINISHED_TASKS
+    if overflow <= 0:
+        return
+
+    oldest_finished_ids = sorted(
+        finished_task_ids,
+        key=lambda task_id: tasks[task_id].get("_finished_at", tasks[task_id].get("_created_at", 0)),
+    )[:overflow]
+    for task_id in oldest_finished_ids:
+        tasks.pop(task_id, None)
 
 
 # ---------------------------------------------------------------------------
@@ -388,6 +429,7 @@ async def create_annotation_task(
         )
 
     # Create task
+    now = time.monotonic()
     tasks[task_id] = {
         "task_id": task_id,
         "video_id": task_request.video_id,
@@ -397,7 +439,10 @@ async def create_annotation_task(
         "priority": task_request.priority,
         "result": None,
         "error": None,
+        "_created_at": now,
+        "_finished_at": None,
     }
+    _prune_finished_tasks(now)
 
     # Start annotation in background
     asyncio.create_task(run_annotation_task(task_id, task_request))
@@ -454,6 +499,7 @@ async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> N
         # Update task
         task["status"] = "completed"
         task["result"] = annotation.model_dump()
+        task["_finished_at"] = time.monotonic()
 
         logger.info(
             "task_completed",
@@ -465,6 +511,7 @@ async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> N
     except Exception as e:
         task["status"] = "failed"
         task["error"] = str(e)
+        task["_finished_at"] = time.monotonic()
 
         logger.error(
             "task_failed",
@@ -472,6 +519,8 @@ async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> N
             video_id=request.video_id,
             error=str(e),
         )
+    finally:
+        _prune_finished_tasks()
 
 
 @app.get(
@@ -481,6 +530,7 @@ async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> N
 )
 async def get_task_status(task_id: str) -> AnnotationResult:
     """Get annotation task status and result."""
+    _prune_finished_tasks()
     if task_id not in tasks:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -542,10 +592,22 @@ async def export_annotations(request: ExportRequest) -> FileResponse:
     # Load annotations
     if request.video_ids:
         annotations = []
+        seen_annotation_ids = set()
         for vid in request.video_ids:
-            ann = store.load(vid, source=request.source)
-            if ann:
-                annotations.append(ann)
+            candidates = [
+                ann
+                for ann in (
+                    store.load(vid, source=request.source),
+                    store.load(f"{vid}_annotated", source=request.source),
+                )
+                if ann is not None
+            ]
+            candidates.extend(store.load_all(source=request.source, video_id=vid))
+
+            for ann in candidates:
+                if ann.id not in seen_annotation_ids:
+                    annotations.append(ann)
+                    seen_annotation_ids.add(ann.id)
     else:
         annotations = list(store.load_all(source=request.source))
 
@@ -558,11 +620,17 @@ async def export_annotations(request: ExportRequest) -> FileResponse:
     # Export to temp file
     output_path = Path(tempfile.gettempdir()) / f"export_{uuid.uuid4().hex[:8]}.jsonl"
 
-    count = store.export_to_jsonl(
-        output_path=output_path,
-        source=request.source,
-        format=request.format,
-    )
+    try:
+        count = export_annotations_to_file(
+            annotations=annotations,
+            output_path=output_path,
+            format=request.format,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
 
     logger.info(
         "export_completed",
@@ -584,6 +652,7 @@ async def export_annotations(request: ExportRequest) -> FileResponse:
 )
 async def get_statistics() -> Dict:
     """Get storage and request statistics."""
+    _prune_finished_tasks()
     store = AnnotationStore()
     stats = store.get_statistics()
 

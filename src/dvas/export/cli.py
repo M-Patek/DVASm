@@ -46,14 +46,27 @@ def export(
     # Load annotations
     if video_ids:
         annotations = []
+        seen_annotation_ids = set()
         for vid in video_ids:
-            ann = store.load(vid, source=source)
-            if ann:
-                annotations.append(ann)
-            else:
+            candidates = [
+                ann
+                for ann in (
+                    store.load(vid, source=source),
+                    store.load(f"{vid}_annotated", source=source),
+                )
+                if ann is not None
+            ]
+            candidates.extend(store.load_all(source=source, video_id=vid))
+
+            if not candidates:
                 console.print(f"[yellow]Warning: Annotation not found for {vid}[/yellow]")
+
+            for ann in candidates:
+                if ann.id not in seen_annotation_ids:
+                    annotations.append(ann)
+                    seen_annotation_ids.add(ann.id)
     else:
-        annotations = store.load_all(source=source)
+        annotations = list(store.load_all(source=source))
 
     if not annotations:
         console.print("[red]No annotations found for export[/red]")

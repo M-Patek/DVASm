@@ -62,7 +62,7 @@ category = classifier.classify(video_path)
 
 **Classification factors**:
 - Filename keywords
-- Color analysis
+- Color analysis over sampled `Frame.data` arrays from `VideoLoader.read_frames()`
 - Motion patterns
 
 ### Behavior 2: Prompt Generation
@@ -133,7 +133,7 @@ suggestions = optimizer.suggest_improvements()
 
 | Aspect | Status | Notes |
 |--------|--------|-------|
-| Video classification | Complete | Heuristic-based |
+| Video classification | Complete | Heuristic-based; consumes Frame dataclass objects correctly |
 | Prompt templates | Complete | 5 specialized templates |
 | Complexity estimation | Complete | Duration + scene count |
 | Feedback loop | Complete | Moving average scoring |
@@ -160,4 +160,4 @@ print(f'Found {len(templates)} kitchen templates')
 
 ---
 
-*Subsystem doc: 13-prompts | Updated: 2024-06-17*
+*Subsystem doc: 13-prompts | Updated: 2026-06-19*

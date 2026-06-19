@@ -83,7 +83,7 @@ Strict endpoints (always require key if configured):
 ### Behavior 4: Export Formats
 
 Supported formats: llava, openai, sharegpt
-Exported as JSONL file with appropriate schema.
+Exported as JSONL file with appropriate schema. When `video_ids` is provided, export now writes only the requested annotations by using the loaded/filtered annotations and `dvas.export.adapters.export_annotations()`, rather than re-exporting the whole source.
 
 ## §4 — Integration with other subsystems
 
@@ -98,11 +98,14 @@ Exported as JSONL file with appropriate schema.
 | Upload endpoint | Complete | With type validation |
 | Task creation | Complete | Async background |
 | Status polling | Complete | |
-| Export | Complete | Multiple formats |
+| Export | Complete | Multiple formats; honors `video_ids` filtering |
 | **Authentication** | **Complete** | API key via X-API-Key header (2026-06-18) |
 | Task persistence | Missing | Need Redis |
 | Rate limiting | Complete | Token bucket middleware |
 
 **Active known_gaps** (from `status.yaml`):
-- ~~No authentication~~ **RESOLVED 2026-06-18**: API key auth via `api/auth.py`
 - In-memory task storage (severity: medium)
+
+---
+
+*Subsystem doc: 07-api | Updated: 2026-06-19*

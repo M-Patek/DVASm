@@ -3,6 +3,7 @@
 import asyncio
 from typing import Any, Dict, List, Optional
 
+from dvas.models.base import GenerationResult
 from dvas.models.teacher import TeacherModel
 
 
@@ -20,6 +21,11 @@ class LLMJudge:
         "relevance",  # Relevant to the video content
         "structure",  # Well-organized and logical
     ]
+
+    @staticmethod
+    def _result_text(result: GenerationResult) -> str:
+        """Return text from the standardized teacher response."""
+        return result.text
 
     def __init__(
         self,
@@ -60,8 +66,8 @@ class LLMJudge:
             temperature=0.0,  # Deterministic for consistency
         )
 
-        # Parse result
-        return self._parse_evaluation(result.get("text", ""))
+        # Parse result. TeacherModel.annotate() returns GenerationResult, not a dict.
+        return self._parse_evaluation(self._result_text(result))
 
     async def evaluate_batch(
         self,

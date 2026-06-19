@@ -79,11 +79,10 @@ Current parsing is heuristic-based:
 
 ### Behavior 4: Batch Processing
 
-- Uses `asyncio.Semaphore` for concurrency control
-- Failed items are caught as exceptions and recorded in failed list
-- Check `isinstance(result, Exception)` to identify failures
-- Successful results are `Annotation` objects
-- **Note**: `process_batch()` now uses `asyncio.gather(return_exceptions=True)` for robust error handling
+- Uses `AsyncBatchProcessor` for concurrency control and backpressure
+- Failed items are recorded against the filtered `items_to_run` list, so skipped checkpoint entries do not corrupt failure attribution
+- Successful results are `Annotation` objects; failed items are `None` plus a failed-list entry
+- Per-video checkpoints are loaded at batch start and flushed after successful saves
 - **Performance**: Batch processing includes garbage collection between chunks to free frame memory
 
 ### Behavior 5: Performance Optimizations
@@ -112,13 +111,12 @@ Recent performance improvements:
 | Generic pipeline | Complete | Scene detect → annotate → store |
 | EPIC pipeline | Complete | Integrates with EPIC action labels |
 | Response parsing | Partial | Heuristic-based, needs JSON mode |
-| Batch processing | Complete | With semaphore concurrency + GC between chunks |
-| Checkpoint/resume | Missing | No recovery on failure |
-| Progress tracking | Partial | Via AnnotationStore counts |
+| Batch processing | Complete | With AsyncBatchProcessor backpressure + GC between chunks |
+| Checkpoint/resume | Complete | CheckpointManager with storage consistency checks and final flush |
+| Progress tracking | Partial | Via AnnotationStore counts and checkpoint state |
 | Performance | Optimized | Frame seeking, heap sampling, concurrent encoding |
 
-**Active known_gaps** (from `status.yaml`):
-- No batch retry logic for API failures (severity: medium)
+**Active known_gaps**: none
 
 ## §6 — Testing
 
@@ -138,4 +136,4 @@ python benchmarks/perf_benchmark.py
 
 ---
 
-*Subsystem doc: 04-pipeline | Updated: 2024-06-18*
+*Subsystem doc: 04-pipeline | Updated: 2026-06-19*

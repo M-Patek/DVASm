@@ -11,7 +11,7 @@ agent_hints:
   - "WARNING: GPT-5.5 supports 32 frames max—sampler will downsample if more provided"
   - "WARNING: Claude 4.8 supports 20 frames max—most restrictive"
   - "WARNING: Together/Qwen2.5-VL supports 8 frames max—cheapest option"
-  - "WARNING: Base class prompt templates are hardcoded—update base.py for now"
+  - "WARNING: Default prompts are rendered via PromptManager/Jinja templates -> update src/dvas/config/prompts/ rather than base.py"
 ---
 
 # §02 Teacher Models
@@ -26,10 +26,10 @@ Unified async interface to GPT-4V, GPT-5.5, and Together AI for batch video anno
 
 ## §1 — Core concepts
 
-- **TeacherModel**: Abstract base class defining the interface
-- **GPT4VTeacher**: OpenAI GPT-4V/GPT-5.5 with 32-frame support
-- **ClaudeTeacher**: Anthropic Claude 3 Sonnet/Opus with 20-frame support
-- **TogetherTeacher**: Together.ai API for open-source models (Qwen2-VL)
+- **TeacherModel**: Unified async teacher class; provider is auto-detected from `model_name`
+- **OpenAI provider**: GPT-family models such as GPT-5.5 with 32-frame support
+- **Anthropic provider**: Claude-family models with 20-frame support
+- **Together provider**: hosted open-source vision models such as Qwen/Llama via Together-compatible API
 - **Fine-grained Prompt**: Specialized prompt for robotic manipulation scenes
 - **Frame Encoding**: BGR→RGB conversion, JPEG compression, base64 encoding
 
@@ -38,9 +38,7 @@ Unified async interface to GPT-4V, GPT-5.5, and Together AI for batch video anno
 | Anchor | Purpose | When to use |
 |--------|---------|-------------|
 | `base.py:TeacherModel` | Abstract interface | Implementing new teacher |
-| `gpt4v.py:GPT4VTeacher` | OpenAI models | Best quality, higher cost |
-| `claude.py:ClaudeTeacher` | Anthropic models | Alternative quality option |
-| `together.py:TogetherTeacher` | OSS via API | Cheapest, good for validation |
+| `base.py:TeacherModel._get_default_prompt()` | PromptManager integration | Understanding prompt rendering |
 
 ## §3 — Key behaviors & contracts
 
@@ -49,7 +47,7 @@ Unified async interface to GPT-4V, GPT-5.5, and Together AI for batch video anno
 All teacher models extend `UnifiedModel` and return `GenerationResult`:
 
 ```python
-teacher = GPT4VTeacher()
+teacher = TeacherModel(model_name="gpt-5.5")
 result: GenerationResult = await teacher.annotate(frames=frames, task="fine_grained")
 
 if result.is_success():
@@ -76,12 +74,14 @@ If more frames provided, uniform sampling reduces to max.
 
 ### Behavior 3: Prompt Templates
 
-Base class provides default prompts:
+Default prompts are rendered by `dvas.config.prompts.PromptManager` from Jinja templates in `src/dvas/config/prompts/`:
 - `caption`: Simple description
 - `dense_caption`: Detailed with temporal info
 - `qa`: Question-answer generation
 - `temporal`: Time segment localization
-- `fine_grained`: **Main use case—robotic manipulation focus**
+- `fine_grained`: **Main use case?robotic manipulation focus**
+
+Update prompt behavior in the prompt template package, not by hardcoding strings in `base.py`.
 
 ### Behavior 4: Error Handling
 
@@ -105,7 +105,7 @@ Base class provides default prompts:
 | GPT-5.5 | Complete | gpt-5.5 (latest) |
 | Claude 4.8 | Complete | claude-opus-4-8 (latest) |
 | Together | Complete | Qwen2.5-VL, Llama 4 Scout/Maverick |
-| Prompt templates | Hardcoded | TD-002 to externalize |
+| Prompt templates | Complete | PromptManager + Jinja templates (`src/dvas/config/prompts/`) |
 | Batch retry logic | Complete | @with_retry decorator added |
 
 **Active known_gaps**: none (all low priority)
@@ -125,4 +125,4 @@ pytest tests/test_teacher_base.py -v
 
 ---
 
-*Subsystem doc: 02-teacher | Updated: 2026-06-18*
+*Subsystem doc: 02-teacher | Updated: 2026-06-19*

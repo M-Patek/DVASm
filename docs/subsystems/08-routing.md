@@ -66,10 +66,12 @@ decision = await router.route(video_path)
 
 ```python
 ensemble = MultiTeacherEnsemble(consensus_method="confidence_aware")
-result = await ensemble.annotate_with_ensemble(frames)
+result = await ensemble.annotate_with_ensemble(frames)  # teachers return GenerationResult
 # result.agreement_score → inter-teacher agreement
 # result.dissenting_opinions → where teachers disagree
 ```
+
+Teacher responses are read from `GenerationResult.text` before confidence scoring or consensus.
 
 **Consensus methods**:
 - `majority`: Simple vote
@@ -100,7 +102,7 @@ result = await ensemble.annotate_with_ensemble(frames)
 |--------|--------|-------|
 | Complexity analysis | Complete | 5-factor scoring |
 | Adaptive routing | Complete | 4 strategies |
-| Ensemble voting | Complete | 4 consensus methods |
+| Ensemble voting | Complete | 4 consensus methods; uses GenerationResult.text |
 | Cost estimation | Complete | Based on frame count |
 | Incremental consensus | Complete | Early stopping |
 | Disagreement resolution | Partial | 3 strategies implemented |
@@ -128,4 +130,4 @@ asyncio.run(test())
 
 ---
 
-*Subsystem doc: 08-routing | Updated: 2024-06-17*
+*Subsystem doc: 08-routing | Updated: 2026-06-19*

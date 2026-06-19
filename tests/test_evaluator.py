@@ -6,6 +6,7 @@ Tests automatic metrics (BLEU, ROUGE, CIDEr, METEOR) and LLM-as-Judge.
 import pytest
 from unittest.mock import MagicMock
 
+from dvas.models.base import GenerationResult, ModelType
 from dvas.models.evaluator.metrics import MetricsCalculator
 from dvas.models.evaluator.llm_judge import LLMJudge, ConsistencyChecker
 
@@ -119,8 +120,8 @@ class TestLLMJudge:
         """Test quality evaluation."""
         # Create async mock with response format that parser expects
         async def mock_annotate(*args, **kwargs):
-            return {
-                "text": """Overall Score: 8.5/10
+            return GenerationResult(
+                text="""Overall Score: 8.5/10
 
 Dimension Scores:
 - Accuracy: 9/10
@@ -128,8 +129,10 @@ Dimension Scores:
 
 Justification: Good annotation with accurate details.
 
-Suggestions: Add more detail."""
-            }
+Suggestions: Add more detail.""",
+                model_type=ModelType.TEACHER_GPT55,
+                model_version="test-judge",
+            )
 
         mock_teacher.annotate = mock_annotate
 
@@ -146,7 +149,11 @@ Suggestions: Add more detail."""
         """Test batch evaluation."""
         # Create async mock
         async def mock_annotate(*args, **kwargs):
-            return {"text": '{"scores": {"accuracy": 8}, "feedback": "Good"}'}
+            return GenerationResult(
+                text='{"scores": {"accuracy": 8}, "feedback": "Good"}',
+                model_type=ModelType.TEACHER_GPT55,
+                model_version="test-judge",
+            )
 
         mock_teacher.annotate = mock_annotate
 

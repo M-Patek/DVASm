@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
+from dvas.models.base import GenerationResult
 from dvas.models.teacher.base import TeacherModel
 from dvas.utils.logging import get_logger
 
@@ -120,6 +121,11 @@ class MultiTeacherEnsemble:
         }
         return methods.get(name, ConsensusMethods.confidence_aware_merging)
 
+    @staticmethod
+    def _result_text(result: GenerationResult) -> str:
+        """Return text from the standardized teacher response."""
+        return result.text
+
     async def annotate_with_ensemble(
         self,
         frames: List[np.ndarray],
@@ -143,12 +149,14 @@ class MultiTeacherEnsemble:
                 latency = (time.time() - start_time) * 1000
                 cost = self._estimate_cost(teacher_id, frames)
 
-                # Estimate confidence from response characteristics
-                confidence = self._estimate_confidence(result.get("text", ""))
+                # Estimate confidence from response characteristics.
+                # TeacherModel.annotate() returns GenerationResult, not a dict.
+                response_text = self._result_text(result)
+                confidence = self._estimate_confidence(response_text)
 
                 return TeacherVote(
                     teacher_id=teacher_id,
-                    response=result.get("text", ""),
+                    response=response_text,
                     confidence=confidence,
                     cost=cost,
                     latency_ms=latency,
@@ -355,6 +363,11 @@ class IncrementalConsensus:
         self.target_confidence = target_confidence
         self.max_teachers = max_teachers
 
+    @staticmethod
+    def _result_text(result: GenerationResult) -> str:
+        """Return text from the standardized teacher response."""
+        return result.text
+
     async def annotate_incremental(
         self,
         frames: List[np.ndarray],
@@ -366,11 +379,12 @@ class IncrementalConsensus:
 
         for i, teacher in enumerate(self.teachers[: self.max_teachers]):
             result = await teacher.annotate(frames=frames, prompt=prompt, task=task)
+            response_text = self._result_text(result)
 
             vote = TeacherVote(
                 teacher_id=teacher.__class__.__name__,
-                response=result.get("text", ""),
-                confidence=self._estimate_confidence(result.get("text", "")),
+                response=response_text,
+                confidence=self._estimate_confidence(response_text),
                 cost=0.01,  # Placeholder
                 latency_ms=0,
             )

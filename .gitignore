@@ -23,8 +23,9 @@ env/
 *.swo
 *~
 
-# Data
-data/
+# Data directories (not source code)
+/data/
+/src/data/
 !data/.gitkeep
 
 # Secrets

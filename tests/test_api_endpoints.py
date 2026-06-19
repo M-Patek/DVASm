@@ -351,6 +351,52 @@ class TestExport:
             # without a 422 validation error
             pass
 
+    @patch("dvas.api.main.AnnotationStore")
+    def test_export_filters_to_requested_video_ids(self, mock_store_class, client_no_auth):
+        """Export writes only annotations selected by video_ids."""
+        from dvas.data.schemas import Annotation, Segment, VideoMetadata
+
+        selected = Annotation(
+            id="vid_1_annotated",
+            video_id="vid_1",
+            video_path="/videos/vid_1.mp4",
+            segments=[Segment(start_time=0.0, end_time=1.0, caption="selected")],
+            metadata=VideoMetadata(
+                fps=30.0,
+                resolution=[224, 224],
+                duration=1.0,
+                total_frames=30,
+            ),
+        )
+
+        def load_side_effect(annotation_id, source="model"):
+            if annotation_id == "vid_1_annotated":
+                return selected
+            return None
+
+        def load_all_side_effect(source="model", video_id=None, batch_size=100):
+            return iter([selected] if video_id == "vid_1" else [])
+
+        mock_store = MagicMock()
+        mock_store.load.side_effect = load_side_effect
+        mock_store.load_all.side_effect = load_all_side_effect
+        mock_store_class.return_value = mock_store
+
+        response = client_no_auth.post(
+            "/api/v1/export",
+            json={
+                "video_ids": ["vid_1"],
+                "format": "llava",
+                "source": "gold",
+            },
+        )
+
+        assert response.status_code == 200
+        lines = [line for line in response.text.splitlines() if line.strip()]
+        assert len(lines) == 1
+        assert '"id": "vid_1_annotated"' in lines[0]
+        mock_store.export_to_jsonl.assert_not_called()
+
 
 class TestStatistics:
     """Test statistics endpoint."""

@@ -54,7 +54,7 @@ Fast metrics based on n-gram overlap:
 
 ### Behavior 2: LLM-as-Judge
 
-Uses GPT-4 to score 5 dimensions:
+Uses a `TeacherModel` judge and consumes the standardized `GenerationResult.text` response to score 5 dimensions:
 - Accuracy: Factual correctness
 - Completeness: Coverage of important aspects
 - Clarity: Understandability
@@ -77,7 +77,7 @@ Uses GPT-4 to score 5 dimensions:
 | Aspect | Status | Notes |
 |--------|--------|-------|
 | BLEU/ROUGE/CIDEr/METEOR | Complete | Full implementation |
-| LLM-as-Judge | Complete | 5-dimension evaluation |
+| LLM-as-Judge | Complete | 5-dimension evaluation; honors GenerationResult contract |
 | Consistency checks | Complete | Temporal + action |
 | Batch evaluation | Complete | Async with concurrency |
 | Human correlation study | Missing | Validate LLM scores vs human |
@@ -96,4 +96,4 @@ pytest tests/test_llm_judge.py -v --openai-key $OPENAI_API_KEY
 
 ---
 
-*Subsystem doc: 05-evaluation | Updated: 2024-06-17*
+*Subsystem doc: 05-evaluation | Updated: 2026-06-19*

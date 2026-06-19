@@ -65,9 +65,10 @@ class AnnotationPipeline:
     def teacher(self) -> "TeacherModel":
         """Lazy-load teacher model if not provided."""
         if self._teacher is None:
-            from dvas.models.teacher.gpt55 import GPT55Teacher
+            from dvas.config import settings
+            from dvas.models.teacher import TeacherModel
 
-            self._teacher = GPT55Teacher()
+            self._teacher = TeacherModel(model_name=settings.DEFAULT_TEACHER_MODEL)
             self.builder.model_version = self._teacher.model_name
         return self._teacher
 
@@ -351,7 +352,8 @@ class AnnotationPipeline:
                 if batch_processor:
                     batch_processor.mark_processed(f"item_{processed_count}")
             elif result is None:
-                failed.append({"item": video_items[i], "error": "processing_failed"})
+                failed_item = items_to_run[i] if i < len(items_to_run) else {}
+                failed.append({"item": failed_item, "error": "processing_failed"})
                 if batch_processor:
                     batch_processor.mark_failed(f"item_{processed_count}", "processing_failed")
 

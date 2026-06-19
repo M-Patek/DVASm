@@ -137,7 +137,7 @@ class DataQualityAnalyzer:
         """Full dataset analysis."""
         logger.info("analyzing_dataset", source=source)
 
-        annotations = self.store.load_all(source=source)
+        annotations = list(self.store.load_all(source=source))
 
         if sample_size and len(annotations) > sample_size:
             import random
@@ -330,7 +330,7 @@ class DataQualityAnalyzer:
         metrics, distribution = self.analyze_dataset(source)
 
         # Detect duplicates
-        annotations = self.store.load_all(source=source)
+        annotations = list(self.store.load_all(source=source))
         duplicates = self.anomaly_detector.detect_duplicates(annotations)
 
         report = {
