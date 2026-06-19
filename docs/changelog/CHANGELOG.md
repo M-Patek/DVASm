@@ -51,6 +51,32 @@
 
 ---
 
+### Session — P2: Core Pipeline Hardening
+
+- **Type**: T6
+- **Goal**: Harden the main annotation pipeline: Video → Segment → Teacher → Parse → Annotation → Quality → Export
+- **Done**:
+  - Created comprehensive E2E test suite in tests/e2e/
+  - test_golden_path.py: Golden path E2E tests (single video, batch, export, cost tracking)
+  - test_failure_recovery.py: Failure recovery tests (video loading, teacher failures, storage failures, retry)
+  - test_checkpoint_resume.py: Checkpoint resume tests (basic, batch, integrity, cross-session)
+  - Added pytest.ini e2e marker for test categorization
+  - Created pipeline state machine (state_machine.py) with explicit lifecycle states
+  - Created quality gates (quality_gate.py) with configurable thresholds
+  - Created export gate with approval workflow
+  - QualityGateRegistry with predefined configs: strict/standard/lenient/debug
+- **Files**:
+  - tests/e2e/test_golden_path.py (new)
+  - tests/e2e/test_failure_recovery.py (new)
+  - tests/e2e/test_checkpoint_resume.py (new)
+  - src/dvas/pipeline/state_machine.py (new)
+  - src/dvas/pipeline/quality_gate.py (new)
+  - pytest.ini (added e2e marker)
+- **Validation**: V3 — pytest tests/e2e/ → 43 tests collected; pytest tests/test_pipeline*.py → pass
+- **Left for next time**: None — P2 core complete (future: integrate state machine into pipeline, add metrics)
+
+---
+
 ### Session ? Fixed cross-subsystem runtime contract regressions
 
 - **Type**: T3
