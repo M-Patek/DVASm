@@ -208,9 +208,17 @@ class CircuitBreaker:
 
 
 class CircuitBreakerRegistry:
-    """Registry for managing multiple circuit breakers."""
+    """Registry for managing multiple circuit breakers with explicit lifecycle."""
 
     _breakers: Dict[str, CircuitBreaker] = {}
+    _lock = asyncio.Lock()
+
+    @classmethod
+    async def shutdown(cls) -> None:
+        """Clear all registered circuit breakers."""
+        async with cls._lock:
+            cls._breakers.clear()
+            logger.info("circuit_breaker_registry_shutdown")
 
     @classmethod
     def get_or_create(

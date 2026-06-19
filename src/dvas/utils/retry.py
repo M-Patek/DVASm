@@ -118,6 +118,128 @@ def with_retry(
     return decorator
 
 
+def with_retry_sync(
+    max_attempts: int = 3,
+    base_delay: float = 1.0,
+    max_delay: float = 60.0,
+    exceptions: Tuple[Type[Exception], ...] = (Exception,),
+    on_retry: Optional[Callable[[Exception, int, float], None]] = None,
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """Explicit synchronous retry decorator.
+
+    Identical to :py:func:`with_retry` but **always** returns a synchronous
+    wrapper, avoiding the ``inspect.iscoroutinefunction`` runtime check.
+    Use this when you know the decorated function is sync and want to
+    eliminate the overhead.
+
+    Usage::
+
+        @with_retry_sync(max_attempts=5)
+        def fetch_data(url: str) -> bytes:
+            ...
+    """
+
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> T:
+            last_exception: Optional[Exception] = None
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    return func(*args, **kwargs)
+                except exceptions as e:
+                    last_exception = e
+                    if attempt >= max_attempts:
+                        raise RetryExhaustedError(
+                            f"Function {func.__name__} failed after {max_attempts} attempts: {e}",
+                            attempts=max_attempts,
+                            last_error=e,
+                        ) from e
+
+                    delay = min(base_delay * (2 ** (attempt - 1)), max_delay)
+                    if on_retry:
+                        on_retry(e, attempt, delay)
+                    logger.warning(
+                        "Retry attempt %d/%d for %s: %s (delay=%.1fs)",
+                        attempt,
+                        max_attempts,
+                        func.__name__,
+                        str(e),
+                        delay,
+                    )
+                    time.sleep(delay)
+
+            raise RetryExhaustedError(
+                f"Unexpected exit from retry loop for {func.__name__}",
+                attempts=max_attempts,
+                last_error=last_exception,
+            )
+
+        return wrapper
+
+    return decorator
+
+
+def with_retry_async(
+    max_attempts: int = 3,
+    base_delay: float = 1.0,
+    max_delay: float = 60.0,
+    exceptions: Tuple[Type[Exception], ...] = (Exception,),
+    on_retry: Optional[Callable[[Exception, int, float], None]] = None,
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """Explicit asynchronous retry decorator.
+
+    Identical to :py:func:`with_retry` but **always** returns an async
+    wrapper, avoiding the ``inspect.iscoroutinefunction`` runtime check.
+    Use this when you know the decorated function is a coroutine and want
+    to eliminate the overhead.
+
+    Usage::
+
+        @with_retry_async(max_attempts=5)
+        async def fetch_data(url: str) -> bytes:
+            ...
+    """
+
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        @wraps(func)
+        async def wrapper(*args: Any, **kwargs: Any) -> T:
+            last_exception: Optional[Exception] = None
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    return await func(*args, **kwargs)
+                except exceptions as e:
+                    last_exception = e
+                    if attempt >= max_attempts:
+                        raise RetryExhaustedError(
+                            f"Function {func.__name__} failed after {max_attempts} attempts: {e}",
+                            attempts=max_attempts,
+                            last_error=e,
+                        ) from e
+
+                    delay = min(base_delay * (2 ** (attempt - 1)), max_delay)
+                    if on_retry:
+                        on_retry(e, attempt, delay)
+                    logger.warning(
+                        "Async retry attempt %d/%d for %s: %s (delay=%.1fs)",
+                        attempt,
+                        max_attempts,
+                        func.__name__,
+                        str(e),
+                        delay,
+                    )
+                    await asyncio.sleep(delay)
+
+            raise RetryExhaustedError(
+                f"Unexpected exit from retry loop for {func.__name__}",
+                attempts=max_attempts,
+                last_error=last_exception,
+            )
+
+        return wrapper
+
+    return decorator
+
+
 @dataclass
 class BatchCheckpoint:
     """Checkpoint data for batch processing."""
@@ -263,3 +385,78 @@ class BatchProcessor:
                 failed.append({"item": item, "error": str(e)})
 
         return results, failed
+
+    async def process_batch_async(
+        self,
+        items: List[Dict[str, Any]],
+        processor: Callable[[Dict[str, Any]], Any],
+        skip_processed: bool = True,
+        max_concurrency: int = 10,
+    ) -> Tuple[List[Any], List[Dict[str, Any]]]:
+        """Process a batch of items asynchronously with checkpoint support.
+
+        Uses :py:func:`asyncio.gather` to run *processor* concurrently for
+        each item, respecting *max_concurrency* via a semaphore.  Checkpoint
+        updates are still serialised so that state remains consistent.
+
+        Args:
+            items: List of items to process
+            processor: Async function to process each item
+            skip_processed: Whether to skip already processed items
+            max_concurrency: Maximum number of concurrent tasks
+
+        Returns:
+            Tuple of (successful results, failed items)
+        """
+        semaphore = asyncio.Semaphore(max_concurrency)
+        results: List[Any] = []
+        failed: List[Dict[str, Any]] = []
+
+        async def _process_one(item: Dict[str, Any]) -> None:
+            """Process a single item under the concurrency semaphore."""
+            item_id = item.get("id", str(item))
+
+            if skip_processed and self.is_processed(item_id):
+                return
+
+            async with semaphore:
+                try:
+                    if asyncio.iscoroutinefunction(processor):
+                        result = await processor(item)
+                    else:
+                        result = processor(item)
+                    results.append(result)
+                    self.mark_processed(item_id)
+                except Exception as e:
+                    self.mark_failed(item_id, str(e))
+                    failed.append({"item": item, "error": str(e)})
+
+        await asyncio.gather(*[_process_one(item) for item in items])
+        return results, failed
+
+    async def save_checkpoint_async(self) -> None:
+        """Save checkpoint asynchronously using a thread pool for disk I/O."""
+        if not self.checkpoint_path:
+            return
+        self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        data = self.checkpoint.to_dict()
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(
+            None,
+            lambda: self.checkpoint_path.write_text(
+                json.dumps(data, indent=2), encoding="utf-8"
+            ),
+        )
+
+    async def mark_processed_async(self, item_id: str) -> None:
+        """Async version of :py:meth:`mark_processed` with async checkpoint save."""
+        self.checkpoint.processed_count += 1
+        self.checkpoint.last_processed_id = item_id
+
+        if self.checkpoint.processed_count % self.save_interval == 0:
+            await self.save_checkpoint_async()
+
+    async def clear_failed_async(self) -> None:
+        """Async version of :py:meth:`clear_failed`."""
+        self.checkpoint.failed_items = []
+        await self.save_checkpoint_async()

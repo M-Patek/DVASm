@@ -24,6 +24,7 @@ from typing import (
 
 import numpy as np
 
+from dvas.core.object_pool import PoolRegistry
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -546,66 +547,6 @@ class FrameEncoderPool:
             "encoded_count": self._encoded_count,
             "max_workers": self.max_workers,
         }
-
-
-# ---------------------------------------------------------------------------
-# Global pool registry
-# ---------------------------------------------------------------------------
-
-
-class PoolRegistry:
-    """Registry for managing global thread/process pools."""
-
-    _pools: Dict[str, Any] = {}
-    _lock = threading.Lock()
-
-    @classmethod
-    def get_or_create_thread_pool(
-        cls,
-        name: str,
-        max_workers: int = 8,
-    ) -> WorkStealingPool:
-        """Get or create a thread pool."""
-        with cls._lock:
-            if name not in cls._pools:
-                cls._pools[name] = WorkStealingPool(
-                    max_workers=max_workers,
-                    thread_name_prefix=name,
-                )
-            return cls._pools[name]
-
-    @classmethod
-    def get_or_create_process_pool(
-        cls,
-        name: str,
-        max_workers: Optional[int] = None,
-    ) -> ProcessPoolWrapper:
-        """Get or create a process pool."""
-        with cls._lock:
-            if name not in cls._pools:
-                cls._pools[name] = ProcessPoolWrapper(max_workers=max_workers)
-            return cls._pools[name]
-
-    @classmethod
-    def get(cls, name: str) -> Optional[Any]:
-        """Get a pool by name."""
-        with cls._lock:
-            return cls._pools.get(name)
-
-    @classmethod
-    def shutdown_all(cls, wait: bool = True) -> None:
-        """Shutdown all registered pools."""
-        with cls._lock:
-            for pool in cls._pools.values():
-                if hasattr(pool, "shutdown"):
-                    pool.shutdown(wait=wait)
-            cls._pools.clear()
-
-    @classmethod
-    def stats(cls) -> Dict[str, Dict]:
-        """Get statistics for all pools."""
-        with cls._lock:
-            return {name: getattr(pool, "stats", {}) for name, pool in cls._pools.items()}
 
 
 # ---------------------------------------------------------------------------

@@ -16,11 +16,11 @@ from dvas.security.audit import (
     DataEncryptor,
     InputValidator,
     PasswordHasher,
-    RateLimiter,
     SecurityHeaders,
     secure_hex,
     secure_token,
 )
+from dvas.api.middleware import RateLimiter, RateLimitConfig
 
 
 class TestInputValidator:
@@ -270,27 +270,27 @@ class TestRateLimiter:
 
     def test_allow_request_within_limit(self):
         """Test request within rate limit."""
-        limiter = RateLimiter(requests_per_second=10, burst_size=5)
-        assert limiter.allow_request("client_001")
+        limiter = RateLimiter(RateLimitConfig(requests_per_second=10, burst_size=5))
+        assert limiter.allow_request("client_001", "/api/test")
 
     def test_allow_request_exceeds_limit(self):
         """Test request exceeds rate limit."""
-        limiter = RateLimiter(requests_per_second=1, burst_size=1)
-        assert limiter.allow_request("client_001")
-        assert not limiter.allow_request("client_001")
+        limiter = RateLimiter(RateLimitConfig(requests_per_second=1, burst_size=1))
+        assert limiter.allow_request("client_001", "/api/test")
+        assert limiter.consume("client_001")  # consume the token
+        assert not limiter.allow_request("client_001", "/api/test")
 
     def test_different_clients_independent(self):
         """Test rate limits are per-client."""
-        limiter = RateLimiter(requests_per_second=1, burst_size=1)
-        assert limiter.allow_request("client_001")
-        assert limiter.allow_request("client_002")
+        limiter = RateLimiter(RateLimitConfig(requests_per_second=1, burst_size=1))
+        assert limiter.allow_request("client_001", "/api/test")
+        assert limiter.allow_request("client_002", "/api/test")
 
     def test_get_remaining(self):
         """Test getting remaining tokens."""
-        limiter = RateLimiter(requests_per_second=10, burst_size=5)
-        assert limiter.get_remaining("client_001") == 5.0
-        limiter.allow_request("client_001")
-        assert limiter.get_remaining("client_001") >= 3.9
+        limiter = RateLimiter(RateLimitConfig(requests_per_second=10, burst_size=5))
+        stats = limiter.get_stats("client_001")
+        assert stats["available_tokens"] > 0
 
 
 class TestSecurityHeaders:

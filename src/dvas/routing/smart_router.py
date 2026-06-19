@@ -10,19 +10,10 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 from dvas.data.video_loader import VideoLoader
+from dvas.models.base import ModelType
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)
-
-
-class ModelType(str, Enum):
-    """Available model types."""
-
-    TEACHER_GPT55 = "gpt-5.5"
-    TEACHER_CLAUDE = "claude"
-    TEACHER_TOGETHER = "together"
-    STUDENT_LOCAL = "student-local"
-    STUDENT_EDGE = "student-edge"
 
 
 class RoutingStrategy(str, Enum):

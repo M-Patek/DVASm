@@ -257,6 +257,43 @@ class VideoLoader:
 
     # --- Async streaming ---
 
+    async def read_frames_async(
+        self,
+        start_time: Optional[float] = None,
+        end_time: Optional[float] = None,
+        num_frames: Optional[int] = None,
+    ) -> AsyncIterator[Frame]:
+        """Async generator that yields frames without blocking the event loop.
+
+        Wraps the synchronous :py:meth:`read_frames` in ``asyncio.to_thread``
+        so that OpenCV I/O does not stall the async event loop.  Use this in
+        async pipelines (e.g. FastAPI endpoints) instead of the sync APIs.
+
+        Usage::
+
+            async for frame in loader.read_frames_async(num_frames=8):
+                await process(frame)
+        """
+        # Build the synchronous generator once; we will drive it from a
+        # background thread and yield each frame asynchronously.
+        sync_iter = self.read_frames(start_time, end_time, num_frames)
+
+        # Use a sentinel that cannot be confused with a real Frame object.
+        sentinel = object()
+
+        def _next() -> Union[Frame, object]:
+            """Return the next frame or *sentinel* on StopIteration."""
+            try:
+                return next(sync_iter)
+            except StopIteration:
+                return sentinel
+
+        while True:
+            frame = await run_in_thread(_next)
+            if frame is sentinel:
+                break
+            yield frame  # type: ignore[misc]
+
     async def aiter_frames(
         self,
         start_time: Optional[float] = None,

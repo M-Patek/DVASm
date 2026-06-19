@@ -7,7 +7,10 @@ Features:
 - Request/response compression
 - Health checks (liveness/readiness)
 - Structured logging
+- Dependency injection (no global state)
 """
+
+from __future__ import annotations
 
 import asyncio
 import tempfile
@@ -18,12 +21,13 @@ from pathlib import Path
 from typing import AsyncGenerator, Dict, List, Optional, Any
 
 import aiofiles
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from dvas.api.auth import get_auth_status, require_auth, require_auth_strict
+from dvas.api.dependencies import AppState
 from dvas.api.middleware import (
     APIVersion,
     CompressionMiddleware,
@@ -45,117 +49,29 @@ from dvas.utils.logging import get_logger
 logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------
-# Global state
-# ---------------------------------------------------------------------------
-
-# In-memory task storage (replace with Redis in production)
-tasks: Dict[str, Dict] = {}
-MAX_FINISHED_TASKS = 1000
-FINISHED_TASK_TTL_SECONDS = 3600.0
-rate_limiter = RateLimiter(RateLimitConfig(requests_per_second=10.0, burst_size=20.0))
-request_tracker = RequestTracker()
-health_checker = HealthChecker()
-compression = CompressionMiddleware(min_size=1024)
-
-
-def _prune_finished_tasks(now: Optional[float] = None) -> None:
-    """Keep in-memory task storage bounded while preserving active work."""
-    if not tasks:
-        return
-
-    now = now if now is not None else time.monotonic()
-    finished_statuses = {"completed", "failed"}
-
-    if FINISHED_TASK_TTL_SECONDS > 0:
-        expired_task_ids = [
-            task_id
-            for task_id, task in tasks.items()
-            if task.get("status") in finished_statuses
-            and task.get("_finished_at") is not None
-            and now - task["_finished_at"] > FINISHED_TASK_TTL_SECONDS
-        ]
-        for task_id in expired_task_ids:
-            tasks.pop(task_id, None)
-
-    if MAX_FINISHED_TASKS <= 0:
-        return
-
-    finished_task_ids = [
-        task_id for task_id, task in tasks.items() if task.get("status") in finished_statuses
-    ]
-    overflow = len(finished_task_ids) - MAX_FINISHED_TASKS
-    if overflow <= 0:
-        return
-
-    oldest_finished_ids = sorted(
-        finished_task_ids,
-        key=lambda task_id: tasks[task_id].get("_finished_at", tasks[task_id].get("_created_at", 0)),
-    )[:overflow]
-    for task_id in oldest_finished_ids:
-        tasks.pop(task_id, None)
-
-
-# ---------------------------------------------------------------------------
-# Health checks
+# Dependency injection helpers
 # ---------------------------------------------------------------------------
 
 
-def check_storage():
-    """Check storage health."""
-    try:
-        store = AnnotationStore(enable_index=False)
-        _stats = store.get_statistics()
-        return HealthChecker._run_check.__self__  # type: ignore
-    except Exception:
-        pass
-
-    return type(
-        "HealthCheck",
-        (),
-        {
-            "name": "storage",
-            "status": HealthStatus.HEALTHY,
-            "message": "Storage accessible",
-            "latency_ms": 0.0,
-        },
-    )()
+def get_app_state(request: Request) -> AppState:
+    """Get the AppState from the FastAPI request context."""
+    return request.app.state.dvas  # type: ignore
 
 
-def check_disk_space():
-    """Check disk space."""
-    import shutil
-
-    try:
-        total, used, free = shutil.disk_usage(str(settings.DATA_ROOT))
-        free_gb = free / (1024**3)
-        status = HealthStatus.HEALTHY if free_gb > 1.0 else HealthStatus.DEGRADED
-
-        return type(
-            "HealthCheck",
-            (),
-            {
-                "name": "disk_space",
-                "status": status,
-                "message": f"{free_gb:.1f}GB free",
-                "latency_ms": 0.0,
-            },
-        )()
-    except Exception as e:
-        return type(
-            "HealthCheck",
-            (),
-            {
-                "name": "disk_space",
-                "status": HealthStatus.UNHEALTHY,
-                "message": f"Failed to check disk: {e}",
-                "latency_ms": 0.0,
-            },
-        )()
+def get_rate_limiter(state: AppState = Depends(get_app_state)) -> RateLimiter:
+    return state.rate_limiter
 
 
-# Register health checks
-health_checker.register("storage", lambda: check_storage())
-health_checker.register("disk_space", lambda: check_disk_space())
+def get_request_tracker(state: AppState = Depends(get_app_state)) -> RequestTracker:
+    return state.request_tracker
+
+
+def get_health_checker(state: AppState = Depends(get_app_state)) -> HealthChecker:
+    return state.health_checker
+
+
+def get_tasks(state: AppState = Depends(get_app_state)) -> Dict[str, Dict[str, Any]]:
+    return state.tasks
 
 
 # ---------------------------------------------------------------------------
@@ -215,9 +131,13 @@ class ExportRequest(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
-    """Application lifespan manager."""
+    """Application lifespan manager with dependency injection."""
     # Startup
     logger.info("api_starting", version="0.2.0")
+
+    # Initialize app state
+    app.state.dvas = AppState()
+    await app.state.dvas.startup()
 
     # Ensure data directories exist
     for name, path in settings.data_paths.items():
@@ -228,6 +148,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 
     # Shutdown
     logger.info("api_shutting_down")
+    await app.state.dvas.shutdown()
 
 
 app = FastAPI(
@@ -259,11 +180,14 @@ async def add_request_tracking(request: Request, call_next):
     if request.url.path in ("/health", "/ready", "/api/v1/health", "/api/v1/ready"):
         return await call_next(request)
 
+    # Get app state from request
+    state: AppState = request.app.state.dvas
+
     # Rate limiting
     client_ip = request.headers.get(
         "X-Forwarded-For", request.client.host if request.client else "unknown"
     )
-    if not rate_limiter.allow_request(client_ip, request.url.path):
+    if not state.rate_limiter.allow_request(client_ip, request.url.path):
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             content=api_error(
@@ -273,10 +197,10 @@ async def add_request_tracking(request: Request, call_next):
             ),
         )
 
-    rate_limiter.consume(client_ip)
+    state.rate_limiter.consume(client_ip)
 
     # Track request
-    request_id = request_tracker.start_request(request.method, request.url.path)
+    request_id = state.request_tracker.start_request(request.method, request.url.path)
 
     # Process request
     start_time = asyncio.get_event_loop().time()
@@ -284,7 +208,7 @@ async def add_request_tracking(request: Request, call_next):
     duration = (asyncio.get_event_loop().time() - start_time) * 1000
 
     # End tracking
-    request_tracker.end_request(request_id, response.status_code)
+    state.request_tracker.end_request(request_id, response.status_code)
 
     # Add headers
     response.headers["X-Request-ID"] = request_id
@@ -299,15 +223,17 @@ async def add_request_tracking(request: Request, call_next):
 
 
 @app.get("/health")
-async def health_check() -> Dict[str, Any]:
+async def health_check(request: Request) -> Dict[str, Any]:
     """Liveness probe - is the process running?"""
-    return health_checker.liveness()
+    state: AppState = request.app.state.dvas
+    return state.health_checker.liveness()
 
 
 @app.get("/ready")
-async def readiness_check() -> Dict:
+async def readiness_check(request: Request) -> Dict:
     """Readiness probe - is the service ready to accept traffic?"""
-    return health_checker.readiness()
+    state: AppState = request.app.state.dvas
+    return state.health_checker.readiness()
 
 
 # ---------------------------------------------------------------------------
@@ -411,7 +337,7 @@ async def create_annotation_task(
     task_request: AnnotationTaskRequest,
 ) -> AnnotationTaskResponse:
     """Create a new annotation task."""
-    task_id = f"task_{uuid.uuid4().hex[:12]}"
+    state: AppState = request.app.state.dvas
 
     # Check if video exists
     upload_dir = settings.data_paths["raw"] / "uploads"
@@ -421,31 +347,26 @@ async def create_annotation_task(
         logger.warning(
             "video_not_found",
             video_id=task_request.video_id,
-            task_id=task_id,
         )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Video not found: {task_request.video_id}",
         )
 
-    # Create task
-    now = time.monotonic()
-    tasks[task_id] = {
-        "task_id": task_id,
-        "video_id": task_request.video_id,
-        "status": "pending",
-        "teacher_model": task_request.teacher_model,
-        "num_frames": task_request.num_frames,
-        "priority": task_request.priority,
-        "result": None,
-        "error": None,
-        "_created_at": now,
-        "_finished_at": None,
-    }
-    _prune_finished_tasks(now)
+    # Create task via AppState
+    task_id = state.create_task(
+        video_id=task_request.video_id,
+        teacher_model=task_request.teacher_model,
+        num_frames=task_request.num_frames,
+        priority=task_request.priority,
+        result=None,
+        error=None,
+    )
 
     # Start annotation in background
-    asyncio.create_task(run_annotation_task(task_id, task_request))
+    asyncio.create_task(
+        run_annotation_task(state, task_id, task_request)
+    )
 
     logger.info(
         "task_created",
@@ -462,10 +383,13 @@ async def create_annotation_task(
     )
 
 
-async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> None:
+async def run_annotation_task(
+    state: AppState,
+    task_id: str,
+    request: AnnotationTaskRequest,
+) -> None:
     """Run annotation task in background."""
-    task = tasks[task_id]
-    task["status"] = "processing"
+    state.update_task(task_id, status="processing")
 
     logger.info(
         "task_processing",
@@ -497,9 +421,8 @@ async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> N
         )
 
         # Update task
-        task["status"] = "completed"
-        task["result"] = annotation.model_dump()
-        task["_finished_at"] = time.monotonic()
+        state.finish_task(task_id, status="completed")
+        state.update_task(task_id, result=annotation.model_dump())
 
         logger.info(
             "task_completed",
@@ -509,9 +432,7 @@ async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> N
         )
 
     except Exception as e:
-        task["status"] = "failed"
-        task["error"] = str(e)
-        task["_finished_at"] = time.monotonic()
+        state.finish_task(task_id, status="failed", error=str(e))
 
         logger.error(
             "task_failed",
@@ -519,8 +440,6 @@ async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> N
             video_id=request.video_id,
             error=str(e),
         )
-    finally:
-        _prune_finished_tasks()
 
 
 @app.get(
@@ -528,16 +447,19 @@ async def run_annotation_task(task_id: str, request: AnnotationTaskRequest) -> N
     response_model=AnnotationResult,
     dependencies=[require_auth],
 )
-async def get_task_status(task_id: str) -> AnnotationResult:
+async def get_task_status(
+    task_id: str,
+    request: Request,
+) -> AnnotationResult:
     """Get annotation task status and result."""
-    _prune_finished_tasks()
-    if task_id not in tasks:
+    state: AppState = request.app.state.dvas
+    task = state.get_task(task_id)
+
+    if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Task not found: {task_id}",
         )
-
-    task = tasks[task_id]
 
     return AnnotationResult(
         task_id=task_id,
@@ -650,27 +572,20 @@ async def export_annotations(request: ExportRequest) -> FileResponse:
     f"{API_PREFIX}/stats",
     dependencies=[require_auth_strict],  # Admin endpoint
 )
-async def get_statistics() -> Dict:
+async def get_statistics(request: Request) -> Dict:
     """Get storage and request statistics."""
-    _prune_finished_tasks()
+    state: AppState = request.app.state.dvas
     store = AnnotationStore()
     stats = store.get_statistics()
 
     # Add task statistics
-    all_tasks = list(tasks.values())
-    stats["tasks"] = {
-        "total": len(all_tasks),
-        "pending": sum(1 for t in all_tasks if t["status"] == "pending"),
-        "processing": sum(1 for t in all_tasks if t["status"] == "processing"),
-        "completed": sum(1 for t in all_tasks if t["status"] == "completed"),
-        "failed": sum(1 for t in all_tasks if t["status"] == "failed"),
-    }
+    stats["tasks"] = state.get_task_stats()
 
     # Add request statistics
-    stats["requests"] = request_tracker.get_stats()
+    stats["requests"] = state.request_tracker.get_stats()
 
     # Add rate limiter statistics
-    stats["rate_limiter"] = rate_limiter.get_stats()
+    stats["rate_limiter"] = state.rate_limiter.get_stats()
 
     return api_response(
         data=stats,

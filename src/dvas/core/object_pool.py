@@ -6,6 +6,7 @@ to reduce GC pressure and allocation overhead.
 
 from __future__ import annotations
 
+import asyncio
 import threading
 from collections import deque
 from dataclasses import dataclass
@@ -186,13 +187,19 @@ class NumpyArrayPool(ObjectPool[np.ndarray]):
 
 
 class PoolRegistry:
-    """Registry for managing multiple object pools.
-
-    Provides centralized pool management with lifecycle hooks.
-    """
+    """Registry for managing multiple object pools with explicit lifecycle."""
 
     _pools: Dict[str, ObjectPool] = {}
     _lock = threading.Lock()
+
+    @classmethod
+    def shutdown(cls) -> None:
+        """Clear all registered pools and release resources."""
+        with cls._lock:
+            for pool in cls._pools.values():
+                pool.clear()
+            cls._pools.clear()
+            logger.info("pool_registry_shutdown")
 
     @classmethod
     def register(cls, name: str, pool: ObjectPool) -> None:
@@ -264,3 +271,114 @@ class PooledObject:
         if self.obj is not None:
             self.pool.release(self.obj)
             self.obj = None
+
+
+# ---------------------------------------------------------------------------
+# Async Object Pool
+# ---------------------------------------------------------------------------
+
+
+class AsyncObjectPool(Generic[T]):
+    """Async-safe object pool for reusable objects.
+
+    Uses asyncio.Lock instead of threading.Lock to avoid blocking the event loop.
+
+    Usage::
+
+        pool = AsyncObjectPool(
+            factory=lambda: np.zeros((448, 448, 3), dtype=np.uint8),
+            reset=lambda obj: obj.fill(0),
+            max_size=32,
+        )
+
+        obj = await pool.acquire()
+        # Use obj...
+        await pool.release(obj)
+    """
+
+    def __init__(
+        self,
+        factory: Callable[[], T],
+        reset: Optional[Callable[[T], None]] = None,
+        max_size: int = 32,
+        name: str = "async_pool",
+    ) -> None:
+        self.factory = factory
+        self.reset = reset
+        self.max_size = max_size
+        self.name = name
+        self._pool: Deque[T] = deque()
+        self._lock = asyncio.Lock()
+        self._stats = PoolStats()
+        self._in_use: int = 0
+
+    async def acquire(self) -> T:
+        """Acquire an object from the pool.
+
+        Returns a pooled object if available, otherwise creates a new one.
+        """
+        async with self._lock:
+            if self._pool:
+                obj = self._pool.popleft()
+                self._stats.hits += 1
+                self._stats.current_size = len(self._pool)
+                self._in_use += 1
+
+                if self.reset:
+                    self.reset(obj)
+                return obj
+
+            self._stats.misses += 1
+            self._stats.created += 1
+            self._in_use += 1
+
+        # Create outside lock to avoid blocking
+        return self.factory()
+
+    async def release(self, obj: T) -> None:
+        """Return an object to the pool.
+
+        If the pool is full, the object is discarded.
+        """
+        async with self._lock:
+            self._in_use -= 1
+            self._stats.released += 1
+
+            if len(self._pool) < self.max_size:
+                self._pool.append(obj)
+                self._stats.current_size = len(self._pool)
+                self._stats.peak_size = max(self._stats.peak_size, len(self._pool))
+            else:
+                self._stats.evicted += 1
+
+    async def clear(self) -> int:
+        """Clear all objects from the pool.
+
+        Returns the number of objects cleared.
+        """
+        async with self._lock:
+            count = len(self._pool)
+            self._pool.clear()
+            self._stats.current_size = 0
+            return count
+
+    @property
+    async def stats(self) -> PoolStats:
+        """Get pool statistics."""
+        async with self._lock:
+            return PoolStats(
+                hits=self._stats.hits,
+                misses=self._stats.misses,
+                created=self._stats.created,
+                released=self._stats.released,
+                evicted=self._stats.evicted,
+                current_size=len(self._pool),
+                peak_size=self._stats.peak_size,
+            )
+
+    async def __aenter__(self) -> T:
+        return await self.acquire()
+
+    async def __aexit__(self, *args: Any) -> None:
+        # Note: caller must pass the acquired object to release
+        pass

@@ -493,52 +493,6 @@ class RequestTracker:
 
 
 # ---------------------------------------------------------------------------
-# Input Validation
-# ---------------------------------------------------------------------------
-
-
-class InputValidator:
-    """Validate and sanitize API inputs."""
-
-    @staticmethod
-    def sanitize_string(value: str, max_length: int = 1000) -> str:
-        """Sanitize a string input."""
-        if not isinstance(value, str):
-            raise ValueError("Expected string input")
-
-        # Trim whitespace
-        value = value.strip()
-
-        # Limit length
-        if len(value) > max_length:
-            value = value[:max_length]
-
-        return value
-
-    @staticmethod
-    def validate_video_id(video_id: str) -> str:
-        """Validate a video ID."""
-        if not video_id or len(video_id) < 3:
-            raise ValueError("Video ID must be at least 3 characters")
-
-        # Allow alphanumeric, underscore, hyphen
-        import re
-
-        if not re.match(r"^[a-zA-Z0-9_-]+$", video_id):
-            raise ValueError("Video ID contains invalid characters")
-
-        return video_id
-
-    @staticmethod
-    def validate_file_size(size_bytes: int, max_mb: float = 500.0) -> bool:
-        """Validate file size."""
-        max_bytes = int(max_mb * 1024 * 1024)
-        if size_bytes > max_bytes:
-            raise ValueError(f"File size exceeds maximum of {max_mb}MB")
-        return True
-
-
-# ---------------------------------------------------------------------------
 # API Response Utilities
 # ---------------------------------------------------------------------------
 

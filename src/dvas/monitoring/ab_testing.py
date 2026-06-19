@@ -12,6 +12,7 @@ import numpy as np
 from scipy import stats
 
 from dvas.data.schemas import Annotation
+from dvas.observability.metrics import PerformanceMonitor
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -373,71 +374,3 @@ class DriftDetector:
             "reference_stats": self.reference_stats,
             "new_stats": new_stats,
         }
-
-
-class PerformanceMonitor:
-    """Monitor system performance metrics."""
-
-    def __init__(self, window_size: int = 100):
-        self.window_size = window_size
-        self.metrics: Dict[str, List] = {
-            "latency": [],
-            "cost": [],
-            "quality": [],
-            "success_rate": [],
-        }
-        self.timestamps: List[datetime] = []
-
-    def record(self, metrics: Dict[str, float]) -> None:
-        """Record metrics."""
-        for key, value in metrics.items():
-            if key in self.metrics:
-                self.metrics[key].append(value)
-                if len(self.metrics[key]) > self.window_size:
-                    self.metrics[key].pop(0)
-
-        self.timestamps.append(datetime.now(timezone.utc))
-
-    def get_statistics(self) -> Dict:
-        """Get rolling window statistics."""
-        stats = {}
-
-        for metric_name, values in self.metrics.items():
-            if values:
-                stats[metric_name] = {
-                    "mean": float(np.mean(values)),
-                    "std": float(np.std(values)),
-                    "p50": float(np.percentile(values, 50)),
-                    "p95": float(np.percentile(values, 95)),
-                    "p99": float(np.percentile(values, 99)),
-                    "count": len(values),
-                }
-
-        return stats
-
-    def check_anomalies(self, threshold_std: float = 3.0) -> List[Dict]:
-        """Check for anomalous metrics."""
-        anomalies = []
-
-        for metric_name, values in self.metrics.items():
-            if len(values) < 10:
-                continue
-
-            mean = np.mean(values[:-1])  # Exclude latest
-            std = np.std(values[:-1])
-
-            if std > 0:
-                latest = values[-1]
-                z_score = abs(latest - mean) / std
-
-                if z_score > threshold_std:
-                    anomalies.append(
-                        {
-                            "metric": metric_name,
-                            "value": latest,
-                            "z_score": float(z_score),
-                            "expected_range": (float(mean - std), float(mean + std)),
-                        }
-                    )
-
-        return anomalies

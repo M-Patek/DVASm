@@ -7,7 +7,6 @@ import pytest
 
 from dvas.core.algorithms import (
     AdaptiveSampler,
-    AlgorithmRegistry,
     ColorVarianceImportance,
     CompositeImportance,
     EdgeImportance,
@@ -454,54 +453,10 @@ class TestAdaptiveSampler:
 # AlgorithmRegistry Tests
 # ---------------------------------------------------------------------------
 
-class TestAlgorithmRegistry:
-    """Test AlgorithmRegistry."""
-
-    def test_get_sampler(self) -> None:
-        """Test getting sampler from registry."""
-        sampler_cls = AlgorithmRegistry.get_sampler("adaptive")
-        assert sampler_cls == AdaptiveSampler
-
-    def test_get_unknown_sampler(self) -> None:
-        """Test getting unknown sampler raises error."""
-        with pytest.raises(ValueError, match="Unknown sampler"):
-            AlgorithmRegistry.get_sampler("unknown")
-
-    def test_get_summarizer(self) -> None:
-        """Test getting summarizer from registry."""
-        summarizer_cls = AlgorithmRegistry.get_summarizer("default")
-        assert summarizer_cls == VideoSummarizer
-
-    def test_get_segmenter(self) -> None:
-        """Test getting segmenter from registry."""
-        segmenter_cls = AlgorithmRegistry.get_segmenter("semantic")
-        assert segmenter_cls == SemanticSegmenter
-
-    def test_list_algorithms(self) -> None:
-        """Test listing all algorithms."""
-        algorithms = AlgorithmRegistry.list_algorithms()
-        assert "samplers" in algorithms
-        assert "extractors" in algorithms
-        assert "summarizers" in algorithms
-        assert "segmenters" in algorithms
-        assert "adaptive" in algorithms["samplers"]
-        assert "semantic" in algorithms["segmenters"]
-
-    def test_register_sampler(self) -> None:
-        """Test registering a new sampler."""
-        class DummySampler:
-            pass
-
-        AlgorithmRegistry.register_sampler("dummy", DummySampler)
-        assert AlgorithmRegistry.get_sampler("dummy") == DummySampler
-
-    def test_register_extractor(self) -> None:
-        """Test registering a new extractor."""
-        class DummyExtractor:
-            pass
-
-        AlgorithmRegistry.register_extractor("dummy", DummyExtractor)
-        assert AlgorithmRegistry.get_extractor("dummy") == DummyExtractor
+# AlgorithmRegistry was removed during module refactoring.
+# These tests are skipped until a registry is reintroduced.
+# class TestAlgorithmRegistry:
+#     ...
 
 
 # ---------------------------------------------------------------------------

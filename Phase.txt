@@ -1,0 +1,569 @@
+P0：短期救火稳定
+
+保护当前工作区：创建分支/补丁快照
+
+修复 D:\Github\DVASm\src\dvas\models\teacher\base.py 缩进语法错误
+
+安装/锁定项目依赖
+
+固定 Python 支持范围：建议 >=3.10,<3.13
+
+修复 PYTHONPATH=src 依赖问题
+
+修复 structlog 缺失导致的导入失败
+
+修复 D:\Github\DVASm\docs\subsystems\11-monitoring.md 的 PerformanceMonitor 锚点漂移
+
+修复 D:\Github\DVASm\docs\_machine\status.yaml 中重复的 09-quality
+
+同步 D:\Github\DVASm\docs\INDEX.md 与实际子系统编号
+
+修复 Windows GBK 控制台编码问题
+
+清理或解释根目录下异常嵌套目录 D:\Github\DVASm\dvas
+
+跑通 python scripts/check_doc_anchors.py --quiet
+
+跑通 python scripts/check_known_gaps.py
+
+跑通最小单元测试集
+
+跑通无 API key 的 E2E smoke test
+
+更新 D:\Github\DVASm\docs\changelog\CHANGELOG.md
+
+更新 D:\Github\DVASm\docs\_machine\status.yaml
+P1：主干工程质量
+
+建立统一开发环境脚本
+
+建立 make/just/PowerShell 任务入口
+
+建立本地一键验证命令
+
+建立 CI 与本地验证一致的测试矩阵
+
+拆分 unit / integration / e2e / gpu / slow 测试
+
+给测试添加稳定 marker
+
+修复所有 collection error
+
+修复所有 flaky tests
+
+建立 coverage 基线
+
+建立 mutation testing 基线
+
+建立 static typing 基线
+
+清理 mypy 抑制
+
+清理 ruff/black 格式问题
+
+修复 README 与 docs 编码损坏
+
+删除或归档废弃文档
+
+统一 changelog/status/bugs/tech-debt 更新流程
+P2：核心链路硬化
+
+固化主链路：Video → Segment → Teacher → Parse → Annotation → Quality → Export
+
+为主链路建立 golden path 测试
+
+为主链路建立失败恢复测试
+
+为主链路建立 checkpoint resume 测试
+
+为主链路建立成本统计测试
+
+为主链路建立延迟统计测试
+
+重构 AnnotationPipeline 的任务状态机
+
+重构 teacher response parser
+
+引入结构化输出优先策略
+
+引入 parser confidence
+
+引入 parser fallback audit
+
+引入 annotation validation gate
+
+引入 quality gate
+
+引入 export gate
+
+建立 annotation lifecycle 状态流转
+P3：数据层升级
+
+抽象 AnnotationStore backend 接口
+
+实现 LocalFS backend
+
+实现 SQLite metadata backend
+
+实现 PostgreSQL metadata backend
+
+实现 S3/MinIO object backend
+
+建立 annotation index
+
+建立 video hash index
+
+建立 frame hash index
+
+建立 prompt version index
+
+建立 model version index
+
+建立 dataset version index
+
+建立 schema migration 框架
+
+建立 annotation diff 工具
+
+建立 annotation rollback 工具
+
+建立 backup/restore 工具
+
+建立 compaction/rebuild 工具
+P4：Teacher 系统领先化
+
+统一 OpenAI/Anthropic/Together provider contract
+
+引入 provider capability registry
+
+引入 model frame limit registry
+
+引入 model pricing registry
+
+引入 model latency profile
+
+引入 model quality profile
+
+引入 quota manager
+
+引入 rate limit scheduler
+
+引入 adaptive batching
+
+引入 multi-teacher consensus
+
+引入 teacher disagreement mining
+
+引入 teacher fallback chain
+
+引入 model-specific structured output
+
+引入 prompt-model compatibility matrix
+
+建立 teacher cost/quality benchmark
+P5：Student 蒸馏闭环
+
+跑通 mini dataset SFT
+
+跑通真实 EPIC 子集 SFT
+
+跑通 DPO preference pair 构造
+
+跑通 DPO 训练
+
+跑通 student inference
+
+建立 teacher vs student 质量评估
+
+建立 teacher vs student 成本评估
+
+建立 teacher vs student 延迟评估
+
+建立 student confidence calibration
+
+建立 low-confidence fallback teacher
+
+建立 active learning sample selection
+
+建立 student regression benchmark
+
+建立 LoRA adapter registry
+
+建立 model artifact registry
+
+建立训练数据版本绑定
+P6：质量闭环
+
+定义 annotation quality schema
+
+定义 factuality score
+
+定义 temporal consistency score
+
+定义 object grounding score
+
+定义 action grounding score
+
+定义 affordance score
+
+定义 robotic usefulness score
+
+定义 language clarity score
+
+定义 parse confidence score
+
+定义 reviewer confidence score
+
+建立 automatic quality analyzer
+
+建立 LLM-as-judge pipeline
+
+建立 human review queue
+
+建立 disagreement queue
+
+建立 low-quality quarantine
+
+建立 quality trend dashboard
+
+建立 dataset acceptance criteria
+P7：VLA/机器人数据能力
+
+扩展 Action schema 的机器人动作字段
+
+增加 hand pose 标注
+
+增加 gripper state 标注
+
+增加 contact event 标注
+
+增加 object affordance 标注
+
+增加 precondition 标注
+
+增加 postcondition 标注
+
+增加 failure mode 标注
+
+增加 causal chain 标注
+
+增加 counterfactual 标注
+
+增加 action primitive 标注
+
+增加 robot policy hint 标注
+
+增加 Open X-Embodiment 对齐测试
+
+增加 Ego4D 对齐测试
+
+增加 EPIC-KITCHENS 对齐测试
+P8：World Model 能力
+
+将 D:\Github\DVASm\src\dvas\world_model\annotator.py 从 placeholder 升级为真实模块
+
+实现 state_before 生成
+
+实现 state_after 生成
+
+实现 next-state prediction
+
+实现 physical dynamics annotation
+
+实现 causal relation extraction
+
+实现 counterfactual generation
+
+实现 temporal event graph
+
+实现 object state transition graph
+
+实现 world-model training export
+
+建立 world-model annotation benchmark
+
+建立 world-model quality evaluator
+P9：Prompt 系统升级
+
+建立 prompt registry
+
+建立 prompt versioning
+
+建立 prompt lineage
+
+建立 prompt A/B testing
+
+建立 prompt quality attribution
+
+建立 prompt auto-selection
+
+建立 few-shot example retrieval
+
+建立 semantic example index
+
+建立 domain-specific prompt packs
+
+建立 VLA prompt pack
+
+建立 world-model prompt pack
+
+建立 human-review prompt pack
+
+建立 prompt regression tests
+P10：API 与任务系统
+
+将 API task storage 从内存迁移到 Redis/Postgres
+
+引入 Celery/RQ/Arq 任务队列
+
+实现 task retry
+
+实现 task cancel
+
+实现 task resume
+
+实现 task progress streaming
+
+实现 batch job API
+
+实现 dataset API
+
+实现 annotation review API
+
+实现 export job API
+
+实现 model registry API
+
+实现 prompt registry API
+
+实现 tenant isolation
+
+实现 API rate limit
+
+实现 API audit log
+P11：审核工作台
+
+建立 dataset browser
+
+建立 video segment viewer
+
+建立 frame strip viewer
+
+建立 annotation editor
+
+建立 annotation diff viewer
+
+建立 teacher output viewer
+
+建立 quality score viewer
+
+建立 reviewer assignment
+
+建立 review queue
+
+建立 disagreement review
+
+建立 approve/reject workflow
+
+建立 reviewer metrics
+
+建立 export approval gate
+P12：安全与合规
+
+完善 PII detection
+
+完善 video path anonymization
+
+完善 annotation anonymization
+
+完善 watermark
+
+完善 RBAC
+
+完善 audit log
+
+实现 encryption at rest
+
+实现 secret management
+
+实现 tenant-level data isolation
+
+实现 export approval audit
+
+实现 data retention policy
+
+实现 deletion request flow
+
+实现 security regression tests
+
+建立 Bandit/SAST gate
+P13：可观测性
+
+统一 metrics collector
+
+统一 tracing
+
+统一 structured logging
+
+引入 OpenTelemetry
+
+引入 Prometheus metrics
+
+引入 Grafana dashboard
+
+监控 teacher latency
+
+监控 teacher cost
+
+监控 parser failures
+
+监控 annotation quality
+
+监控 task queue depth
+
+监控 export throughput
+
+监控 storage size
+
+监控 student fallback rate
+
+建立 alert rules
+P14：Benchmark 与行业领先指标
+
+建立 EPIC-KITCHENS benchmark
+
+建立 Ego4D benchmark
+
+建立 Open X-Embodiment benchmark
+
+建立 synthetic video benchmark
+
+建立 long-video benchmark
+
+建立 teacher comparison leaderboard
+
+建立 student comparison leaderboard
+
+建立 cost/quality Pareto chart
+
+建立 latency/quality Pareto chart
+
+建立 annotation consistency benchmark
+
+建立 human agreement benchmark
+
+建立 regression benchmark
+
+建立 nightly benchmark report
+P15：基础设施
+
+编写 Dockerfile
+
+编写 docker-compose
+
+编写 Helm chart
+
+引入 Postgres
+
+引入 Redis
+
+引入 MinIO
+
+引入 worker deployment
+
+引入 API deployment
+
+引入 migration job
+
+引入 backup job
+
+引入 benchmark job
+
+引入 GPU worker profile
+
+引入 dev/staging/prod 配置
+
+建立 CI/CD 发布流程
+P16：数据治理
+
+建立 dataset manifest
+
+建立 dataset card
+
+建立 annotation card
+
+建立 model card
+
+建立 prompt card
+
+建立 data license metadata
+
+建立 source dataset provenance
+
+建立 export provenance
+
+建立 schema compatibility matrix
+
+建立 standard conversion loss report
+
+建立 dataset quality report
+
+建立 release checklist
+P17：长期产品化
+
+明确产品定位：VLA/World Model 数据生产系统
+
+建立 CLI 专业工作流
+
+建立 SDK
+
+建立 REST API 文档
+
+建立 examples gallery
+
+建立 demo dataset
+
+建立 public benchmark report
+
+建立部署手册
+
+建立运维手册
+
+建立 reviewer handbook
+
+建立 data quality handbook
+
+建立 customer export templates
+
+建立 enterprise security checklist
+
+建立版本发布节奏
+P18：长期研究方向
+
+多模态 teacher ensemble
+
+视频 grounding verifier
+
+自动帧选择策略学习
+
+自动 prompt optimization
+
+低成本 teacher distillation routing
+
+机器人动作 primitive 自动归纳
+
+世界模型反事实生成
+
+视频因果图构建
+
+人类反馈驱动数据修正
+
+student self-training
+
+synthetic data augmentation
+
+dataset curriculum learning
+
+cross-dataset schema alignment
+
+embodied evaluation suite
