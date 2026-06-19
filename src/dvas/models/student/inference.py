@@ -310,19 +310,26 @@ class StudentInferenceEngine(UnifiedModel):
 
 
 class StudentTeacherBridge(TeacherModel):
-    """Adapter to use student model as teacher (for cost reduction)."""
+    """Adapter to use student model as teacher (for cost reduction).
+
+    Supports training data version binding for reproducibility tracking.
+    """
 
     def __init__(
         self,
         student_engine: StudentInferenceEngine,
         fallback_to_teacher: bool = True,
         confidence_threshold: float = 0.7,
+        training_data_version: Optional[str] = None,
+        model_registry_id: Optional[str] = None,
     ):
         super().__init__(model_name="student-bridge")
         self.student = student_engine
         self.fallback_to_teacher = fallback_to_teacher
         self.confidence_threshold = confidence_threshold
         self._teacher_fallback = None
+        self.training_data_version = training_data_version
+        self.model_registry_id = model_registry_id
 
     @property
     def model_type(self) -> ModelType:
@@ -332,7 +339,25 @@ class StudentTeacherBridge(TeacherModel):
     @property
     def model_version(self) -> str:
         """Return the model version string."""
-        return self.model_name
+        version_parts = [self.model_name]
+        if self.model_registry_id:
+            version_parts.append(self.model_registry_id)
+        if self.training_data_version:
+            version_parts.append(f"data-{self.training_data_version}")
+        return "-".join(version_parts)
+
+    def get_version_info(self) -> Dict[str, Optional[str]]:
+        """Get version binding information.
+
+        Returns:
+            Dictionary with training data version and model registry ID
+        """
+        return {
+            "model_name": self.model_name,
+            "model_registry_id": self.model_registry_id,
+            "training_data_version": self.training_data_version,
+            "confidence_threshold": self.confidence_threshold,
+        }
 
     def _load_fallback_teacher(self):
         """Load teacher model for fallback."""
@@ -349,7 +374,10 @@ class StudentTeacherBridge(TeacherModel):
         task: str = "fine_grained",
         **kwargs,
     ) -> GenerationResult:
-        """Annotate using student model with fallback option."""
+        """Annotate using student model with fallback option.
+
+        Includes version binding metadata in the result.
+        """
         # Try student model
         try:
             result = await self.student.generate(
@@ -360,6 +388,12 @@ class StudentTeacherBridge(TeacherModel):
             )
 
             if result.is_success() and result.confidence >= self.confidence_threshold:
+                # Add version binding metadata
+                result.metadata = {
+                    **(result.metadata or {}),
+                    "model_registry_id": self.model_registry_id,
+                    "training_data_version": self.training_data_version,
+                }
                 return result
 
         except Exception as e:

@@ -1,7 +1,7 @@
 # DVAS Machine-Readable Status (Schema v2)
 
 schema_version: 2
-last_full_audit: 2026-06-18
+last_full_audit: 2026-06-20
 
 # ── Documentation Refactoring Tracker ──────────────────────────────────────
 doc_refactor:
@@ -32,7 +32,7 @@ global:
 subsystems:
   - id: 01-data
     title: "Data Layer — Video loading, preprocessing, storage"
-    status: stable
+    status: enhanced
     health: green
     code_root: "src/dvas/data/"
     doc: "docs/subsystems/01-data.md"
@@ -41,6 +41,8 @@ subsystems:
       - "2026-06-18: Multi-format support (MP4/MOV/AVI/MKV/WebM/M4V) + SUPPORTED_VIDEO_FORMATS constant + format validation"
       - "2026-06-18: Metadata cache LRU eviction (max 1000 entries) to prevent memory leaks"
       - "2026-06-19: Fixed gold/teacher and reviewed/human storage source aliases"
+      - "2026-06-20: Phase 3 - Pluggable backend architecture with LocalFS, SQLite, PostgreSQL, S3 backends"
+      - "2026-06-20: Phase 3 - Index management, schema migrations, diff/rollback/backup/compaction tools"
     known_gaps:
       - title: "No distributed video processing"
         opened: "2024-06-17"
@@ -49,13 +51,13 @@ subsystems:
         notes: "Current implementation is single-process. Consider Dask/Ray for scale."
 
     last_validated:
-      date: "2026-06-19"
-      by: "codex"
-      method: "targeted-smoke"
-      evidence: "AnnotationStore source alias behavior covered by targeted export/API tests and E2E smoke"
+      date: "2026-06-20"
+      by: "claude"
+      method: "unit-tests"
+      evidence: "pytest tests/test_persistence_backends.py (17 passed), tests/test_persistence_tools.py (12 passed)"
   - id: 02-teacher
     title: "Teacher Models — GPT-4V, Claude, Together API wrappers"
-    status: stable
+    status: enhanced
     health: green
     code_root: "src/dvas/models/teacher/"
     doc: "docs/subsystems/02-teacher.md"
@@ -64,15 +66,21 @@ subsystems:
       - "2024-06-18: UnifiedModel interface with GenerationResult standardized across all teachers"
       - "2026-06-18: FrameEncoderPool BGR/RGB conversion parameter to prevent double conversion"
       - "2026-06-18: Updated model versions - Claude Sonnet 4.6, Qwen2.5-VL, Llama 4 support"
-    known_gaps: []
+      - "2026-06-20: Phase 4 - Added registry.py, capabilities.py, pricing.py, profiles.py, quota.py, scheduler.py, consensus.py, fallback.py"
+    known_gaps:
+      - title: "Integration of new registry modules with TeacherModel base class"
+        opened: "2026-06-20"
+        severity: low
+        next_review: "2026-06-21"
+        notes: "New registry modules need to be integrated into TeacherModel for full Phase 4 completion"
     last_validated:
-      date: "2026-06-18"
+      date: "2026-06-20"
       by: "claude"
       method: "unit-tests"
-      evidence: "test_models_base.py: 19 tests pass (GenerationResult status handling)"
+      evidence: "163 new tests pass across registry, capabilities, pricing, profiles, quota, scheduler, consensus, fallback"
 
   - id: 03-student
-    title: "Student Models — Qwen2-VL finetuning via SFT/DPO"
+    title: "Student Models — Qwen2-VL finetuning via SFT/DPO with closed-loop evaluation"
     status: stable
     health: green
     code_root: "src/dvas/models/student/"
@@ -82,17 +90,24 @@ subsystems:
       - "2026-06-18: Fixed transformers 5.x compatibility (AutoModelForVision2Seq → AutoModelForImageTextToText)"
       - "2026-06-18: Changed attn_implementation to 'eager' for Windows stability"
       - "2026-06-18: PyTorch 2.6.0+cu124 installed, CUDA 12.4 working on RTX 4060 Laptop"
+      - "2026-06-20: P5 - LoRA adapter registry with data version binding"
+      - "2026-06-20: P5 - Confidence calibration with temperature scaling"
+      - "2026-06-20: P5 - Active learning sample selection (uncertainty, diversity, committee)"
+      - "2026-06-20: P5 - Teacher vs student evaluation (quality, cost, latency)"
+      - "2026-06-20: P5 - Low-confidence fallback with adaptive thresholds"
+      - "2026-06-20: P5 - Regression benchmark suite for model versions"
+      - "2026-06-20: P5 - Training data version binding in StudentTeacherBridge"
     known_gaps:
-      - title: "End-to-end GPU training validated (code ready, pending data)"
-        opened: "2026-06-18"
+      - title: "Full GPU E2E training run with real EPIC data"
+        opened: "2026-06-20"
         severity: low
-        next_review: "2026-07-18"
-        notes: "Code is complete (LoRA + 4-bit + TRL + vLLM), PyTorch CUDA installed. Pending actual training run with real EPIC data."
+        next_review: "2026-07-20"
+        notes: "Phase 5 implementation complete (6 new modules, 3 example scripts, 100+ tests). Code validated via unit tests. Pending actual GPU training run with real EPIC data for final validation."
     last_validated:
-      date: "2026-06-18"
+      date: "2026-06-20"
       by: "claude"
-      method: "code-review"
-      evidence: "test_student_inference.py exists; code review confirms SFT/DPO/Inference/StudentTeacherBridge are real implementations (1238 LOC)"
+      method: "unit-tests"
+      evidence: "6 new test modules (test_student_registry, calibration, selection, evaluation, fallback, benchmark) with 95+ tests passing; 3 example scripts created; all 6 new modules integrated into student/__init__.py"
 
   - id: 04-pipeline
     title: "Annotation Pipeline — End-to-end video annotation"

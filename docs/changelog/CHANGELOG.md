@@ -22,6 +22,46 @@
 
 ---
 
+### Session — P3: Data Layer Upgrade (Phase 3)
+
+- **Type**: T6
+- **Goal**: Implement pluggable backend architecture for annotation storage with indexing, versioning, and data management tools
+- **Done**:
+  - Created abstract Backend base classes (Backend, StorageBackend, MetadataBackend)
+  - Implemented LocalFSBackend for file-based storage
+  - Implemented SQLiteBackend for metadata indexing with FTS5 support
+  - Implemented PostgreSQLBackend (optional, requires psycopg2)
+  - Implemented S3Backend for cloud storage (optional, requires boto3)
+  - Created IndexManager for unified index management (annotation, video hash, frame hash)
+  - Created schema migration framework with MigrationManager
+  - Created annotation diff tool for comparing versions
+  - Created rollback tool for reverting to previous versions
+  - Created backup/restore tool for data protection
+  - Created compaction/rebuild tool for storage maintenance
+  - Maintained backward compatibility with legacy AnnotationStore interface
+- **Files**:
+  - src/dvas/persistence/backends/__init__.py (new)
+  - src/dvas/persistence/backends/base.py (new)
+  - src/dvas/persistence/backends/localfs.py (new)
+  - src/dvas/persistence/backends/sqlite.py (new)
+  - src/dvas/persistence/backends/postgresql.py (new)
+  - src/dvas/persistence/backends/s3.py (new)
+  - src/dvas/persistence/index_manager.py (new)
+  - src/dvas/persistence/migrations.py (new)
+  - src/dvas/persistence/diff_tool.py (new)
+  - src/dvas/persistence/rollback_tool.py (new)
+  - src/dvas/persistence/backup_restore.py (new)
+  - src/dvas/persistence/compaction.py (new)
+  - src/dvas/persistence/legacy_store.py (new)
+  - src/dvas/persistence/__init__.py (updated)
+  - src/dvas/utils/hash.py (new)
+  - tests/test_persistence_backends.py (new)
+  - tests/test_persistence_tools.py (new)
+- **Validation**: V3 — pytest tests/test_persistence_backends.py → 17 passed; pytest tests/test_persistence_tools.py → 12 passed
+- **Left for next time**: None — P3 complete
+
+---
+
 ### Session — P1: Main Engineering Quality Improvements
 
 - **Type**: T5
@@ -490,3 +530,72 @@
   - Document deprecation of `core/pipeline.py:Pipeline` vs `src/dvas/pipeline/core.py:AnnotationPipeline` (Phase 5 dual-pipeline tech debt)
 
 ---
+
+### Session — P5: Student Distillation Closed Loop (Phase 5)
+
+- **Type**: T5
+- **Goal**: Implement complete student model training, evaluation, and deployment pipeline with confidence calibration, fallback, and regression testing
+- **Done**:
+  - **LoRA Adapter Registry** (`src/dvas/models/student/registry.py`):
+    - Versioned storage for LoRA adapters and model artifacts
+    - Training data hash binding for reproducibility
+    - Adapter lineage tracking (SFT -> DPO parent/child relationships)
+    - Metadata querying and filtering by tags, base model, EPIC split
+  - **Confidence Calibration** (`src/dvas/models/student/calibration.py`):
+    - Temperature scaling for confidence calibration
+    - Calibration metrics (ECE, MCE, NLL, Brier score)
+    - Confidence threshold optimization
+    - Reliability diagram plotting
+  - **Active Learning Sample Selection** (`src/dvas/models/student/selection.py`):
+    - Uncertainty sampling (least confidence, entropy)
+    - Diversity sampling with greedy facility location
+    - Expected model change selection
+    - Query by committee with vote entropy and KL divergence
+    - Hybrid strategy with weighted combination
+  - **Teacher vs Student Evaluation** (`src/dvas/models/student/evaluation.py`):
+    - Quality comparison (BLEU, ROUGE, LLM-as-Judge)
+    - Cost comparison (teacher API cost vs student local)
+    - Latency comparison (percentiles, speedup ratios)
+    - Comprehensive comparison reports
+  - **Low-Confidence Fallback** (`src/dvas/models/student/fallback.py`):
+    - Automatic teacher fallback when student confidence is low
+    - Calibrated confidence threshold support
+    - Adaptive fallback with dynamic threshold adjustment
+    - Fallback statistics tracking
+  - **Regression Benchmark** (`src/dvas/models/student/benchmark.py`):
+    - Standardized benchmark suite for model versions
+    - Baseline tracking and regression detection
+    - Checkpoint management during training
+    - Per-sample result tracking
+  - **Bridge Updates** (`src/dvas/models/student/inference.py`):
+    - Added training data version binding to `StudentTeacherBridge`
+    - Model registry ID tracking
+    - Version info metadata in generation results
+  - **Example Scripts**:
+    - `examples/train_student_sft.py`: SFT training with mini dataset support
+    - `examples/train_student_dpo.py`: DPO training with preference pairs
+    - `examples/eval_teacher_vs_student.py`: Comprehensive model comparison
+  - **Test Suite** (6 new test files, ~100 tests):
+    - `tests/test_student_registry.py`: Adapter registration and lineage
+    - `tests/test_student_calibration.py`: Temperature scaling and metrics
+    - `tests/test_student_selection.py`: Active learning strategies
+    - `tests/test_student_evaluation.py`: Quality/cost/latency comparison
+    - `tests/test_student_fallback.py`: Fallback routing and statistics
+    - `tests/test_student_benchmark.py`: Regression detection
+  - **Updated exports** (`src/dvas/models/student/__init__.py`):
+    - All new modules exported for public API
+- **Files**:
+  - `src/dvas/models/student/registry.py` → NEW (524 LOC)
+  - `src/dvas/models/student/calibration.py` → NEW (484 LOC)
+  - `src/dvas/models/student/selection.py` → NEW (530 LOC)
+  - `src/dvas/models/student/evaluation.py` → NEW (510 LOC)
+  - `src/dvas/models/student/fallback.py` → NEW (433 LOC)
+  - `src/dvas/models/student/benchmark.py` → NEW (517 LOC)
+  - `src/dvas/models/student/inference.py` → MODIFIED (version binding)
+  - `src/dvas/models/student/__init__.py` → MODIFIED (exports)
+  - `examples/train_student_sft.py` → NEW
+  - `examples/train_student_dpo.py` → NEW
+  - `examples/eval_teacher_vs_student.py` → NEW
+  - `tests/test_student_*.py` → 6 NEW test files
+- **Validation**: V2 — pytest tests/test_student_*.py → 95+ new tests pass
+- **Left for next time**: Full GPU E2E training run requires actual hardware
