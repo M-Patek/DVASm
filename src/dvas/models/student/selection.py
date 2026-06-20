@@ -294,7 +294,7 @@ class QueryByCommittee(SelectionStrategy):
                     p.confidence if p.confidence else 0.5
                     for p in committee_preds
                 ]
-                mean_conf = np.mean(confidences)
+                _ = np.mean(confidences)  # mean_conf calculated for reference
                 # Variance as proxy for KL divergence
                 disagreement = np.var(confidences)
 

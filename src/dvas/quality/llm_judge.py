@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from dvas.data.schemas import Annotation, Segment
-from dvas.models.base import GenerationResult, ModelType
+from dvas.models.base import GenerationResult
 from dvas.quality.schema import DimensionScore, QualityDimension, QualityScores
 from dvas.utils.logging import get_logger
 

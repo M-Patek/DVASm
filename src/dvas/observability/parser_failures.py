@@ -218,14 +218,14 @@ class ParserFailureMonitor:
         Returns:
             List of trend data points
         """
-        now = time.time()
+        _ = time.time()  # now captured for potential future use
         with self._lock:
             if not self._failures:
                 return []
 
             # Find time range
             min_time = min(f.timestamp for f in self._failures)
-            max_time = max(f.timestamp for f in self._failures)
+            _ = max(f.timestamp for f in self._failures)  # max_time for range context
 
             # Create buckets
             buckets: Dict[int, List[ParserFailure]] = {}

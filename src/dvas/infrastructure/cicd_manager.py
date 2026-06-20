@@ -7,8 +7,7 @@ and secret handling for GitHub Actions and GitLab CI.
 from __future__ import annotations
 
 import json
-import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional

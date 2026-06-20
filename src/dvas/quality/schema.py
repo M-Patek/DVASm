@@ -9,9 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from dvas.data.schemas import Annotation
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)

@@ -8,9 +8,8 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
-import numpy as np
 
 from dvas.benchmarks.base import BaseBenchmark, BenchmarkResult
 from dvas.utils.logging import get_logger

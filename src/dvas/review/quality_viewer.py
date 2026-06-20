@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from dvas.quality.schema import DimensionScore, QualityDimension, QualityScores
+from dvas.quality.schema import QualityDimension, QualityScores
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)

@@ -7,7 +7,6 @@ module generation, and workspace switching across AWS, GCP, and Azure.
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 from dataclasses import dataclass, field
 from enum import Enum
@@ -493,7 +492,7 @@ class TerraformManager:
         elif provider == TerraformProvider.GCP:
             lines.append(f'provider "google" {{\n  region = "{region}"\n}}')
         elif provider == TerraformProvider.AZURE:
-            lines.append(f'provider "azurerm" {{\n  features {{}}\n}}')
+            lines.append('provider "azurerm" {\n  features {}\n}')
         return "\n".join(lines)
 
     def generate_aws_module(self, module_name: str = "dvas-aws") -> str:

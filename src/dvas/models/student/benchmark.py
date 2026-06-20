@@ -5,14 +5,13 @@ across model versions and training runs.
 """
 
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 
-from dvas.models.base import GenerationResult
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)

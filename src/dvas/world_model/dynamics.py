@@ -9,7 +9,7 @@ Provides classes for representing:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum, auto
+from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np

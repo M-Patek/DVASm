@@ -4,7 +4,7 @@ Tracks per-model pricing for input/output tokens and images.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 
 @dataclass(frozen=True)

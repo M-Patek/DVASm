@@ -38,7 +38,7 @@ class PrometheusConfig:
         ]
         for target in self.targets:
             lines.append(f"  - job_name: '{target.get('job_name', 'default')}'")
-            lines.append(f"    static_configs:")
+            lines.append("    static_configs:")
             for static in target.get("static_configs", []):
                 targets = static.get("targets", [])
                 lines.append(f"      - targets: {json.dumps(targets)}")

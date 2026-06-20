@@ -11,7 +11,7 @@ import time
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional
 
-from dvas.observability.collector import MetricsCollector, get_metrics
+from dvas.observability.collector import get_metrics
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)

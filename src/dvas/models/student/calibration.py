@@ -6,7 +6,7 @@ that model confidence scores accurately reflect prediction accuracy.
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional
 
 import numpy as np
 

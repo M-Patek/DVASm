@@ -6,7 +6,6 @@ access control, and data isolation guarantees.
 
 from __future__ import annotations
 
-import hashlib
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone

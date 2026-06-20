@@ -13,13 +13,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-import numpy as np
 
 from dvas.data.schemas import Action, Annotation, Segment
 from dvas.utils.logging import get_logger
-from dvas.world_model.dynamics import ContactDynamics, MotionPrediction, PhysicalDynamics
+from dvas.world_model.dynamics import PhysicalDynamics
 from dvas.world_model.state_repr import ObjectState, ObjectRole, WorldState
-from dvas.world_model.temporal_graph import MultiObjectTransitionGraph, TemporalEventGraph
+from dvas.world_model.temporal_graph import MultiObjectTransitionGraph
 
 logger = get_logger(__name__)
 

@@ -8,11 +8,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 from dvas.data.schemas import Annotation
 from dvas.quality.schema import (
-    DimensionScore,
     QualityDimension,
     QualityProfile,
     QualityScores,
@@ -109,9 +108,9 @@ class AcceptanceCriteria:
         # Check required dimensions
         for dim in self.required_dimensions:
             dim_score = scores.get_score(dim)
-            min_score = self.min_dimension_scores.get(
+            _ = self.min_dimension_scores.get(
                 dim.value, self.thresholds.check_score(scores)[1]
-            )
+            )  # min_score calculated for potential future use
 
             # Get threshold for this dimension
             threshold_map = {

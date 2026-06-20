@@ -3,10 +3,12 @@
 Requires: pip install asyncpg psycopg2-binary
 """
 
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from dvas.data.schemas import Annotation
 from dvas.persistence.backends.base import (
     BackendConfig,
     BackendStats,
@@ -23,17 +25,13 @@ logger = get_logger(__name__)
 
 # Optional import
 try:
-    import asyncpg
+    import asyncpg  # noqa: F401
     import psycopg2
     from psycopg2.extras import RealDictCursor
 
     HAS_POSTGRES = True
 except ImportError:
     HAS_POSTGRES = False
-
-import json
-import orjson
-from dvas.data.schemas import Annotation
 
 
 class PostgreSQLConfig(BackendConfig):
@@ -260,7 +258,7 @@ class PostgreSQLBackend(MetadataBackend):
         if self.config.read_only:
             raise RuntimeError("Cannot index to read-only backend")
 
-        content = self._extract_searchable_content(annotation)
+        _ = self._extract_searchable_content(annotation)  # content extracted for side effects
         content_hash = self._compute_hash(annotation)
 
         cur = self._sync_conn.cursor()

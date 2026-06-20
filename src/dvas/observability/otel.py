@@ -9,11 +9,10 @@ from __future__ import annotations
 import threading
 import time
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
-from dvas.observability.collector import MetricsCollector, get_metrics
-from dvas.observability.tracing import Span, Tracer, get_tracer
+from dvas.observability.collector import get_metrics
+from dvas.observability.tracing import get_tracer
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)

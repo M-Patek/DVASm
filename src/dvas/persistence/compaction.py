@@ -9,7 +9,7 @@ Provides tools for:
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 
 from dvas.data.schemas import Annotation
 from dvas.persistence.backends.base import StorageBackend, MetadataBackend
@@ -136,10 +136,7 @@ class CompactionManager:
         if not self.storage or not self.metadata:
             return {"found": 0, "removed": 0, "space_reclaimed": 0}
 
-        # Get all indexed IDs
-        indexed_ids: Set[str] = set()
-
-        # This is inefficient for large datasets - would need backend support
+        # Get all indexed IDs (inefficient for large datasets - would need backend support)
         # For now, iterate through storage and check index
         found = 0
         removed = 0

@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from dvas.data.schemas import Annotation
-from dvas.quality.schema import QualityDimension, QualityScores
+from dvas.quality.schema import QualityScores
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)

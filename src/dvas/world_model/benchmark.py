@@ -12,7 +12,7 @@ import json
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -20,7 +20,7 @@ from dvas.data.schemas import Action, Annotation, Segment
 from dvas.utils.logging import get_logger
 from dvas.world_model.annotator import WorldModelAnnotator
 from dvas.world_model.quality_evaluator import WorldModelQualityEvaluator
-from dvas.world_model.state_repr import ObjectState, WorldState
+from dvas.world_model.state_repr import WorldState
 
 logger = get_logger(__name__)
 

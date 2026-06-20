@@ -13,9 +13,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
-from dvas.data.schemas import Action, Annotation, Segment
+from dvas.data.schemas import Annotation
 from dvas.utils.logging import get_logger
-from dvas.world_model.dynamics import ContactDynamics, MotionPrediction, PhysicalDynamics
+from dvas.world_model.dynamics import ContactDynamics, PhysicalDynamics
 from dvas.world_model.state_repr import WorldState
 
 logger = get_logger(__name__)

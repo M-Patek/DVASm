@@ -11,14 +11,13 @@ Usage:
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 from typing import Optional
 
 import typer
 
-from dvas.governance.approval_workflow import ApprovalWorkflow, AssignmentStrategy, Reviewer
-from dvas.governance.policy_engine import PolicyEngine, PolicyResult
+from dvas.governance.approval_workflow import ApprovalWorkflow
+from dvas.governance.policy_engine import PolicyEngine
 from dvas.governance.quality_gates import (
     GateStatus,
     QualityDimension,

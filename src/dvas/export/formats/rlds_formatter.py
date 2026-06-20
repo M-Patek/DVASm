@@ -8,7 +8,7 @@ Reference: https://github.com/google-research/rlds
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 from dvas.data.schemas import Annotation
 

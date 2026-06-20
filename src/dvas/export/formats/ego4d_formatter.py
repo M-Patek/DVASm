@@ -8,7 +8,7 @@ Reference: https://ego4d-data.org/
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from dvas.data.schemas import Annotation, AnnotationStandard
 

@@ -7,7 +7,7 @@ information in text fields, with configurable redaction strategies.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Pattern, Set, Tuple
 

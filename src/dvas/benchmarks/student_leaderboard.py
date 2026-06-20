@@ -13,7 +13,6 @@ from typing import Any, Dict, List, Optional, Union
 import numpy as np
 
 from dvas.benchmarks.base import BaseBenchmark, BenchmarkResult
-from dvas.models.base import GenerationResult
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -246,14 +245,14 @@ class StudentLeaderboard(BaseBenchmark):
         for model_id in model_ids:
             q = quality_scores.get(model_id, 0.0)
             s = size_scores.get(model_id, 0.0)
-            l = latency_scores.get(model_id, 0.0)
+            lat = latency_scores.get(model_id, 0.0)
             t = throughput_scores.get(model_id, 0.0)
             m = memory_scores.get(model_id, 0.0)
 
             overall = (
                 self.weights["quality"] * q +
                 self.weights["size"] * s +
-                self.weights["latency"] * l +
+                self.weights["latency"] * lat +
                 self.weights["throughput"] * t +
                 self.weights["memory"] * m
             )

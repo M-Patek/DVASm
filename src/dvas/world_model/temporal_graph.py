@@ -8,11 +8,10 @@ Provides graph structures for representing temporal sequences:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum, auto
+from enum import Enum
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 
 from dvas.utils.logging import get_logger
-from dvas.world_model.state_repr import ObjectState, WorldState
 
 logger = get_logger(__name__)
 
@@ -717,14 +716,12 @@ class MultiObjectTransitionGraph:
         all_transitions.sort(key=lambda x: x[1])
         groups: List[List[str]] = []
         current_group: List[str] = []
-        group_start: float = 0.0
         group_end: float = 0.0
 
         for oid, ts in all_transitions:
             if not current_group:
                 # First item in group
                 current_group = [oid]
-                group_start = ts
                 group_end = ts
             elif ts - group_end <= time_window:
                 # Within window, add to current group
@@ -735,7 +732,7 @@ class MultiObjectTransitionGraph:
                 if len(current_group) > 1:
                     groups.append(current_group)
                 current_group = [oid]
-                group_start = ts
+                _ = ts  # group_start assigned for clarity
                 group_end = ts
 
         if len(current_group) > 1:

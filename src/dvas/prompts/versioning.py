@@ -7,9 +7,8 @@ and diff functionality for prompt templates.
 from __future__ import annotations
 
 import difflib
-import re
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from dvas.utils.logging import get_logger
 

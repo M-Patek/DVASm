@@ -14,13 +14,12 @@ from typing import TYPE_CHECKING, Dict, Iterator, List, Optional
 
 from dvas.data.schemas import Annotation
 from dvas.persistence.backends import LocalFSBackend, LocalFSConfig
-from dvas.persistence.backends.base import QueryFilter
 from dvas.persistence.index_manager import IndexManager
 from dvas.persistence.indexed_store import IndexStore, IndexStoreConfig
 from dvas.utils.logging import get_logger
 
 if TYPE_CHECKING:
-    from dvas.persistence.backends import SQLiteBackend
+    pass
 
 logger = get_logger(__name__)
 

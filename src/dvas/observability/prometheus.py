@@ -7,8 +7,7 @@ including counters, gauges, histograms, and summaries.
 from __future__ import annotations
 
 import threading
-import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from dvas.observability.collector import MetricsCollector, get_metrics
 from dvas.utils.logging import get_logger

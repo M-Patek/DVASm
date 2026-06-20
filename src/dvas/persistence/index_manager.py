@@ -10,7 +10,6 @@ Provides unified access to multiple index types:
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from dvas.data.schemas import Annotation
@@ -234,7 +233,6 @@ class IndexManager:
         # Get video hash count if available
         if hasattr(self.backend, "_get_connection"):
             try:
-                import sqlite3
                 conn = self.backend._get_connection()
                 row = conn.execute("SELECT COUNT(*) FROM video_hashes").fetchone()
                 stats.video_hashes_count = row[0] if row else 0

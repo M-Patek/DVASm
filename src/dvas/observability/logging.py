@@ -8,18 +8,13 @@ from __future__ import annotations
 
 import functools
 import json
-import logging
-import sys
 import threading
 import time
-import traceback
 from contextlib import contextmanager
 from contextvars import ContextVar
-from pathlib import Path
 from typing import Any, Callable, Dict, Generator, Optional, TypeVar
 
-import structlog
-from structlog.types import EventDict, Processor
+from structlog.types import EventDict
 
 from dvas.utils.logging import get_logger
 

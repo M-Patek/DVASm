@@ -4,13 +4,12 @@ import json
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Dict, Iterator, Optional, Tuple
 
 import orjson
 
 from dvas.data.schemas import Annotation
 from dvas.persistence.backends.base import BackendStats, BackendConfig, StorageBackend
-from dvas.utils.hash import compute_annotation_hash
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)

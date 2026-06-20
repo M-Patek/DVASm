@@ -7,11 +7,10 @@ hostnames, or other identifying information.
 from __future__ import annotations
 
 import hashlib
-import os
 import re
 from dataclasses import dataclass
-from pathlib import Path, PurePath
-from typing import Dict, List, Optional, Pattern, Tuple, Union
+from pathlib import Path
+from typing import Dict, List, Optional, Pattern, Union
 
 from dvas.utils.logging import get_logger
 

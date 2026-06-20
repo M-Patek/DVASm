@@ -4,7 +4,6 @@ Measures human-AI agreement metrics including Cohen's kappa,
 percentage agreement, and correlation-based measures.
 """
 
-import json
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path

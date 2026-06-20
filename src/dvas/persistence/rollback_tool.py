@@ -6,8 +6,8 @@ Provides utilities for:
 - Rolling back specific changes
 """
 
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import Any, Dict, Optional
 
 from dvas.data.schemas import Annotation
 from dvas.persistence.backends.base import MetadataBackend

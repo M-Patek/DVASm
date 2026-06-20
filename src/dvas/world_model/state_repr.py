@@ -7,8 +7,8 @@ object states, and scene graphs for spatial and relational understanding.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from enum import Enum
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 

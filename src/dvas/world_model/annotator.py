@@ -12,7 +12,7 @@ Supports both Teacher model-based and rule-based annotation.
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -25,18 +25,12 @@ from dvas.world_model.state_repr import (
     ObjectRole,
     ObjectState,
     Relationship,
-    SceneGraph,
     WorldState,
 )
 from dvas.world_model.temporal_graph import (
     EventType,
-    MultiObjectTransitionGraph,
-    ObjectStateTransitionGraph,
-    StateTransition,
     TemporalEvent,
     TemporalEventGraph,
-    TemporalRelation,
-    TemporalRelationType,
 )
 
 logger = get_logger(__name__)
@@ -348,14 +342,14 @@ class WorldModelAnnotator:
         start_time = time.time()
 
         # Generate all annotations
-        state_before = await self.generate_state_before(segment, video_frames)
-        state_after = await self.generate_state_after(segment, video_frames)
-
         state_pred = await self.generate_state_prediction(segment)
+        await self.generate_state_before(segment, video_frames)
+        await self.generate_state_after(segment, video_frames)
+
         dynamics = await self.generate_dynamics(segment)
 
         # Extract causal relations
-        causal = await self.extract_causal_relations(segment)
+        await self.extract_causal_relations(segment)
 
         # Generate counterfactuals if actions exist
         counterfactuals = []
@@ -436,7 +430,7 @@ class WorldModelAnnotator:
         action: Action,
     ) -> WorldState:
         """Use teacher model for state prediction."""
-        prompt = f"""
+        _ = f"""
         Given the current scene state:
         {current_state.describe()}
 
@@ -492,7 +486,7 @@ class WorldModelAnnotator:
         counterfactuals = []
 
         for alt_action in alternative_actions:
-            prompt = f"""
+            _ = f"""
             In the video, the action was: {actual_action.verb} {actual_action.noun}
 
             What would happen if instead the action was: {alt_action.verb} {alt_action.noun}?

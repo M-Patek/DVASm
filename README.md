@@ -218,36 +218,43 @@ black src/ tests/
 
 ```
 DVASm/
-├── src/dvas/              # Core source code
-│   ├── api/               # FastAPI REST endpoints with auth & rate limiting
-│   ├── cli/               # Developer tools (scaffold, migrate, dev mode)
-│   ├── config/            # Settings, prompts, constants
-│   ├── core/              # Event bus, circuit breaker, algorithms, actors, Saga
-│   ├── data/              # Video loading, schemas, storage
-│   │   └── robot_schemas/ # VLA/Robot annotations (hand pose, affordance, counterfactual)
-│   ├── governance/        # Data governance, standards, policy engine, quality gates
-│   ├── infrastructure/    # Docker, K8s, Terraform, CI/CD, monitoring
-│   ├── models/            # Teacher & student models
-│   │   ├── teacher/base.py    # Unified TeacherModel (all providers)
-│   │   ├── teacher/           # Registry, capabilities, pricing, quota, consensus
-│   │   ├── student/           # LoRA registry, SFT/DPO, calibration, selection
-│   │   └── evaluator/         # Metrics & LLM-as-Judge
-│   ├── persistence/       # Pluggable backends (LocalFS, SQLite, PostgreSQL, S3)
-│   ├── pipeline/          # Annotation pipeline
-│   │   ├── core.py        # Main orchestrator
-│   │   ├── builder.py     # Annotation construction
-│   │   ├── checkpoint.py  # Resume persistence
-│   │   ├── parser.py      # Response parsing
-│   │   ├── quality_gate.py    # Quality validation gates
-│   │   └── state_machine.py   # Annotation lifecycle management
-│   ├── prompts/           # Prompt registry, versioning, A/B testing, auto-selection
-│   ├── quality/           # Quality loop (analyzer, llm_judge, review_queue, trend_dashboard)
-│   ├── review/            # Review workbench (browser, editor, assignment, workflow)
-│   ├── routing/           # SmartRouter, Ensemble, CostOptimizer
-│   ├── security/          # Privacy & access control, audit logging
-│   ├── world_model/       # State prediction, dynamics, causal extraction, training export
-│   └── utils/             # Logging, retry, caching, observability
-├── tests/                 # Test suite (900+ tests)
+├── src/
+│   ├── dvas/              # Core source code
+│   │   ├── api/               # FastAPI REST endpoints with auth & rate limiting
+│   │   ├── cli/               # Developer tools (scaffold, migrate, dev mode)
+│   │   ├── config/            # Settings, prompts, constants
+│   │   ├── core/              # Event bus, circuit breaker, algorithms, actors, Saga
+│   │   ├── data/              # Video loading, schemas, storage
+│   │   │   └── robot_schemas/ # VLA/Robot annotations (hand pose, affordance, counterfactual)
+│   │   ├── governance/        # Data governance, standards, policy engine, quality gates
+│   │   ├── infrastructure/    # Docker, K8s, Terraform, CI/CD, monitoring
+│   │   ├── models/            # Teacher & student models
+│   │   │   ├── teacher/base.py    # Unified TeacherModel (all providers)
+│   │   │   ├── teacher/           # Registry, capabilities, pricing, quota, consensus
+│   │   │   ├── student/           # LoRA registry, SFT/DPO, calibration, selection
+│   │   │   └── evaluator/         # Metrics & LLM-as-Judge
+│   │   ├── persistence/       # Pluggable backends (LocalFS, SQLite, PostgreSQL, S3)
+│   │   ├── pipeline/          # Annotation pipeline
+│   │   │   ├── core.py        # Main orchestrator
+│   │   │   ├── builder.py     # Annotation construction
+│   │   │   ├── checkpoint.py  # Resume persistence
+│   │   │   ├── parser.py      # Response parsing
+│   │   │   ├── quality_gate.py    # Quality validation gates
+│   │   │   └── state_machine.py   # Annotation lifecycle management
+│   │   ├── prompts/           # Prompt registry, versioning, A/B testing, auto-selection
+│   │   ├── quality/           # Quality loop (analyzer, llm_judge, review_queue, trend_dashboard)
+│   │   ├── review/            # Review workbench (browser, editor, assignment, workflow)
+│   │   ├── routing/           # SmartRouter, Ensemble, CostOptimizer
+│   │   ├── security/          # Privacy & access control, audit logging
+│   │   ├── world_model/       # State prediction, dynamics, causal extraction, training export
+│   │   └── utils/             # Logging, retry, caching, observability
+│   ├── data/                  # Runtime data directories (not version-controlled)
+│   │   ├── annotations/       # Generated annotation outputs (gold, model, reviewed)
+│   │   ├── exports/           # Export format outputs (LLaVA, OpenAI, etc.)
+│   │   ├── processed/         # Processed video/data intermediates
+│   │   └── raw/               # Raw uploaded videos and source data
+│   └── migrations/            # Database migration scripts (Alembic/SQL)
+├── tests/                 # Test suite (1100+ tests)
 ├── examples/              # Usage examples
 │   ├── annotate_epic.py
 │   ├── download_epic.py
@@ -259,7 +266,7 @@ DVASm/
 ├── scripts/               # Utility scripts
 ├── benchmarks/            # Performance benchmarks
 └── docs/                  # Documentation
-    ├── subsystems/        # Per-subsystem docs (16 subsystems)
+    ├── subsystems/        # Per-subsystem docs (19 subsystems)
     ├── architecture/      # Design docs & constitution
     └── _machine/          # Status & tech debt tracking
 ```

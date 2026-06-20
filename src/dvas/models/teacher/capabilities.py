@@ -4,7 +4,7 @@ Provides capability detection and provider capability contracts.
 """
 
 from dataclasses import dataclass, field
-from enum import Enum, auto
+from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
 

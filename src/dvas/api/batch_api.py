@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
 from dvas.api.task_lifecycle import TaskLifecycleManager
-from dvas.api.task_store import InMemoryTaskStore, TaskStatus, TaskType
+from dvas.api.task_store import InMemoryTaskStore, TaskType
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)

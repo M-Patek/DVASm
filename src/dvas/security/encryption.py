@@ -8,12 +8,11 @@ from __future__ import annotations
 
 import base64
 import hashlib
-import json
 import os
-import secrets
+import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from dvas.utils.logging import get_logger
 
@@ -58,8 +57,6 @@ class EncryptionAtRest:
         """
         try:
             from cryptography.fernet import Fernet
-            from cryptography.hazmat.primitives import hashes
-            from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
         except ImportError:
             raise ImportError(
                 "cryptography package required. Install with: pip install cryptography"
@@ -430,9 +427,6 @@ class KeyManager:
             version = key_file.stem.replace("key_", "")
             with open(key_file, "rb") as f:
                 self._keys[version] = f.read()
-
-
-import time
 
 
 __all__ = [

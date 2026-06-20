@@ -8,12 +8,10 @@ from __future__ import annotations
 
 import copy
 import hashlib
-import re
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
-from dvas.data.schemas import Annotation, Segment, Object, Action
+from dvas.data.schemas import Annotation
 from dvas.security.pii import PIIDetector, PIIFinding, PIIType
 from dvas.utils.logging import get_logger
 

@@ -4,14 +4,13 @@ Provides comprehensive evaluation metrics comparing teacher and student models
 across multiple dimensions: annotation quality, inference cost, and latency.
 """
 
-import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from dvas.models.base import GenerationResult, ModelType
+from dvas.models.base import GenerationResult
 from dvas.models.evaluator.metrics import MetricsCalculator
 from dvas.utils.logging import get_logger
 
@@ -155,10 +154,10 @@ class ComparisonReport:
 
         if self.latency_comparison:
             print("\n--- LATENCY COMPARISON ---")
-            l = self.latency_comparison
-            print(f"Teacher latency: {l.teacher_latency_ms:.1f}ms (p95: {l.teacher_p95_ms:.1f}ms)")
-            print(f"Student latency: {l.student_latency_ms:.1f}ms (p95: {l.student_p95_ms:.1f}ms)")
-            print(f"Speedup: {l.speedup_ratio:.1f}x")
+            lat = self.latency_comparison
+            print(f"Teacher latency: {lat.teacher_latency_ms:.1f}ms (p95: {lat.teacher_p95_ms:.1f}ms)")
+            print(f"Student latency: {lat.student_latency_ms:.1f}ms (p95: {lat.student_p95_ms:.1f}ms)")
+            print(f"Speedup: {lat.speedup_ratio:.1f}x")
 
         print("\n--- AGREEMENT ---")
         print(f"Exact match rate: {self.exact_match_rate:.1%}")

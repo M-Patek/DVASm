@@ -6,11 +6,10 @@ import argparse
 import sys
 from pathlib import Path
 
-from dvas.infrastructure.docker_manager import DockerfileBuilder, DockerManager
+from dvas.infrastructure.docker_manager import DockerfileBuilder
 from dvas.infrastructure.kubernetes_manager import (
     ContainerSpec,
     DeploymentSpec,
-    KubernetesManager,
 )
 from dvas.infrastructure.monitoring_stack import MonitoringStack
 from dvas.infrastructure.terraform_manager import TerraformManager

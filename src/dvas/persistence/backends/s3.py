@@ -6,7 +6,7 @@ Requires: pip install boto3
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Dict, Iterator, Optional, Tuple
 
 import orjson
 

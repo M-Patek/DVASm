@@ -10,7 +10,6 @@ from dvas.infrastructure.cicd_manager import (
     CICDManager,
     DeploymentTarget,
     PipelineRun,
-    SecretRef,
 )
 from dvas.infrastructure.docker_manager import (
     ContainerConfig,

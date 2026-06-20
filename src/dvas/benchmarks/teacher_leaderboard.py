@@ -13,13 +13,8 @@ from typing import Any, Dict, List, Optional, Union
 import numpy as np
 
 from dvas.benchmarks.base import BaseBenchmark, BenchmarkResult
-from dvas.models.base import GenerationResult
-from dvas.models.teacher.pricing import PricingInfo, get_pricing_registry
+from dvas.models.teacher.pricing import get_pricing_registry
 from dvas.models.teacher.profiles import (
-    BASELINE_LATENCY_PROFILES,
-    BASELINE_QUALITY_PROFILES,
-    LatencyProfile,
-    QualityProfile,
     get_profile_manager,
 )
 from dvas.models.teacher.registry import MODEL_REGISTRY, get_registry
@@ -246,13 +241,13 @@ class TeacherLeaderboard(BaseBenchmark):
         for name in model_names:
             q = quality_scores.get(name, 0.0)
             c = cost_scores.get(name, 0.0)
-            l = latency_scores.get(name, 0.0)
+            lat = latency_scores.get(name, 0.0)
             f = feature_scores.get(name, 0.0)
 
             overall = (
                 self.weights["quality"] * q +
                 self.weights["cost"] * c +
-                self.weights["latency"] * l +
+                self.weights["latency"] * lat +
                 self.weights["features"] * f
             )
             scores[name] = overall

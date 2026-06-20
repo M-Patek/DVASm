@@ -4,7 +4,6 @@ Measures inter-annotator consistency and model stability
 across multiple runs and annotators.
 """
 
-import json
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path

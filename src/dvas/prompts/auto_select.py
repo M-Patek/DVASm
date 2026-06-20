@@ -8,11 +8,9 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
-from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from dvas.prompts.adaptive import VideoCategory
 from dvas.prompts.registry import PromptDomain, PromptRegistry, PromptTemplate
 from dvas.utils.logging import get_logger
 

@@ -6,10 +6,9 @@ Computes quality scores across all dimensions using heuristics and
 
 from __future__ import annotations
 
-import re
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional
 
-from dvas.data.schemas import Action, Annotation, Object, Segment
+from dvas.data.schemas import Action, Annotation, Object
 from dvas.quality.schema import (
     DimensionScore,
     QualityDimension,

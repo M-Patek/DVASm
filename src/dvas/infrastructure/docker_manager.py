@@ -6,10 +6,8 @@ with GPU support, and resource allocation.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import subprocess
-import tempfile
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -54,7 +52,7 @@ class ResourceLimits:
         if self.memory_swap_mb is not None:
             args.extend(["--memory-swap", f"{self.memory_swap_mb}m"])
         if self.gpu_count is not None:
-            args.extend(["--gpus", f"all,capabilities=compute,utility"])
+            args.extend(["--gpus", "all,capabilities=compute,utility"])
         if self.gpu_ids is not None:
             gpus = ",".join(self.gpu_ids)
             args.extend(["--gpus", f"\"device={gpus}\""])

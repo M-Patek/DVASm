@@ -11,7 +11,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
-from dvas.data.schemas import AnnotationStandard
 
 
 class StandardFieldType(str, Enum):
@@ -391,13 +390,13 @@ class StandardRegistry:
         target_fields = {f.name for f in target.fields}
         common_fields = source_fields & target_fields
 
-        for field in common_fields:
-            if field in data:
-                result[field] = data[field]
+        for common_field in common_fields:
+            if common_field in data:
+                result[common_field] = data[common_field]
 
-        for field in target.fields:
-            if field.name not in result and field.default is not None:
-                result[field.name] = field.default
+        for target_field in target.fields:
+            if target_field.name not in result and target_field.default is not None:
+                result[target_field.name] = target_field.default
 
         # Also copy fields from source data that exist in source but not in target
         for field_name in data:
