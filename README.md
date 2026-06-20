@@ -181,7 +181,8 @@ DVAS
 | 15 | [Review Workbench](docs/subsystems/05-evaluation.md) | ✅ Enhanced | Dataset browser, annotation editor, reviewer assignment |
 | 16 | [World Model](docs/subsystems/14-world-model.md) | ✅ Enhanced | State prediction, dynamics annotation, causal extraction, benchmarks |
 | 17 | [Benchmarks](docs/subsystems/17-benchmarks.md) | ✅ Enhanced | EPIC-KITCHENS, Ego4D, Open X-Embodiment, leaderboards, Pareto analysis |
-| 18 | [Infrastructure](docs/subsystems/15-infrastructure.md) | 📝 Draft | Data platform deployment, ops |
+| 18 | [Infrastructure](docs/subsystems/18-infrastructure.md) | ✅ Stable | Docker, K8s, Terraform, CI/CD, monitoring stack |
+| 19 | [Governance](docs/subsystems/19-governance.md) | ✅ Stable | Data governance, standards, policy engine, approval workflow, quality gates |
 
 **Test Coverage:** 1100+ tests passing (~95% pass rate, failures are Windows/env-specific)
 
@@ -224,6 +225,8 @@ DVASm/
 │   ├── core/              # Event bus, circuit breaker, algorithms, actors, Saga
 │   ├── data/              # Video loading, schemas, storage
 │   │   └── robot_schemas/ # VLA/Robot annotations (hand pose, affordance, counterfactual)
+│   ├── governance/        # Data governance, standards, policy engine, quality gates
+│   ├── infrastructure/    # Docker, K8s, Terraform, CI/CD, monitoring
 │   ├── models/            # Teacher & student models
 │   │   ├── teacher/base.py    # Unified TeacherModel (all providers)
 │   │   ├── teacher/           # Registry, capabilities, pricing, quota, consensus

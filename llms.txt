@@ -111,9 +111,23 @@ subsystems:
   - id: "14-deployment"
     name: "Deployment"
     doc: "docs/subsystems/14-deployment.md"
-    status: draft
+    status: stable
     health: green
     code_root: "src/dvas/deployment/"
+
+  - id: "15-infrastructure"
+    name: "Infrastructure"
+    doc: "docs/subsystems/15-infrastructure.md"
+    status: stable
+    health: green
+    code_root: "src/dvas/infrastructure/"
+
+  - id: "16-governance"
+    name: "Governance"
+    doc: "docs/subsystems/16-governance.md"
+    status: stable
+    health: green
+    code_root: "src/dvas/governance/"
 
 # Scripts
 scripts:
@@ -134,6 +148,13 @@ teacher_models:
   - claude-opus-4-8 (user-specified latest)
   - qwen2.5-vl-7b / qwen2.5-vl-72b (via Together)
 student_base: Qwen2.5-VL-7B-Instruct
+
+# Recent Fixes (2026-06-20)
+# - P15 Infrastructure: Docker/K8s/Terraform/CI/CD modules with 91% test coverage
+# - P16 Governance: Data governance, standards, policy engine, approval workflow, quality gates
+# - src/dvas/infrastructure/docker_manager.py: Added set_workdir method
+# - src/dvas/infrastructure/terraform_manager.py: Fixed .format() string parsing
+# - tests/: Added 48 terraform tests, 17 CLI tests, fixed HPA test structure
 
 # Recent Fixes (2026-06-18)
 # - src/dvas/pipeline/core.py: GenerationResult status handling (is_recoverable, is_timeout, is_rate_limited)
