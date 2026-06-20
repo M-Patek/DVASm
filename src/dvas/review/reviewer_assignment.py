@@ -13,6 +13,7 @@ logger = get_logger(__name__)
 @dataclass
 class Reviewer:
     """A human reviewer with skills and workload."""
+
     reviewer_id: str
     name: str
     skills: List[str] = field(default_factory=list)
@@ -50,6 +51,7 @@ class Reviewer:
 @dataclass
 class Assignment:
     """An assignment of a review item to a reviewer."""
+
     item_id: str
     reviewer_id: str
     assigned_at: str = ""
@@ -95,13 +97,16 @@ class ReviewerAssignment:
     def get_reviewer_by_id(self, reviewer_id: str) -> Optional[Reviewer]:
         return self._reviewers.get(reviewer_id)
 
-    def assign_item(self, item_id: str, required_skills: Optional[List[str]] = None, priority: str = "medium") -> Optional[Assignment]:
+    def assign_item(
+        self, item_id: str, required_skills: Optional[List[str]] = None, priority: str = "medium"
+    ) -> Optional[Assignment]:
         reviewer = self._find_best_reviewer(required_skills or [])
         if not reviewer:
             logger.warning("no_reviewer_available", item_id=item_id)
             return None
 
         from datetime import datetime
+
         assignment = Assignment(
             item_id=item_id,
             reviewer_id=reviewer.reviewer_id,
@@ -115,7 +120,9 @@ class ReviewerAssignment:
         reviewer.current_workload += 1
         reviewer.review_count += 1
 
-        logger.info("item_assigned", item_id=item_id, reviewer_id=reviewer.reviewer_id, priority=priority)
+        logger.info(
+            "item_assigned", item_id=item_id, reviewer_id=reviewer.reviewer_id, priority=priority
+        )
         return assignment
 
     def _find_best_reviewer(self, required_skills: List[str]) -> Optional[Reviewer]:
@@ -140,7 +147,12 @@ class ReviewerAssignment:
         candidates.sort(key=lambda x: (-x[1], x[2]))
         return candidates[0][0]
 
-    def batch_assign(self, item_ids: List[str], required_skills: Optional[List[str]] = None, priority: str = "medium") -> List[Assignment]:
+    def batch_assign(
+        self,
+        item_ids: List[str],
+        required_skills: Optional[List[str]] = None,
+        priority: str = "medium",
+    ) -> List[Assignment]:
         assignments = []
         for item_id in item_ids:
             assignment = self.assign_item(item_id, required_skills, priority)
@@ -175,7 +187,11 @@ class ReviewerAssignment:
         available = sum(1 for r in self._reviewers.values() if r.is_available)
         total_capacity = sum(r.max_workload for r in self._reviewers.values())
         current_load = sum(r.current_workload for r in self._reviewers.values())
-        avg_agreement = sum(r.agreement_rate for r in self._reviewers.values()) / total_reviewers if total_reviewers > 0 else 0.0
+        avg_agreement = (
+            sum(r.agreement_rate for r in self._reviewers.values()) / total_reviewers
+            if total_reviewers > 0
+            else 0.0
+        )
 
         return {
             "total_reviewers": total_reviewers,

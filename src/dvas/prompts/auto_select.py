@@ -22,24 +22,67 @@ class DomainDetector:
 
     DOMAIN_KEYWORDS = {
         PromptDomain.KITCHEN: [
-            "cook", "kitchen", "cut", "chop", "food", "ingredient",
-            "recipe", "pan", "oven", "knife", "stove", "plate",
+            "cook",
+            "kitchen",
+            "cut",
+            "chop",
+            "food",
+            "ingredient",
+            "recipe",
+            "pan",
+            "oven",
+            "knife",
+            "stove",
+            "plate",
         ],
         PromptDomain.ROBOT: [
-            "grasp", "pick", "place", "manipulate", "hand", "finger",
-            "grip", "assembly", "robot", "arm", "gripper",
+            "grasp",
+            "pick",
+            "place",
+            "manipulate",
+            "hand",
+            "finger",
+            "grip",
+            "assembly",
+            "robot",
+            "arm",
+            "gripper",
         ],
         PromptDomain.MEDICAL: [
-            "surgery", "medical", "patient", "instrument", "operation",
-            "tissue", "doctor", "hospital", "clinic",
+            "surgery",
+            "medical",
+            "patient",
+            "instrument",
+            "operation",
+            "tissue",
+            "doctor",
+            "hospital",
+            "clinic",
         ],
         PromptDomain.SPORTS: [
-            "run", "jump", "sport", "ball", "game", "match",
-            "exercise", "fitness", "athlete", "court", "field",
+            "run",
+            "jump",
+            "sport",
+            "ball",
+            "game",
+            "match",
+            "exercise",
+            "fitness",
+            "athlete",
+            "court",
+            "field",
         ],
         PromptDomain.ASSEMBLY: [
-            "assemble", "build", "construct", "screw", "bolt",
-            "part", "component", "wrench", "tool", "factory",
+            "assemble",
+            "build",
+            "construct",
+            "screw",
+            "bolt",
+            "part",
+            "component",
+            "wrench",
+            "tool",
+            "factory",
         ],
     }
 
@@ -148,8 +191,7 @@ class AutoSelector:
             return None
         # Filter by task type if specified
         task_candidates = [
-            p for p in candidates
-            if task_type in p.metadata.tags or not p.metadata.tags
+            p for p in candidates if task_type in p.metadata.tags or not p.metadata.tags
         ]
         if task_candidates:
             candidates = task_candidates
@@ -164,7 +206,7 @@ class AutoSelector:
         # Exploration vs exploitation
         if random.random() < self._exploration_rate and len(ranked) > 1:
             # Explore: pick a random candidate from top 3
-            selected = random.choice(ranked[:min(3, len(ranked))])
+            selected = random.choice(ranked[: min(3, len(ranked))])
             logger.info(
                 "prompt_selected_explore",
                 prompt_id=selected.id,

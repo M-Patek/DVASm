@@ -373,3 +373,59 @@ class DriftDetector:
             "reference_stats": self.reference_stats,
             "new_stats": new_stats,
         }
+
+
+class PerformanceMonitor:
+    """Rolling window performance metrics monitor."""
+
+    def __init__(self, window_size: int = 100):
+        self.window_size = window_size
+        self.metrics: Dict[str, List[float]] = {}
+
+    def record(self, metrics: Dict[str, float]) -> None:
+        """Record a set of metrics."""
+        for key, value in metrics.items():
+            if key not in self.metrics:
+                self.metrics[key] = []
+            self.metrics[key].append(value)
+            # Keep only the last window_size entries
+            if len(self.metrics[key]) > self.window_size:
+                self.metrics[key] = self.metrics[key][-self.window_size :]
+
+    def get_statistics(self) -> Dict[str, Dict[str, float]]:
+        """Get statistics for all tracked metrics."""
+        stats = {}
+        for key, values in self.metrics.items():
+            if values:
+                stats[key] = {
+                    "mean": float(np.mean(values)),
+                    "std": float(np.std(values)),
+                    "min": float(np.min(values)),
+                    "max": float(np.max(values)),
+                    "count": len(values),
+                }
+        return stats
+
+    def check_anomalies(self, threshold_std: float = 3.0) -> List[Dict]:
+        """Check for anomalies in the latest metrics."""
+        anomalies = []
+        for key, values in self.metrics.items():
+            if len(values) < 2:
+                continue
+            mean = np.mean(values)
+            std = np.std(values)
+            if std == 0:
+                continue
+            latest = values[-1]
+            z_score = abs(latest - mean) / std
+            if z_score > threshold_std:
+                anomalies.append(
+                    {
+                        "metric": key,
+                        "value": latest,
+                        "mean": mean,
+                        "std": std,
+                        "z_score": z_score,
+                    }
+                )
+        return anomalies

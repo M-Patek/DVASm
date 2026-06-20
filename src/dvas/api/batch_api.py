@@ -209,10 +209,12 @@ async def get_batch_results(batch_id: str) -> BatchJobResult:
             if task_status.get("status") == "COMPLETED":
                 results.append(task_status.get("result", {}))
             elif task_status.get("error"):
-                errors.append({
-                    "task_id": task_id,
-                    "error": task_status.get("error"),
-                })
+                errors.append(
+                    {
+                        "task_id": task_id,
+                        "error": task_status.get("error"),
+                    }
+                )
 
     return BatchJobResult(
         batch_id=batch_id,

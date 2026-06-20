@@ -254,9 +254,7 @@ class QualityTrendDashboard:
 
         # Update dimension trends
         for dim_score in scores.all_scores:
-            self._dimension_trends[dim_score.dimension].add_point(
-                dim_score.score, ts
-            )
+            self._dimension_trends[dim_score.dimension].add_point(dim_score.score, ts)
 
         logger.debug(
             "added_scores_to_dashboard",
@@ -305,9 +303,9 @@ class QualityTrendDashboard:
 
         if scores_list:
             # Compute averages
-            snapshot.avg_overall_score = sum(
-                s.overall_score for s in scores_list
-            ) / len(scores_list)
+            snapshot.avg_overall_score = sum(s.overall_score for s in scores_list) / len(
+                scores_list
+            )
 
             # Pass rate (assuming 0.6 threshold)
             passed = sum(1 for s in scores_list if s.overall_score >= 0.6)
@@ -342,9 +340,9 @@ class QualityTrendDashboard:
 
             snapshot.top_issues = [
                 {"issue": issue, "count": count}
-                for issue, count in sorted(
-                    issue_counts.items(), key=lambda x: x[1], reverse=True
-                )[:10]
+                for issue, count in sorted(issue_counts.items(), key=lambda x: x[1], reverse=True)[
+                    :10
+                ]
             ]
 
         self._snapshots.append(snapshot)
@@ -380,9 +378,7 @@ class QualityTrendDashboard:
         )
 
         if scores_list:
-            rollup.avg_quality_score = sum(
-                s.overall_score for s in scores_list
-            ) / len(scores_list)
+            rollup.avg_quality_score = sum(s.overall_score for s in scores_list) / len(scores_list)
 
             passed = sum(1 for s in scores_list if s.overall_score >= 0.6)
             rollup.pass_rate = passed / len(scores_list)
@@ -428,9 +424,7 @@ class QualityTrendDashboard:
         )
 
         if scores_list:
-            rollup.avg_quality_score = sum(
-                s.overall_score for s in scores_list
-            ) / len(scores_list)
+            rollup.avg_quality_score = sum(s.overall_score for s in scores_list) / len(scores_list)
 
             passed = sum(1 for s in scores_list if s.overall_score >= 0.6)
             rollup.pass_rate = passed / len(scores_list)
@@ -460,16 +454,11 @@ class QualityTrendDashboard:
         return {
             "generated_at": datetime.utcnow().isoformat(),
             "dimension_trends": {
-                dim.value: trend.to_dict()
-                for dim, trend in self._dimension_trends.items()
+                dim.value: trend.to_dict() for dim, trend in self._dimension_trends.items()
             },
             "snapshots": [s.to_dict() for s in self._snapshots],
-            "dataset_rollups": {
-                k: v.to_dict() for k, v in self._dataset_rollups.items()
-            },
-            "model_rollups": {
-                k: v.to_dict() for k, v in self._model_rollups.items()
-            },
+            "dataset_rollups": {k: v.to_dict() for k, v in self._dataset_rollups.items()},
+            "model_rollups": {k: v.to_dict() for k, v in self._model_rollups.items()},
         }
 
     def export_json(self, filepath: str) -> None:

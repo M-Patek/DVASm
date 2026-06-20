@@ -46,18 +46,12 @@ class MetricsCollector:
     def __init__(self) -> None:
         self._counters: Dict[str, Dict[str, int]] = defaultdict(lambda: {"value": 0})
         self._gauges: Dict[str, Dict[str, float]] = defaultdict(lambda: {"value": 0.0})
-        self._histograms: Dict[str, Dict[str, List[float]]] = defaultdict(
-            lambda: {"values": []}
-        )
-        self._summaries: Dict[str, Dict[str, List[float]]] = defaultdict(
-            lambda: {"values": []}
-        )
+        self._histograms: Dict[str, Dict[str, List[float]]] = defaultdict(lambda: {"values": []})
+        self._summaries: Dict[str, Dict[str, List[float]]] = defaultdict(lambda: {"values": []})
         self._lock = threading.RLock()
         self._registered_callbacks: Dict[str, Callable[[], float]] = {}
 
-    def increment(
-        self, name: str, value: int = 1, labels: Optional[Dict[str, str]] = None
-    ) -> None:
+    def increment(self, name: str, value: int = 1, labels: Optional[Dict[str, str]] = None) -> None:
         """Increment a counter metric.
 
         Args:
@@ -69,9 +63,7 @@ class MetricsCollector:
         with self._lock:
             self._counters[key]["value"] = self._counters[key].get("value", 0) + value
 
-    def decrement(
-        self, name: str, value: int = 1, labels: Optional[Dict[str, str]] = None
-    ) -> None:
+    def decrement(self, name: str, value: int = 1, labels: Optional[Dict[str, str]] = None) -> None:
         """Decrement a counter metric.
 
         Args:
@@ -81,9 +73,7 @@ class MetricsCollector:
         """
         self.increment(name, -value, labels)
 
-    def gauge(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
-    ) -> None:
+    def gauge(self, name: str, value: float, labels: Optional[Dict[str, str]] = None) -> None:
         """Set a gauge metric value.
 
         Args:
@@ -95,9 +85,7 @@ class MetricsCollector:
         with self._lock:
             self._gauges[key]["value"] = value
 
-    def observe(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
-    ) -> None:
+    def observe(self, name: str, value: float, labels: Optional[Dict[str, str]] = None) -> None:
         """Observe a value in a histogram.
 
         Args:
@@ -112,9 +100,7 @@ class MetricsCollector:
             if len(self._histograms[key]["values"]) > 10000:
                 self._histograms[key]["values"] = self._histograms[key]["values"][-10000:]
 
-    def summary(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
-    ) -> None:
+    def summary(self, name: str, value: float, labels: Optional[Dict[str, str]] = None) -> None:
         """Record a summary value.
 
         Args:
@@ -161,9 +147,7 @@ class MetricsCollector:
         with self._lock:
             return self._gauges.get(key, {}).get("value", 0.0)
 
-    def get_histogram(
-        self, name: str, labels: Optional[Dict[str, str]] = None
-    ) -> Dict[str, Any]:
+    def get_histogram(self, name: str, labels: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """Get histogram statistics.
 
         Returns a dict with count, sum, avg, min, max, p50, p95, p99.
@@ -270,9 +254,7 @@ class MetricsCollector:
                 "histograms": {
                     k: self.get_histogram(k.split("{")[0]) for k in self._histograms.keys()
                 },
-                "summaries": {
-                    k: self.get_summary(k.split("{")[0]) for k in self._summaries.keys()
-                },
+                "summaries": {k: self.get_summary(k.split("{")[0]) for k in self._summaries.keys()},
             }
 
     def reset(self) -> None:

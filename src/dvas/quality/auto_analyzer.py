@@ -56,12 +56,8 @@ class AutomaticQualityAnalyzer:
         )
 
         # Compute each dimension score
-        scores.factuality_score = self._analyze_factuality(
-            annotation, reference_annotation
-        )
-        scores.temporal_consistency_score = self._analyze_temporal_consistency(
-            annotation
-        )
+        scores.factuality_score = self._analyze_factuality(annotation, reference_annotation)
+        scores.temporal_consistency_score = self._analyze_temporal_consistency(annotation)
         scores.object_grounding_score = self._analyze_object_grounding(annotation)
         scores.action_grounding_score = self._analyze_action_grounding(annotation)
         scores.affordance_score = self._analyze_affordance(annotation)
@@ -166,9 +162,7 @@ class AutomaticQualityAnalyzer:
                     action_mentions += 1
                     break
 
-        action_consistency = (
-            action_mentions / len(all_captions) if all_captions else 0
-        )
+        action_consistency = action_mentions / len(all_captions) if all_captions else 0
         details["action_consistency_ratio"] = action_consistency
 
         if action_consistency < 0.5 and all_actions:
@@ -183,9 +177,7 @@ class AutomaticQualityAnalyzer:
                     object_mentions += 1
                     break
 
-        object_consistency = (
-            object_mentions / len(all_captions) if all_captions else 0
-        )
+        object_consistency = object_mentions / len(all_captions) if all_captions else 0
         details["object_consistency_ratio"] = object_consistency
 
         if object_consistency < 0.5 and all_objects:
@@ -535,9 +527,24 @@ class AutomaticQualityAnalyzer:
         details = {}
 
         manipulation_verbs = {
-            "pick", "place", "grasp", "release", "push", "pull",
-            "lift", "lower", "rotate", "turn", "open", "close",
-            "pour", "stir", "cut", "wipe", "insert", "remove",
+            "pick",
+            "place",
+            "grasp",
+            "release",
+            "push",
+            "pull",
+            "lift",
+            "lower",
+            "rotate",
+            "turn",
+            "open",
+            "close",
+            "pour",
+            "stir",
+            "cut",
+            "wipe",
+            "insert",
+            "remove",
         }
 
         total_actions = 0

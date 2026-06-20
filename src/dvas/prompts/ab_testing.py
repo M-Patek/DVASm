@@ -163,14 +163,26 @@ class ABTestRunner:
             return self._assignments[key]
 
         if config.assignment_method == AssignmentMethod.RANDOM:
-            variant = config.variant_a_id if random.random() < config.traffic_split else config.variant_b_id
+            variant = (
+                config.variant_a_id
+                if random.random() < config.traffic_split
+                else config.variant_b_id
+            )
         elif config.assignment_method == AssignmentMethod.HASH:
             hash_val = int(hashlib.md5(key.encode()).hexdigest(), 16)
-            variant = config.variant_a_id if (hash_val % 100) < (config.traffic_split * 100) else config.variant_b_id
+            variant = (
+                config.variant_a_id
+                if (hash_val % 100) < (config.traffic_split * 100)
+                else config.variant_b_id
+            )
         elif config.assignment_method == AssignmentMethod.ROUND_ROBIN:
             self._round_robin_counter += 1
             total = int(1 / config.traffic_split)
-            variant = config.variant_a_id if (self._round_robin_counter % total) < 1 else config.variant_b_id
+            variant = (
+                config.variant_a_id
+                if (self._round_robin_counter % total) < 1
+                else config.variant_b_id
+            )
         else:
             variant = config.variant_a_id
 

@@ -282,7 +282,9 @@ class SyntheticVideoBenchmark(BaseBenchmark):
 
         # Object count metrics
         if predicted_counts and ground_truth_counts:
-            count_metrics = self.evaluate_object_count_accuracy(predicted_counts, ground_truth_counts)
+            count_metrics = self.evaluate_object_count_accuracy(
+                predicted_counts, ground_truth_counts
+            )
             overall_metrics.update(count_metrics)
 
         # Combine all metrics

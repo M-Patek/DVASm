@@ -68,9 +68,7 @@ class S3Backend(StorageBackend):
 
     def __init__(self, config: Optional[S3Config] = None):
         if not HAS_BOTO3:
-            raise ImportError(
-                "S3 backend requires boto3. Install with: pip install boto3"
-            )
+            raise ImportError("S3 backend requires boto3. Install with: pip install boto3")
 
         config = config or S3Config()
         super().__init__(config)
@@ -108,16 +106,18 @@ class S3Backend(StorageBackend):
                 if not self.config.read_only:
                     client.create_bucket(
                         Bucket=self.config.bucket,
-                        CreateBucketConfiguration={
-                            "LocationConstraint": self.config.region
-                        } if self.config.region != "us-east-1" else {},
+                        CreateBucketConfiguration={"LocationConstraint": self.config.region}
+                        if self.config.region != "us-east-1"
+                        else {},
                     )
                     logger.info("s3_bucket_created", bucket=self.config.bucket)
                 else:
                     raise RuntimeError(f"Bucket does not exist: {self.config.bucket}")
 
         self._closed = False
-        logger.info("s3_backend_opened", bucket=self.config.bucket, endpoint=self.config.endpoint_url)
+        logger.info(
+            "s3_backend_opened", bucket=self.config.bucket, endpoint=self.config.endpoint_url
+        )
 
     def close(self) -> None:
         """Close S3 connection."""
@@ -232,9 +232,7 @@ class S3Backend(StorageBackend):
                         continue
 
                     try:
-                        response = self._get_client().get_object(
-                            Bucket=self.config.bucket, Key=key
-                        )
+                        response = self._get_client().get_object(Bucket=self.config.bucket, Key=key)
                         data = orjson.loads(response["Body"].read())
                         annotation = Annotation.model_validate(data)
 
@@ -333,7 +331,7 @@ class S3Backend(StorageBackend):
 
                 # Copy to version prefix
                 copy_source = {"Bucket": self.config.bucket, "Key": obj["Key"]}
-                relative_path = obj["Key"][len(reviewed_prefix):]
+                relative_path = obj["Key"][len(reviewed_prefix) :]
                 new_key = f"{version_prefix}{relative_path}"
 
                 self._get_client().copy_object(
@@ -370,6 +368,5 @@ class S3Backend(StorageBackend):
     def restore(self, source: Path) -> None:
         """Not applicable for S3 backend."""
         raise NotImplementedError(
-            "S3 backend does not support local restore. "
-            "Use S3 restore operations instead."
+            "S3 backend does not support local restore. Use S3 restore operations instead."
         )

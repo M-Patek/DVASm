@@ -110,7 +110,7 @@ class AnnotationConsistencyBenchmark(BaseBenchmark):
 
         # Compute Pe (expected agreement by chance)
         category_proportions = np.sum(category_counts, axis=0) / (n_items * n_annotators)
-        pe = np.sum(category_proportions ** 2)
+        pe = np.sum(category_proportions**2)
 
         # Compute kappa
         if pe >= 1.0:
@@ -249,7 +249,7 @@ class AnnotationConsistencyBenchmark(BaseBenchmark):
 
         consistencies = []
         for i in range(len(annotations) - window_size + 1):
-            window = annotations[i:i + window_size]
+            window = annotations[i : i + window_size]
             # Check if all annotations in window are similar
             for j in range(len(window) - 1):
                 words_a = set(window[j].lower().split())

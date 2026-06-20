@@ -83,9 +83,7 @@ class QualityScores:
 
     # Individual dimension scores
     factuality_score: DimensionScore = field(
-        default_factory=lambda: DimensionScore(
-            dimension=QualityDimension.FACTUALITY, score=0.0
-        )
+        default_factory=lambda: DimensionScore(dimension=QualityDimension.FACTUALITY, score=0.0)
     )
     temporal_consistency_score: DimensionScore = field(
         default_factory=lambda: DimensionScore(
@@ -103,9 +101,7 @@ class QualityScores:
         )
     )
     affordance_score: DimensionScore = field(
-        default_factory=lambda: DimensionScore(
-            dimension=QualityDimension.AFFORDANCE, score=0.0
-        )
+        default_factory=lambda: DimensionScore(dimension=QualityDimension.AFFORDANCE, score=0.0)
     )
     robotic_usefulness_score: DimensionScore = field(
         default_factory=lambda: DimensionScore(
@@ -156,9 +152,7 @@ class QualityScores:
         # Weighted average
         total_weight = sum(s.weight for s in scores)
         if total_weight > 0:
-            self.weighted_score = sum(
-                s.score * s.weight for s in scores
-            ) / total_weight
+            self.weighted_score = sum(s.score * s.weight for s in scores) / total_weight
         else:
             self.weighted_score = self.overall_score
 

@@ -23,8 +23,9 @@ class VLAPromptPack:
     domain: PromptDomain = PromptDomain.VLA
 
     # Standard VLA prompt templates
-    TEMPLATES: Dict[str, str] = field(default_factory=lambda: {
-        "vla_grasp_analysis": """Analyze this robotic manipulation video for VLA training.
+    TEMPLATES: Dict[str, str] = field(
+        default_factory=lambda: {
+            "vla_grasp_analysis": """Analyze this robotic manipulation video for VLA training.
 
 Focus on grasp analysis:
 1. GRASP TYPE: Pinch, power, tripod, hook, lateral, precision, etc.
@@ -41,8 +42,7 @@ For each grasp event, provide:
 - Adjustment (if any)
 
 Caption: """,
-
-        "vla_trajectory": """Describe the trajectory of the end effector in this video.
+            "vla_trajectory": """Describe the trajectory of the end effector in this video.
 
 Include:
 1. START POSITION: Initial position in workspace
@@ -64,8 +64,7 @@ Use this format:
 }}
 
 Caption: """,
-
-        "vla_action_sequence": """Provide a step-by-step action sequence for this manipulation task.
+            "vla_action_sequence": """Provide a step-by-step action sequence for this manipulation task.
 
 For each step:
 1. ACTION: What the robot does (pick, place, push, rotate, etc.)
@@ -77,8 +76,7 @@ For each step:
 Format as a numbered list with JSON for each step.
 
 Caption: """,
-
-        "vla_affordance": """Identify object affordances in this video for VLA training.
+            "vla_affordance": """Identify object affordances in this video for VLA training.
 
 For each object:
 1. OBJECT NAME: What is the object
@@ -88,8 +86,7 @@ For each object:
 5. CONSTRAINTS: Physical constraints (weight, fragility, etc.)
 
 Caption: """,
-
-        "vla_fine_motor": """Provide fine-grained motor control description.
+            "vla_fine_motor": """Provide fine-grained motor control description.
 
 Detail level:
 1. FINGER CONFIGURATION: Which fingers used, joint angles
@@ -99,7 +96,8 @@ Detail level:
 5. PRECISION: Accuracy of placement/alignment
 
 Caption: """,
-    })
+        }
+    )
 
     def get_template(self, name: str) -> Optional[str]:
         """Get a template by name."""

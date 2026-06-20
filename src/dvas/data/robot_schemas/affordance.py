@@ -483,9 +483,7 @@ class AffordanceAnnotation:
         """Convert to dictionary."""
         return {
             "scene_id": self.scene_id,
-            "object_affordances": {
-                k: v.to_dict() for k, v in self.object_affordances.items()
-            },
+            "object_affordances": {k: v.to_dict() for k, v in self.object_affordances.items()},
             "scene_affordances": [a.to_dict() for a in self.scene_affordances],
             "affordance_relations": self.affordance_relations,
             "timestamp": self.timestamp,
@@ -515,7 +513,9 @@ class AffordanceAnnotation:
         """Add an object affordance annotation."""
         self.object_affordances[obj_aff.object_name] = obj_aff
 
-    def get_all_affordances_of_type(self, aff_type: AffordanceType) -> List[Tuple[str, SingleAffordance]]:
+    def get_all_affordances_of_type(
+        self, aff_type: AffordanceType
+    ) -> List[Tuple[str, SingleAffordance]]:
         """Get all affordances of a specific type across all objects.
 
         Returns:

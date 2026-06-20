@@ -322,12 +322,15 @@ class RBAC:
         Returns:
             Decorator function.
         """
+
         def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
             def wrapper(user_id: str, *args, **kwargs):
                 self.check_permission(user_id, resource_id, permission)
                 return func(user_id, *args, **kwargs)
+
             return wrapper
+
         return decorator
 
     def _get_effective_permissions(self, user_id: str) -> Set[Permission]:

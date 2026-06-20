@@ -126,15 +126,11 @@ class AnnotationQualityMonitor:
             except Exception as e:
                 logger.error("alert_handler_failed", error=str(e))
 
-    def add_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> None:
+    def add_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> None:
         """Add an alert handler callback."""
         self._alert_handlers.append(handler)
 
-    def remove_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> bool:
+    def remove_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> bool:
         """Remove an alert handler.
 
         Returns:
@@ -228,14 +224,16 @@ class AnnotationQualityMonitor:
         trends = []
         for bucket in sorted(buckets.keys()):
             bucket_scores = [s.score for s in buckets[bucket]]
-            trends.append({
-                "timestamp": min_time + bucket * interval_seconds,
-                "count": len(bucket_scores),
-                "avg_score": sum(bucket_scores) / len(bucket_scores),
-                "min_score": min(bucket_scores),
-                "max_score": max(bucket_scores),
-                "p50_score": sorted(bucket_scores)[len(bucket_scores) // 2],
-            })
+            trends.append(
+                {
+                    "timestamp": min_time + bucket * interval_seconds,
+                    "count": len(bucket_scores),
+                    "avg_score": sum(bucket_scores) / len(bucket_scores),
+                    "min_score": min(bucket_scores),
+                    "max_score": max(bucket_scores),
+                    "p50_score": sorted(bucket_scores)[len(bucket_scores) // 2],
+                }
+            )
 
         return trends
 
@@ -298,9 +296,9 @@ class AnnotationQualityMonitor:
         cutoff = time.time() - window_seconds if window_seconds else 0
         with self._lock:
             return [
-                s for s in self._scores
-                if s.timestamp >= cutoff
-                and (model_name is None or s.model_name == model_name)
+                s
+                for s in self._scores
+                if s.timestamp >= cutoff and (model_name is None or s.model_name == model_name)
             ]
 
     def get_stats(self) -> Dict[str, Any]:

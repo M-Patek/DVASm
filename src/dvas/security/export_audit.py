@@ -404,13 +404,15 @@ class ExportApprovalAudit:
         reason: str = "",
     ) -> None:
         """Log an audit event."""
-        self._audit_log.append({
-            "export_id": export_id,
-            "action": action,
-            "user_id": user_id,
-            "timestamp": time.time(),
-            "reason": reason,
-        })
+        self._audit_log.append(
+            {
+                "export_id": export_id,
+                "action": action,
+                "user_id": user_id,
+                "timestamp": time.time(),
+                "reason": reason,
+            }
+        )
 
 
 __all__ = [

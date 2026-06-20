@@ -398,16 +398,19 @@ class DeletionRequestFlow:
     def _generate_verification_code(self) -> str:
         """Generate a verification code."""
         import secrets
+
         return secrets.token_hex(3)  # 6 hex chars
 
     def _log_event(self, request_id: str, action: str, user_id: str) -> None:
         """Log an audit event."""
-        self._audit_log.append({
-            "request_id": request_id,
-            "action": action,
-            "user_id": user_id,
-            "timestamp": time.time(),
-        })
+        self._audit_log.append(
+            {
+                "request_id": request_id,
+                "action": action,
+                "user_id": user_id,
+                "timestamp": time.time(),
+            }
+        )
 
 
 __all__ = [

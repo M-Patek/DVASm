@@ -157,7 +157,9 @@ class StudentLeaderboard(BaseBenchmark):
 
         scores = {}
         for model_id, latency in latencies.items():
-            scores[model_id] = 100.0 * (max_latency - latency) / latency_range if latency_range > 0 else 50.0
+            scores[model_id] = (
+                100.0 * (max_latency - latency) / latency_range if latency_range > 0 else 50.0
+            )
 
         return scores
 
@@ -175,11 +177,17 @@ class StudentLeaderboard(BaseBenchmark):
         throughputs = {mid: data["throughput"] for mid, data in self._student_data.items()}
         max_throughput = max(throughputs.values())
         min_throughput = min(throughputs.values())
-        throughput_range = max_throughput - min_throughput if max_throughput > min_throughput else 1.0
+        throughput_range = (
+            max_throughput - min_throughput if max_throughput > min_throughput else 1.0
+        )
 
         scores = {}
         for model_id, throughput in throughputs.items():
-            scores[model_id] = 100.0 * (throughput - min_throughput) / throughput_range if throughput_range > 0 else 50.0
+            scores[model_id] = (
+                100.0 * (throughput - min_throughput) / throughput_range
+                if throughput_range > 0
+                else 50.0
+            )
 
         return scores
 
@@ -201,7 +209,9 @@ class StudentLeaderboard(BaseBenchmark):
 
         scores = {}
         for model_id, memory in memories.items():
-            scores[model_id] = 100.0 * (max_memory - memory) / memory_range if memory_range > 0 else 50.0
+            scores[model_id] = (
+                100.0 * (max_memory - memory) / memory_range if memory_range > 0 else 50.0
+            )
 
         return scores
 
@@ -214,10 +224,7 @@ class StudentLeaderboard(BaseBenchmark):
         if not self._student_data:
             return {}
 
-        return {
-            model_id: data["quality_score"]
-            for model_id, data in self._student_data.items()
-        }
+        return {model_id: data["quality_score"] for model_id, data in self._student_data.items()}
 
     def compute_overall_scores(
         self,
@@ -250,11 +257,11 @@ class StudentLeaderboard(BaseBenchmark):
             m = memory_scores.get(model_id, 0.0)
 
             overall = (
-                self.weights["quality"] * q +
-                self.weights["size"] * s +
-                self.weights["latency"] * lat +
-                self.weights["throughput"] * t +
-                self.weights["memory"] * m
+                self.weights["quality"] * q
+                + self.weights["size"] * s
+                + self.weights["latency"] * lat
+                + self.weights["throughput"] * t
+                + self.weights["memory"] * m
             )
             scores[model_id] = overall
 
@@ -397,10 +404,14 @@ class StudentLeaderboard(BaseBenchmark):
                 if model_id == other_id:
                     continue
                 # Other dominates if it has better or equal quality and smaller or equal size
-                if (other_data["quality_score"] >= data["quality_score"] and
-                    other_data["model_size"] <= data["model_size"] and
-                    (other_data["quality_score"] > data["quality_score"] or
-                     other_data["model_size"] < data["model_size"])):
+                if (
+                    other_data["quality_score"] >= data["quality_score"]
+                    and other_data["model_size"] <= data["model_size"]
+                    and (
+                        other_data["quality_score"] > data["quality_score"]
+                        or other_data["model_size"] < data["model_size"]
+                    )
+                ):
                     is_dominated = True
                     break
 

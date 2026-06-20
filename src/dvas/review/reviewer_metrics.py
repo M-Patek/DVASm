@@ -13,6 +13,7 @@ logger = get_logger(__name__)
 @dataclass
 class ReviewSession:
     """A single review session."""
+
     session_id: str
     reviewer_id: str
     annotation_id: str
@@ -40,6 +41,7 @@ class ReviewSession:
 @dataclass
 class ReviewerPerformance:
     """Performance metrics for a single reviewer."""
+
     reviewer_id: str
     name: str
     total_reviews: int = 0
@@ -81,15 +83,24 @@ class ReviewerMetrics:
         if session.reviewer_id not in self._reviewer_sessions:
             self._reviewer_sessions[session.reviewer_id] = []
         self._reviewer_sessions[session.reviewer_id].append(session.session_id)
-        logger.info("session_recorded", session_id=session.session_id, reviewer_id=session.reviewer_id)
+        logger.info(
+            "session_recorded", session_id=session.session_id, reviewer_id=session.reviewer_id
+        )
 
-    def complete_session(self, session_id: str, end_time: str, agreement: Optional[bool] = None, accuracy: Optional[float] = None) -> Optional[ReviewSession]:
+    def complete_session(
+        self,
+        session_id: str,
+        end_time: str,
+        agreement: Optional[bool] = None,
+        accuracy: Optional[float] = None,
+    ) -> Optional[ReviewSession]:
         session = self._sessions.get(session_id)
         if not session:
             return None
         session.end_time = end_time
         try:
             from datetime import datetime
+
             start = datetime.fromisoformat(session.start_time.replace("Z", "+00:00"))
             end = datetime.fromisoformat(end_time.replace("Z", "+00:00"))
             session.duration_min = (end - start).total_seconds() / 60.0
@@ -97,7 +108,9 @@ class ReviewerMetrics:
             session.duration_min = None
         session.agreement = agreement
         session.accuracy = accuracy
-        logger.info("session_completed", session_id=session_id, agreement=agreement, accuracy=accuracy)
+        logger.info(
+            "session_completed", session_id=session_id, agreement=agreement, accuracy=accuracy
+        )
         return session
 
     def get_reviewer_stats(self, reviewer_id: str, name: str = "") -> ReviewerPerformance:
@@ -130,7 +143,9 @@ class ReviewerMetrics:
         for reviewer_id in self._reviewer_sessions:
             stats = self.get_reviewer_stats(reviewer_id)
             stats_list.append(stats)
-        stats_list.sort(key=lambda s: (s.accuracy_rate, s.agreement_rate, s.throughput_per_day), reverse=True)
+        stats_list.sort(
+            key=lambda s: (s.accuracy_rate, s.agreement_rate, s.throughput_per_day), reverse=True
+        )
         for i, stats in enumerate(stats_list):
             stats.rank = i + 1
         return stats_list
@@ -168,30 +183,42 @@ class ReviewerMetrics:
             cumulative_count += 1
             if session.agreement:
                 cumulative_agreements += 1
-            trend.append({
-                "session_id": session.session_id,
-                "annotation_id": session.annotation_id,
-                "start_time": session.start_time,
-                "agreement": session.agreement,
-                "accuracy": session.accuracy,
-                "cumulative_agreement_rate": cumulative_agreements / cumulative_count if cumulative_count > 0 else 0.0,
-            })
+            trend.append(
+                {
+                    "session_id": session.session_id,
+                    "annotation_id": session.annotation_id,
+                    "start_time": session.start_time,
+                    "agreement": session.agreement,
+                    "accuracy": session.accuracy,
+                    "cumulative_agreement_rate": cumulative_agreements / cumulative_count
+                    if cumulative_count > 0
+                    else 0.0,
+                }
+            )
         return trend
 
     def get_comparison(self, reviewer_ids: List[str]) -> Dict[str, Any]:
         comparison = {
             "reviewers": [],
-            "metrics": ["total_reviews", "agreement_rate", "accuracy_rate", "avg_time_min", "throughput"],
+            "metrics": [
+                "total_reviews",
+                "agreement_rate",
+                "accuracy_rate",
+                "avg_time_min",
+                "throughput",
+            ],
         }
         for rid in reviewer_ids:
             stats = self.get_reviewer_stats(rid)
-            comparison["reviewers"].append({
-                "reviewer_id": rid,
-                "name": stats.name,
-                "total_reviews": stats.total_reviews,
-                "agreement_rate": round(stats.agreement_rate, 4),
-                "accuracy_rate": round(stats.accuracy_rate, 4),
-                "avg_time_min": round(stats.avg_review_time_min, 2),
-                "throughput": round(stats.throughput_per_day, 2),
-            })
+            comparison["reviewers"].append(
+                {
+                    "reviewer_id": rid,
+                    "name": stats.name,
+                    "total_reviews": stats.total_reviews,
+                    "agreement_rate": round(stats.agreement_rate, 4),
+                    "accuracy_rate": round(stats.accuracy_rate, 4),
+                    "avg_time_min": round(stats.avg_review_time_min, 2),
+                    "throughput": round(stats.throughput_per_day, 2),
+                }
+            )
         return comparison

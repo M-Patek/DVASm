@@ -254,10 +254,12 @@ class CompactionManager:
             # Check for required fields
             if not annotation.id:
                 report["issues_found"] += 1
-                report["issues"].append({
-                    "type": "missing_id",
-                    "annotation": annotation,
-                })
+                report["issues"].append(
+                    {
+                        "type": "missing_id",
+                        "annotation": annotation,
+                    }
+                )
 
             # Check for hash consistency
             if self.metadata:
@@ -266,12 +268,14 @@ class CompactionManager:
                     current_hash = compute_annotation_hash(annotation)
                     if current_hash != entry.content_hash:
                         report["issues_found"] += 1
-                        report["issues"].append({
-                            "type": "hash_mismatch",
-                            "id": annotation.id,
-                            "expected": entry.content_hash,
-                            "actual": current_hash,
-                        })
+                        report["issues"].append(
+                            {
+                                "type": "hash_mismatch",
+                                "id": annotation.id,
+                                "expected": entry.content_hash,
+                                "actual": current_hash,
+                            }
+                        )
 
                         if fix:
                             self.metadata.index_annotation(annotation)

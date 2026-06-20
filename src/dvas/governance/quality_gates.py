@@ -268,7 +268,9 @@ class QualityGateRunner:
             results[gate_id] = self.run(gate_id, item_id, scores)
         return results
 
-    def get_history(self, gate_id: Optional[str] = None, limit: int = 100) -> List[QualityGateResult]:
+    def get_history(
+        self, gate_id: Optional[str] = None, limit: int = 100
+    ) -> List[QualityGateResult]:
         """Get evaluation history.
 
         Args:
@@ -315,7 +317,7 @@ class QualityGateRunner:
         """Add a result to history."""
         self._history.append(result)
         if len(self._history) > self._history_limit:
-            self._history = self._history[-self._history_limit:]
+            self._history = self._history[-self._history_limit :]
 
     def clear_history(self) -> None:
         """Clear evaluation history."""

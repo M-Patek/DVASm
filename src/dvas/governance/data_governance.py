@@ -251,7 +251,9 @@ class DataGovernance:
             return True
         return False
 
-    def is_expired(self, data_type: str, created_at: float, event_triggered: Optional[str] = None) -> bool:
+    def is_expired(
+        self, data_type: str, created_at: float, event_triggered: Optional[str] = None
+    ) -> bool:
         """Check if data has expired under retention policy.
 
         Args:
@@ -354,7 +356,9 @@ class DataGovernance:
             self._lineage[record_id] = []
         self._lineage[record_id].append(record)
 
-        self._log_event("lineage_tracked", record_id=record_id, source_id=source_id, operation=operation)
+        self._log_event(
+            "lineage_tracked", record_id=record_id, source_id=source_id, operation=operation
+        )
         return record
 
     def get_lineage(self, record_id: str) -> List[LineageRecord]:
@@ -456,11 +460,13 @@ class DataGovernance:
 
     def _log_event(self, event_type: str, **kwargs: Any) -> None:
         """Log a governance event."""
-        self._audit_log.append({
-            "event_type": event_type,
-            "timestamp": time.time(),
-            **kwargs,
-        })
+        self._audit_log.append(
+            {
+                "event_type": event_type,
+                "timestamp": time.time(),
+                **kwargs,
+            }
+        )
 
     def get_audit_log(self, limit: int = 100) -> List[Dict[str, Any]]:
         """Get the audit log.

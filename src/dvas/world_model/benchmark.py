@@ -129,30 +129,30 @@ class StatePredictionBenchmark:
                 expected = test_case["expected_state"]
 
                 # Generate prediction
-                predicted = await self.annotator.predict_next_state(
-                    initial_state, action
-                )
+                predicted = await self.annotator.predict_next_state(initial_state, action)
 
                 # Evaluate accuracy
-                metrics = self.evaluator.evaluate_state_predictions(
-                    [predicted], [expected]
+                metrics = self.evaluator.evaluate_state_predictions([predicted], [expected])
+
+                results.append(
+                    BenchmarkResult(
+                        benchmark_name="state_prediction",
+                        metric_name=f"test_{i}_mae",
+                        value=metrics.mae,
+                        unit="meters",
+                        metadata={"test_id": i},
+                    )
                 )
 
-                results.append(BenchmarkResult(
-                    benchmark_name="state_prediction",
-                    metric_name=f"test_{i}_mae",
-                    value=metrics.mae,
-                    unit="meters",
-                    metadata={"test_id": i},
-                ))
-
-                results.append(BenchmarkResult(
-                    benchmark_name="state_prediction",
-                    metric_name=f"test_{i}_rmse",
-                    value=metrics.rmse,
-                    unit="meters",
-                    metadata={"test_id": i},
-                ))
+                results.append(
+                    BenchmarkResult(
+                        benchmark_name="state_prediction",
+                        metric_name=f"test_{i}_rmse",
+                        value=metrics.rmse,
+                        unit="meters",
+                        metadata={"test_id": i},
+                    )
+                )
 
             except Exception as e:
                 logger.error("benchmark_test_failed", test_id=i, error=str(e))
@@ -160,18 +160,17 @@ class StatePredictionBenchmark:
 
         # Add aggregate results
         if results:
-            mae_values = [
-                r.value for r in results
-                if r.metric_name.endswith("_mae")
-            ]
+            mae_values = [r.value for r in results if r.metric_name.endswith("_mae")]
             if mae_values:
-                results.append(BenchmarkResult(
-                    benchmark_name="state_prediction",
-                    metric_name="mean_mae",
-                    value=float(np.mean(mae_values)),
-                    unit="meters",
-                    metadata={"error_count": len(errors)},
-                ))
+                results.append(
+                    BenchmarkResult(
+                        benchmark_name="state_prediction",
+                        metric_name="mean_mae",
+                        value=float(np.mean(mae_values)),
+                        unit="meters",
+                        metadata={"error_count": len(errors)},
+                    )
+                )
 
         return results
 
@@ -211,9 +210,7 @@ class CausalRelationBenchmark:
                 expected_causes = test_case["expected_causes"]
 
                 # Extract causal relations
-                causal_relations = await self.annotator.extract_causal_relations(
-                    segment
-                )
+                causal_relations = await self.annotator.extract_causal_relations(segment)
 
                 # Compute precision and recall
                 extracted = set(causal_relations)
@@ -225,56 +222,64 @@ class CausalRelationBenchmark:
 
                 precision = (
                     true_positives / (true_positives + false_positives)
-                    if (true_positives + false_positives) > 0 else 0
+                    if (true_positives + false_positives) > 0
+                    else 0
                 )
                 recall = (
                     true_positives / (true_positives + false_negatives)
-                    if (true_positives + false_negatives) > 0 else 0
+                    if (true_positives + false_negatives) > 0
+                    else 0
                 )
                 f1 = (
                     2 * (precision * recall) / (precision + recall)
-                    if (precision + recall) > 0 else 0
+                    if (precision + recall) > 0
+                    else 0
                 )
 
-                results.append(BenchmarkResult(
-                    benchmark_name="causal_relation",
-                    metric_name=f"test_{i}_precision",
-                    value=precision,
-                    unit="ratio",
-                    metadata={"test_id": i},
-                ))
+                results.append(
+                    BenchmarkResult(
+                        benchmark_name="causal_relation",
+                        metric_name=f"test_{i}_precision",
+                        value=precision,
+                        unit="ratio",
+                        metadata={"test_id": i},
+                    )
+                )
 
-                results.append(BenchmarkResult(
-                    benchmark_name="causal_relation",
-                    metric_name=f"test_{i}_recall",
-                    value=recall,
-                    unit="ratio",
-                    metadata={"test_id": i},
-                ))
+                results.append(
+                    BenchmarkResult(
+                        benchmark_name="causal_relation",
+                        metric_name=f"test_{i}_recall",
+                        value=recall,
+                        unit="ratio",
+                        metadata={"test_id": i},
+                    )
+                )
 
-                results.append(BenchmarkResult(
-                    benchmark_name="causal_relation",
-                    metric_name=f"test_{i}_f1",
-                    value=f1,
-                    unit="ratio",
-                    metadata={"test_id": i},
-                ))
+                results.append(
+                    BenchmarkResult(
+                        benchmark_name="causal_relation",
+                        metric_name=f"test_{i}_f1",
+                        value=f1,
+                        unit="ratio",
+                        metadata={"test_id": i},
+                    )
+                )
 
             except Exception as e:
                 logger.error("causal_benchmark_failed", test_id=i, error=str(e))
 
         # Add aggregate results
-        f1_values = [
-            r.value for r in results
-            if r.metric_name.endswith("_f1")
-        ]
+        f1_values = [r.value for r in results if r.metric_name.endswith("_f1")]
         if f1_values:
-            results.append(BenchmarkResult(
-                benchmark_name="causal_relation",
-                metric_name="mean_f1",
-                value=float(np.mean(f1_values)),
-                unit="ratio",
-            ))
+            results.append(
+                BenchmarkResult(
+                    benchmark_name="causal_relation",
+                    metric_name="mean_f1",
+                    value=float(np.mean(f1_values)),
+                    unit="ratio",
+                )
+            )
 
         return results
 
@@ -332,49 +337,59 @@ class CounterfactualBenchmark:
                         id=f"benchmark_{i}",
                         video_id="benchmark",
                         video_path="benchmark.mp4",
-                        metadata={"fps": 30, "resolution": [1920, 1080], "duration": 10.0, "total_frames": 300},
+                        metadata={
+                            "fps": 30,
+                            "resolution": [1920, 1080],
+                            "duration": 10.0,
+                            "total_frames": 300,
+                        },
                     ),
                 )
 
-                results.append(BenchmarkResult(
-                    benchmark_name="counterfactual",
-                    metric_name=f"test_{i}_plausibility",
-                    value=metrics.physical_plausibility,
-                    unit="ratio",
-                    metadata={"test_id": i},
-                ))
+                results.append(
+                    BenchmarkResult(
+                        benchmark_name="counterfactual",
+                        metric_name=f"test_{i}_plausibility",
+                        value=metrics.physical_plausibility,
+                        unit="ratio",
+                        metadata={"test_id": i},
+                    )
+                )
 
-                results.append(BenchmarkResult(
-                    benchmark_name="counterfactual",
-                    metric_name=f"test_{i}_coherence",
-                    value=metrics.semantic_coherence,
-                    unit="ratio",
-                    metadata={"test_id": i},
-                ))
+                results.append(
+                    BenchmarkResult(
+                        benchmark_name="counterfactual",
+                        metric_name=f"test_{i}_coherence",
+                        value=metrics.semantic_coherence,
+                        unit="ratio",
+                        metadata={"test_id": i},
+                    )
+                )
 
-                results.append(BenchmarkResult(
-                    benchmark_name="counterfactual",
-                    metric_name=f"test_{i}_diversity",
-                    value=metrics.diversity,
-                    unit="ratio",
-                    metadata={"test_id": i},
-                ))
+                results.append(
+                    BenchmarkResult(
+                        benchmark_name="counterfactual",
+                        metric_name=f"test_{i}_diversity",
+                        value=metrics.diversity,
+                        unit="ratio",
+                        metadata={"test_id": i},
+                    )
+                )
 
             except Exception as e:
                 logger.error("counterfactual_benchmark_failed", test_id=i, error=str(e))
 
         # Add aggregate results
-        plausibility_values = [
-            r.value for r in results
-            if r.metric_name.endswith("_plausibility")
-        ]
+        plausibility_values = [r.value for r in results if r.metric_name.endswith("_plausibility")]
         if plausibility_values:
-            results.append(BenchmarkResult(
-                benchmark_name="counterfactual",
-                metric_name="mean_plausibility",
-                value=float(np.mean(plausibility_values)),
-                unit="ratio",
-            ))
+            results.append(
+                BenchmarkResult(
+                    benchmark_name="counterfactual",
+                    metric_name="mean_plausibility",
+                    value=float(np.mean(plausibility_values)),
+                    unit="ratio",
+                )
+            )
 
         return results
 
@@ -556,9 +571,7 @@ class WorldModelAnnotationBenchmark:
 
         # Overall score (average of means)
         if by_type:
-            overall = np.mean([
-                np.mean(values) for values in by_type.values()
-            ])
+            overall = np.mean([np.mean(values) for values in by_type.values()])
             summary["overall_score"] = float(overall)
 
         return summary
@@ -594,17 +607,25 @@ class WorldModelAnnotationBenchmark:
                     if isinstance(v, dict):
                         lines.append(f"  {k}:")
                         for kk, vv in v.items():
-                            lines.append(f"    {kk}: {vv:.4f}" if isinstance(vv, float) else f"    {kk}: {vv}")
+                            lines.append(
+                                f"    {kk}: {vv:.4f}"
+                                if isinstance(vv, float)
+                                else f"    {kk}: {vv}"
+                            )
                     else:
                         lines.append(f"  {k}: {v:.4f}" if isinstance(v, float) else f"  {k}: {v}")
             else:
-                lines.append(f"{metric}: {value:.4f}" if isinstance(value, float) else f"{metric}: {value}")
+                lines.append(
+                    f"{metric}: {value:.4f}" if isinstance(value, float) else f"{metric}: {value}"
+                )
 
-        lines.extend([
-            "",
-            "Detailed Results:",
-            "-" * 40,
-        ])
+        lines.extend(
+            [
+                "",
+                "Detailed Results:",
+                "-" * 40,
+            ]
+        )
 
         # Group by benchmark
         by_benchmark: Dict[str, List[BenchmarkResult]] = {}
@@ -616,9 +637,7 @@ class WorldModelAnnotationBenchmark:
         for name, benchmarks in by_benchmark.items():
             lines.append(f"\n{name}:")
             for b in benchmarks[:5]:  # Show first 5
-                lines.append(
-                    f"  {b.metric_name}: {b.value:.4f} {b.unit}"
-                )
+                lines.append(f"  {b.metric_name}: {b.value:.4f} {b.unit}")
             if len(benchmarks) > 5:
                 lines.append(f"  ... and {len(benchmarks) - 5} more")
 
@@ -628,6 +647,7 @@ class WorldModelAnnotationBenchmark:
 
 
 # Convenience functions for running benchmarks
+
 
 async def run_benchmarks(
     annotator: Optional[WorldModelAnnotator] = None,

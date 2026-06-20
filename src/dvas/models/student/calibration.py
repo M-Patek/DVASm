@@ -212,10 +212,12 @@ class ConfidenceCalibrator:
 
         # Determine correctness (using simple text matching for now)
         # In practice, this could use BLEU/ROUGE or LLM-as-judge
-        accuracies = np.array([
-            self._compute_correctness(p.text, gt, similarity_threshold)
-            for p, gt in zip(predictions, ground_truth)
-        ])
+        accuracies = np.array(
+            [
+                self._compute_correctness(p.text, gt, similarity_threshold)
+                for p, gt in zip(predictions, ground_truth)
+            ]
+        )
 
         # Compute pre-calibration metrics
         pre_metrics = self._compute_metrics(confidences, accuracies)
@@ -253,9 +255,7 @@ class ConfidenceCalibrator:
         if not self.is_fitted or self.scaler is None:
             return prediction
 
-        calibrated_conf = self.scaler.transform(
-            np.array([prediction.confidence])
-        )[0]
+        calibrated_conf = self.scaler.transform(np.array([prediction.confidence]))[0]
 
         # Create new result with calibrated confidence
         return GenerationResult(
@@ -341,8 +341,7 @@ class ConfidenceCalibrator:
         # Negative log-likelihood
         clipped_conf = np.clip(confidences, 1e-10, 1 - 1e-10)
         nll = -np.mean(
-            accuracies * np.log(clipped_conf) +
-            (1 - accuracies) * np.log(1 - clipped_conf)
+            accuracies * np.log(clipped_conf) + (1 - accuracies) * np.log(1 - clipped_conf)
         )
 
         # Brier score
@@ -479,13 +478,9 @@ class ConfidenceThresholdOptimizer:
         valid_thresholds = []
 
         for thresh, metrics in self.threshold_metrics.items():
-            meets_accuracy = (
-                target_accuracy is None or
-                metrics["accuracy"] >= target_accuracy
-            )
+            meets_accuracy = target_accuracy is None or metrics["accuracy"] >= target_accuracy
             meets_fallback = (
-                max_fallback_rate is None or
-                metrics["fallback_rate"] <= max_fallback_rate
+                max_fallback_rate is None or metrics["fallback_rate"] <= max_fallback_rate
             )
 
             if meets_accuracy and meets_fallback:

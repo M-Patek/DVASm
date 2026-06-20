@@ -94,9 +94,7 @@ class FrameStripViewer:
             return None
 
         segment = self.annotation.segments[segment_idx]
-        frames = self._sample_frames(
-            segment, num_frames, strip_width, strip_height
-        )
+        frames = self._sample_frames(segment, num_frames, strip_width, strip_height)
 
         key = str(segment_idx)
         selected = self._selected_frames.get(key, [])
@@ -183,8 +181,7 @@ class FrameStripViewer:
             # Remove any comparison pairs involving this frame
             if key in self._comparison_pairs:
                 self._comparison_pairs[key] = [
-                    pair for pair in self._comparison_pairs[key]
-                    if frame_idx not in pair
+                    pair for pair in self._comparison_pairs[key] if frame_idx not in pair
                 ]
             logger.info(
                 "frame_deselected",
@@ -199,9 +196,7 @@ class FrameStripViewer:
         self._selected_frames[key] = []
         self._comparison_pairs[key] = []
 
-    def add_comparison_pair(
-        self, segment_idx: int, frame_a: int, frame_b: int
-    ) -> bool:
+    def add_comparison_pair(self, segment_idx: int, frame_a: int, frame_b: int) -> bool:
         """Add a comparison pair between two frames.
 
         Args:
@@ -233,9 +228,7 @@ class FrameStripViewer:
             )
         return True
 
-    def remove_comparison_pair(
-        self, segment_idx: int, frame_a: int, frame_b: int
-    ) -> bool:
+    def remove_comparison_pair(self, segment_idx: int, frame_a: int, frame_b: int) -> bool:
         """Remove a comparison pair."""
         key = str(segment_idx)
         if key not in self._comparison_pairs:

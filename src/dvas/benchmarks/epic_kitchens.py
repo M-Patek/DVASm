@@ -77,16 +77,49 @@ class EPIKitchensBenchmark(BaseBenchmark):
 
     # Standard verb classes (top 90 verbs)
     VERB_CLASSES = [
-        "take", "put", "cut", "wash", "open", "close", "pour",
-        "mix", "move", "turn", "remove", "add", "throw", "dry",
-        "spread", "peel", "squeeze", "close", "open", "stir",
+        "take",
+        "put",
+        "cut",
+        "wash",
+        "open",
+        "close",
+        "pour",
+        "mix",
+        "move",
+        "turn",
+        "remove",
+        "add",
+        "throw",
+        "dry",
+        "spread",
+        "peel",
+        "squeeze",
+        "close",
+        "open",
+        "stir",
     ]
 
     # Standard noun classes (top 300 nouns)
     NOUN_CLASSES = [
-        "knife", "pan", "bowl", "plate", "cup", "spoon", "fork",
-        "bottle", "container", "bag", "box", "board", "towel",
-        "onion", "tomato", "pepper", "potato", "carrot", "lettuce",
+        "knife",
+        "pan",
+        "bowl",
+        "plate",
+        "cup",
+        "spoon",
+        "fork",
+        "bottle",
+        "container",
+        "bag",
+        "box",
+        "board",
+        "towel",
+        "onion",
+        "tomato",
+        "pepper",
+        "potato",
+        "carrot",
+        "lettuce",
     ]
 
     def __init__(

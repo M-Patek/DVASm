@@ -213,15 +213,11 @@ class StorageSizeMonitor:
             except Exception as e:
                 logger.error("alert_handler_failed", error=str(e))
 
-    def add_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> None:
+    def add_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> None:
         """Add an alert handler callback."""
         self._alert_handlers.append(handler)
 
-    def remove_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> bool:
+    def remove_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> bool:
         """Remove an alert handler.
 
         Returns:
@@ -312,9 +308,7 @@ class StorageSizeMonitor:
             List of storage usage dicts sorted by size
         """
         all_usage = self.get_all_storage_usage()
-        sorted_usage = sorted(
-            all_usage.items(), key=lambda x: x[1]["size_bytes"], reverse=True
-        )
+        sorted_usage = sorted(all_usage.items(), key=lambda x: x[1]["size_bytes"], reverse=True)
         return [usage for _, usage in sorted_usage[:n]]
 
     def get_growth_rate(
@@ -359,12 +353,8 @@ class StorageSizeMonitor:
             Dict with all storage metrics and overall health
         """
         all_usage = self.get_all_storage_usage()
-        critical = [
-            t for t, u in all_usage.items() if u["status"] == "critical"
-        ]
-        warning = [
-            t for t, u in all_usage.items() if u["status"] == "warning"
-        ]
+        critical = [t for t, u in all_usage.items() if u["status"] == "critical"]
+        warning = [t for t, u in all_usage.items() if u["status"] == "warning"]
 
         return {
             "total": self.get_total_usage(),

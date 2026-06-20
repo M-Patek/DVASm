@@ -60,11 +60,13 @@ class SecurityRegressionTestSuite:
                 result = test()
                 results.append(result)
             except Exception as e:
-                results.append(SecurityTestResult(
-                    name=test.__name__,
-                    passed=False,
-                    message=f"Test execution failed: {str(e)}",
-                ))
+                results.append(
+                    SecurityTestResult(
+                        name=test.__name__,
+                        passed=False,
+                        message=f"Test execution failed: {str(e)}",
+                    )
+                )
         return results
 
     def add_test(self, test: Callable[[], SecurityTestResult]) -> None:
@@ -226,7 +228,10 @@ class SecurityRegressionTestSuite:
                 name="encryption_roundtrip",
                 passed=decrypted == plaintext and encrypted != plaintext,
                 message="Encryption roundtrip successful",
-                details={"plaintext_matches": decrypted == plaintext, "ciphertext_differs": encrypted != plaintext},
+                details={
+                    "plaintext_matches": decrypted == plaintext,
+                    "ciphertext_differs": encrypted != plaintext,
+                },
             )
         except ImportError:
             return SecurityTestResult(
@@ -299,7 +304,11 @@ class SecurityRegressionTestSuite:
                 name="pii_redaction",
                 passed=has_email and has_phone and redacted_ok,
                 message="PII detection and redaction works",
-                details={"email_found": has_email, "phone_found": has_phone, "redacted": redacted_ok},
+                details={
+                    "email_found": has_email,
+                    "phone_found": has_phone,
+                    "redacted": redacted_ok,
+                },
             )
         except ImportError:
             return SecurityTestResult(
@@ -318,11 +327,15 @@ class SecurityRegressionTestSuite:
             rbac.set_owner("resource_001", "user_001")
 
             # Owner should have all permissions
-            owner_perm = rbac.has_permission("user_001", "resource_001", Permission.ANNOTATION_WRITE)
+            owner_perm = rbac.has_permission(
+                "user_001", "resource_001", Permission.ANNOTATION_WRITE
+            )
 
             # Non-owner with viewer role should not have write
             rbac.assign_role("user_002", Role.VIEWER)
-            viewer_perm = not rbac.has_permission("user_002", "resource_001", Permission.ANNOTATION_WRITE)
+            viewer_perm = not rbac.has_permission(
+                "user_002", "resource_001", Permission.ANNOTATION_WRITE
+            )
 
             return SecurityTestResult(
                 name="role_permissions",
@@ -412,7 +425,10 @@ class SecurityRegressionTestSuite:
                 name="tenant_isolation",
                 passed=user_tenant == tenant.id and isolated,
                 message="Tenant isolation works correctly",
-                details={"user_in_tenant": user_tenant == tenant.id, "isolation_enforced": isolated},
+                details={
+                    "user_in_tenant": user_tenant == tenant.id,
+                    "isolation_enforced": isolated,
+                },
             )
         except ImportError:
             return SecurityTestResult(

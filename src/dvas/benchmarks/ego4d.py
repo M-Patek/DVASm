@@ -234,9 +234,13 @@ class Ego4DBenchmark(BaseBenchmark):
         logger.info("Running Ego4D benchmark", model=model_id, task=task)
 
         if task == "moment_retrieval":
-            if not isinstance(predictions, list) or not all(isinstance(p, Ego4DMoment) for p in predictions):
+            if not isinstance(predictions, list) or not all(
+                isinstance(p, Ego4DMoment) for p in predictions
+            ):
                 raise TypeError("moment_retrieval requires List[Ego4DMoment]")
-            if not isinstance(ground_truth, list) or not all(isinstance(g, Ego4DMoment) for g in ground_truth):
+            if not isinstance(ground_truth, list) or not all(
+                isinstance(g, Ego4DMoment) for g in ground_truth
+            ):
                 raise TypeError("ground_truth for moment_retrieval requires List[Ego4DMoment]")
             metrics = self.evaluate_moment_retrieval(predictions, ground_truth)
             pred_texts = [p.query for p in predictions]

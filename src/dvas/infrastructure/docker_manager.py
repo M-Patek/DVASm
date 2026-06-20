@@ -55,7 +55,7 @@ class ResourceLimits:
             args.extend(["--gpus", "all,capabilities=compute,utility"])
         if self.gpu_ids is not None:
             gpus = ",".join(self.gpu_ids)
-            args.extend(["--gpus", f"\"device={gpus}\""])
+            args.extend(["--gpus", f'"device={gpus}"'])
         return args
 
     def to_dict(self) -> Dict[str, Any]:
@@ -120,12 +120,18 @@ class ContainerConfig:
             interval = self.health_check.get("interval", "30s")
             timeout = self.health_check.get("timeout", "10s")
             retries = self.health_check.get("retries", 3)
-            args.extend([
-                "--health-cmd", cmd,
-                "--health-interval", interval,
-                "--health-timeout", timeout,
-                "--health-retries", str(retries),
-            ])
+            args.extend(
+                [
+                    "--health-cmd",
+                    cmd,
+                    "--health-interval",
+                    interval,
+                    "--health-timeout",
+                    timeout,
+                    "--health-retries",
+                    str(retries),
+                ]
+            )
         if self.resource_limits:
             args.extend(self.resource_limits.to_docker_args())
         args.append(self.image)
@@ -213,9 +219,14 @@ class DockerfileBuilder:
         self._exposed_ports.append(port)
         return self
 
-    def set_health_check(self, command: str, interval: str = "30s",
-                         timeout: str = "10s", retries: int = 3,
-                         start_period: str = "5s") -> "DockerfileBuilder":
+    def set_health_check(
+        self,
+        command: str,
+        interval: str = "30s",
+        timeout: str = "10s",
+        retries: int = 3,
+        start_period: str = "5s",
+    ) -> "DockerfileBuilder":
         """Set a health check."""
         self._health_check = {
             "command": command,
@@ -244,7 +255,9 @@ class DockerfileBuilder:
 
         if self._packages:
             pkg_list = " ".join(sorted(set(self._packages)))
-            lines.append(f"RUN apt-get update && apt-get install -y {pkg_list} && rm -rf /var/lib/apt/lists/*")
+            lines.append(
+                f"RUN apt-get update && apt-get install -y {pkg_list} && rm -rf /var/lib/apt/lists/*"
+            )
 
         if self._copies:
             for src, dst in self._copies:
@@ -266,10 +279,10 @@ class DockerfileBuilder:
         if self._health_check:
             hc = self._health_check
             lines.append(
-                f'HEALTHCHECK --interval={hc["interval"]} '
-                f'--timeout={hc["timeout"]} --retries={hc["retries"]} '
-                f'--start-period={hc["start_period"]} '
-                f'CMD {hc["command"]}'
+                f"HEALTHCHECK --interval={hc['interval']} "
+                f"--timeout={hc['timeout']} --retries={hc['retries']} "
+                f"--start-period={hc['start_period']} "
+                f"CMD {hc['command']}"
             )
 
         if self._entrypoint:
@@ -491,9 +504,7 @@ class DockerManager:
         Returns:
             ContainerStatus.
         """
-        result = self._run_cmd(
-            ["inspect", "-f", "{{.State.Status}}", name_or_id]
-        )
+        result = self._run_cmd(["inspect", "-f", "{{.State.Status}}", name_or_id])
         if result.returncode == 0 and result.stdout:
             status_str = result.stdout.strip().lower()
             try:
@@ -522,24 +533,30 @@ class DockerManager:
         containers: List[Dict[str, Any]] = []
         for cid in ids:
             inspect = self._run_cmd(
-                ["inspect", "-f",
-                 "{{.Name}}|{{.Config.Image}}|{{.State.Status}}|{{.State.Running}}",
-                 cid]
+                [
+                    "inspect",
+                    "-f",
+                    "{{.Name}}|{{.Config.Image}}|{{.State.Status}}|{{.State.Running}}",
+                    cid,
+                ]
             )
             if inspect.returncode == 0 and inspect.stdout:
                 parts = inspect.stdout.strip().split("|")
                 if len(parts) >= 4:
-                    containers.append({
-                        "id": cid[:12],
-                        "name": parts[0].lstrip("/"),
-                        "image": parts[1],
-                        "status": parts[2],
-                        "running": parts[3] == "true",
-                    })
+                    containers.append(
+                        {
+                            "id": cid[:12],
+                            "name": parts[0].lstrip("/"),
+                            "image": parts[1],
+                            "status": parts[2],
+                            "running": parts[3] == "true",
+                        }
+                    )
         return containers
 
-    def get_container_logs(self, name_or_id: str, tail: int = 100,
-                           follow: bool = False) -> List[str]:
+    def get_container_logs(
+        self, name_or_id: str, tail: int = 100, follow: bool = False
+    ) -> List[str]:
         """Get container logs.
 
         Args:

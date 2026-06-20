@@ -14,6 +14,7 @@ logger = get_logger(__name__)
 
 class QueuePriority(str, Enum):
     """Priority levels for review queue items."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -22,6 +23,7 @@ class QueuePriority(str, Enum):
 
 class QueueItemStatus(str, Enum):
     """Status of a review queue item."""
+
     PENDING = "pending"
     ASSIGNED = "assigned"
     IN_PROGRESS = "in_progress"
@@ -32,6 +34,7 @@ class QueueItemStatus(str, Enum):
 @dataclass
 class QueueItem:
     """Item in the review queue."""
+
     item_id: str
     annotation_id: str
     video_id: str
@@ -89,7 +92,15 @@ class ReviewQueue:
             QueuePriority.LOW: 3,
         }
 
-    def add_item(self, item_id: str, annotation_id: str, video_id: str, priority: QueuePriority = QueuePriority.MEDIUM, tags: Optional[List[str]] = None, metadata: Optional[Dict[str, Any]] = None) -> QueueItem:
+    def add_item(
+        self,
+        item_id: str,
+        annotation_id: str,
+        video_id: str,
+        priority: QueuePriority = QueuePriority.MEDIUM,
+        tags: Optional[List[str]] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> QueueItem:
         item = QueueItem(
             item_id=item_id,
             annotation_id=annotation_id,
@@ -109,14 +120,22 @@ class ReviewQueue:
             return True
         return False
 
-    def get_next_item(self, priority_filter: Optional[List[QueuePriority]] = None, tag_filter: Optional[List[str]] = None) -> Optional[QueueItem]:
+    def get_next_item(
+        self,
+        priority_filter: Optional[List[QueuePriority]] = None,
+        tag_filter: Optional[List[str]] = None,
+    ) -> Optional[QueueItem]:
         candidates = self._get_pending_items(priority_filter, tag_filter)
         if not candidates:
             return None
         candidates.sort(key=lambda x: (self._priority_order[x.priority], x.created_at))
         return candidates[0]
 
-    def _get_pending_items(self, priority_filter: Optional[List[QueuePriority]] = None, tag_filter: Optional[List[str]] = None) -> List[QueueItem]:
+    def _get_pending_items(
+        self,
+        priority_filter: Optional[List[QueuePriority]] = None,
+        tag_filter: Optional[List[str]] = None,
+    ) -> List[QueueItem]:
         items = []
         for item in self._items.values():
             if item.status != QueueItemStatus.PENDING:
@@ -188,7 +207,12 @@ class ReviewQueue:
                 stats["overdue"] += 1
         return stats
 
-    def batch_assign(self, reviewer_id: str, count: int = 5, priority_filter: Optional[List[QueuePriority]] = None) -> List[QueueItem]:
+    def batch_assign(
+        self,
+        reviewer_id: str,
+        count: int = 5,
+        priority_filter: Optional[List[QueuePriority]] = None,
+    ) -> List[QueueItem]:
         assigned = []
         for _ in range(count):
             item = self.get_next_item(priority_filter)

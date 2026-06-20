@@ -157,7 +157,9 @@ class EncryptionAtRest:
         """
         return self._fernet.decrypt(data)
 
-    def encrypt_dict(self, data: Dict[str, Any], sensitive_fields: Optional[List[str]] = None) -> Dict[str, Any]:
+    def encrypt_dict(
+        self, data: Dict[str, Any], sensitive_fields: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
         """Encrypt sensitive fields in a dictionary.
 
         Args:
@@ -177,14 +179,15 @@ class EncryptionAtRest:
                 result[key] = self.encrypt_dict(value, sensitive_fields)
             elif isinstance(value, list):
                 result[key] = [
-                    self.encrypt_field(item) if isinstance(item, str) else item
-                    for item in value
+                    self.encrypt_field(item) if isinstance(item, str) else item for item in value
                 ]
             else:
                 result[key] = value
         return result
 
-    def decrypt_dict(self, data: Dict[str, Any], encrypted_fields: Optional[List[str]] = None) -> Dict[str, Any]:
+    def decrypt_dict(
+        self, data: Dict[str, Any], encrypted_fields: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
         """Decrypt encrypted fields in a dictionary.
 
         Args:
@@ -325,7 +328,7 @@ class FieldEncryption:
         if not value.startswith(self._encrypted_marker):
             raise ValueError("Value is not encrypted")
 
-        encrypted = value[len(self._encrypted_marker):]
+        encrypted = value[len(self._encrypted_marker) :]
         return self.encryptor.decrypt_field(encrypted)
 
     def is_encrypted(self, value: str) -> bool:

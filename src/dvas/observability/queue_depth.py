@@ -69,9 +69,7 @@ class TaskQueueMonitor:
                 self._queues[queue_name] = QueueMetrics(queue_name=queue_name)
 
             self._queues[queue_name].depth = depth
-            self._queues[queue_name].max_depth = max(
-                self._queues[queue_name].max_depth, depth
-            )
+            self._queues[queue_name].max_depth = max(self._queues[queue_name].max_depth, depth)
             self._queues[queue_name].last_updated = time.time()
 
         # Record in global metrics
@@ -205,15 +203,11 @@ class TaskQueueMonitor:
             except Exception as e:
                 logger.error("alert_handler_failed", error=str(e))
 
-    def add_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> None:
+    def add_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> None:
         """Add an alert handler callback."""
         self._alert_handlers.append(handler)
 
-    def remove_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> bool:
+    def remove_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> bool:
         """Remove an alert handler.
 
         Returns:
@@ -304,12 +298,8 @@ class TaskQueueMonitor:
         """
         all_health = self.get_all_queue_health()
         total_depth = sum(h["depth"] for h in all_health.values())
-        critical_queues = [
-            name for name, h in all_health.items() if h["status"] == "critical"
-        ]
-        warning_queues = [
-            name for name, h in all_health.items() if h["status"] == "warning"
-        ]
+        critical_queues = [name for name, h in all_health.items() if h["status"] == "critical"]
+        warning_queues = [name for name, h in all_health.items() if h["status"] == "warning"]
 
         return {
             "total_queues": len(all_health),

@@ -237,11 +237,13 @@ class CICDManager:
         # Add artifact upload if artifacts are configured
         if self._artifacts:
             for artifact in self._artifacts:
-                workflow["jobs"]["test"]["steps"].append({
-                    "name": f"Upload {artifact.name}",
-                    "uses": "actions/upload-artifact@v4",
-                    "with": artifact.to_dict(),
-                })
+                workflow["jobs"]["test"]["steps"].append(
+                    {
+                        "name": f"Upload {artifact.name}",
+                        "uses": "actions/upload-artifact@v4",
+                        "with": artifact.to_dict(),
+                    }
+                )
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(json.dumps(workflow, indent=2), encoding="utf-8")
@@ -295,36 +297,38 @@ class CICDManager:
         ]
         for path in test_paths:
             yaml_lines.append(f"    - pytest {path} -v --tb=short")
-        yaml_lines.extend([
-            "    - mypy src/dvas || true",
-            "    - ruff check src/dvas || true",
-            "    - bandit -r src/dvas || true",
-            "  artifacts:",
-            "    reports:",
-            "      junit: pytest-report.xml",
-            "    paths:",
-            "      - bandit-report.json",
-            "    expire_in: 1 week",
-            "  coverage: '/TOTAL\\s+\\d+%/'",
-            "",
-            "build:",
-            "  stage: build",
-            "  script:",
-            "    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .",
-            "    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest",
-            "  only:",
-            "    - main",
-            "    - master",
-            "",
-            "deploy:",
-            "  stage: deploy",
-            "  script:",
-            "    - echo 'Deploy to staging'",
-            "  environment:",
-            "    name: staging",
-            "  only:",
-            "    - main",
-        ])
+        yaml_lines.extend(
+            [
+                "    - mypy src/dvas || true",
+                "    - ruff check src/dvas || true",
+                "    - bandit -r src/dvas || true",
+                "  artifacts:",
+                "    reports:",
+                "      junit: pytest-report.xml",
+                "    paths:",
+                "      - bandit-report.json",
+                "    expire_in: 1 week",
+                "  coverage: '/TOTAL\\s+\\d+%/'",
+                "",
+                "build:",
+                "  stage: build",
+                "  script:",
+                "    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .",
+                "    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest",
+                "  only:",
+                "    - main",
+                "    - master",
+                "",
+                "deploy:",
+                "  stage: deploy",
+                "  script:",
+                "    - echo 'Deploy to staging'",
+                "  environment:",
+                "    name: staging",
+                "  only:",
+                "    - main",
+            ]
+        )
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text("\n".join(yaml_lines) + "\n", encoding="utf-8")
@@ -345,8 +349,9 @@ class CICDManager:
                 return run
         return None
 
-    def list_pipeline_runs(self, branch: Optional[str] = None,
-                           status: Optional[BuildStatus] = None) -> List[PipelineRun]:
+    def list_pipeline_runs(
+        self, branch: Optional[str] = None, status: Optional[BuildStatus] = None
+    ) -> List[PipelineRun]:
         """List pipeline runs.
 
         Args:
@@ -386,10 +391,10 @@ class CICDManager:
             return ""
         logger.info("build_triggered", branch=branch)
         import uuid
+
         return str(uuid.uuid4())[:8]
 
-    def trigger_deployment(self, target: DeploymentTarget,
-                           image_tag: str = "latest") -> str:
+    def trigger_deployment(self, target: DeploymentTarget, image_tag: str = "latest") -> str:
         """Trigger a deployment.
 
         Args:
@@ -401,6 +406,7 @@ class CICDManager:
         """
         logger.info("deployment_triggered", target=target.value, image_tag=image_tag)
         import uuid
+
         return str(uuid.uuid4())[:8]
 
     def set_github_token(self, token: str) -> None:
@@ -448,8 +454,9 @@ class CICDManager:
             "total": len(self._secrets),
         }
 
-    def generate_docker_build_step(self, image_name: str = "dvas",
-                                    tag: str = "${{ github.sha }}") -> Dict[str, Any]:
+    def generate_docker_build_step(
+        self, image_name: str = "dvas", tag: str = "${{ github.sha }}"
+    ) -> Dict[str, Any]:
         """Generate a Docker build step for GitHub Actions.
 
         Args:
@@ -471,8 +478,9 @@ class CICDManager:
             },
         }
 
-    def generate_deploy_step(self, target: DeploymentTarget,
-                              namespace: str = "default") -> Dict[str, Any]:
+    def generate_deploy_step(
+        self, target: DeploymentTarget, namespace: str = "default"
+    ) -> Dict[str, Any]:
         """Generate a deployment step for GitHub Actions.
 
         Args:

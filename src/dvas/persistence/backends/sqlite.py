@@ -151,7 +151,9 @@ class SQLiteBackend(MetadataBackend):
         conn.execute("CREATE INDEX IF NOT EXISTS idx_source ON annotations(source)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_model_version ON annotations(model_version)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_prompt_version ON annotations(prompt_version)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_dataset_version ON annotations(dataset_version)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dataset_version ON annotations(dataset_version)"
+        )
         conn.execute("CREATE INDEX IF NOT EXISTS idx_quality ON annotations(quality_score)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_created ON annotations(created_at)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_parent ON annotations(parent_id)")
@@ -287,7 +289,9 @@ class SQLiteBackend(MetadataBackend):
                     annotation.created_at.isoformat(),
                     annotation.updated_at.isoformat() if annotation.updated_at else None,
                     len(annotation.segments),
-                    annotation.get_total_duration() if hasattr(annotation, 'get_total_duration') else 0.0,
+                    annotation.get_total_duration()
+                    if hasattr(annotation, "get_total_duration")
+                    else 0.0,
                     tags_json,
                     annotation.parent_id,
                     content_hash,
@@ -704,7 +708,10 @@ class SQLiteBackend(MetadataBackend):
             segments_added=segments_added,
             segments_removed=segments_removed,
             segments_modified=segments_modified,
-            unchanged=len(field_changes) == 0 and not segments_added and not segments_removed and not segments_modified,
+            unchanged=len(field_changes) == 0
+            and not segments_added
+            and not segments_removed
+            and not segments_modified,
         )
 
     def get_statistics(self) -> BackendStats:
@@ -719,7 +726,9 @@ class SQLiteBackend(MetadataBackend):
             row = conn.execute("SELECT COUNT(*) FROM annotations").fetchone()
             stats.total_annotations = row[0] if row else 0
 
-            rows = conn.execute("SELECT source, COUNT(*) FROM annotations GROUP BY source").fetchall()
+            rows = conn.execute(
+                "SELECT source, COUNT(*) FROM annotations GROUP BY source"
+            ).fetchall()
             stats.by_source = {row[0]: row[1] for row in rows}
 
             rows = conn.execute(

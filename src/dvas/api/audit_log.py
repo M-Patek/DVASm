@@ -91,7 +91,7 @@ class AuditLogStore:
     def add(self, entry: AuditLogEntry) -> None:
         self._entries.append(entry)
         if len(self._entries) > self._max_entries:
-            self._entries = self._entries[-self._max_entries:]
+            self._entries = self._entries[-self._max_entries :]
 
     def query(
         self,

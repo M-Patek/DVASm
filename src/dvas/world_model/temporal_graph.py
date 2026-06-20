@@ -81,9 +81,7 @@ class TemporalEvent:
 
     def overlaps(self, other: TemporalEvent) -> bool:
         """Check if this event overlaps with another."""
-        return (
-            self.timestamp < other.end_time and other.timestamp < self.end_time
-        )
+        return self.timestamp < other.end_time and other.timestamp < self.end_time
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -201,10 +199,7 @@ class TemporalEventGraph:
         event_type: Optional[EventType] = None,
     ) -> List[TemporalEvent]:
         """Get events occurring at a specific time."""
-        events = [
-            e for e in self.events.values()
-            if e.timestamp <= timestamp <= e.end_time
-        ]
+        events = [e for e in self.events.values() if e.timestamp <= timestamp <= e.end_time]
         if event_type:
             events = [e for e in events if e.event_type == event_type]
         return events
@@ -216,10 +211,7 @@ class TemporalEventGraph:
         event_type: Optional[EventType] = None,
     ) -> List[TemporalEvent]:
         """Get events in a time range."""
-        events = [
-            e for e in self.events.values()
-            if e.timestamp < end and e.end_time > start
-        ]
+        events = [e for e in self.events.values() if e.timestamp < end and e.end_time > start]
         if event_type:
             events = [e for e in events if e.event_type == event_type]
         return events
@@ -230,10 +222,7 @@ class TemporalEventGraph:
 
     def get_relations_for_event(self, event_id: str) -> List[TemporalRelation]:
         """Get all relations involving an event."""
-        return [
-            r for r in self.relations
-            if r.event_a_id == event_id or r.event_b_id == event_id
-        ]
+        return [r for r in self.relations if r.event_a_id == event_id or r.event_b_id == event_id]
 
     def get_causal_chain(self, start_event_id: str) -> List[str]:
         """Get the causal chain starting from an event.
@@ -250,7 +239,8 @@ class TemporalEventGraph:
         while True:
             # Find event that current causes
             next_events = [
-                r.event_b_id for r in self.relations
+                r.event_b_id
+                for r in self.relations
                 if r.event_a_id == current and r.relation_type == TemporalRelationType.CAUSES
             ]
             if not next_events:
@@ -312,7 +302,7 @@ class TemporalEventGraph:
         events_list = list(self.events.values())
 
         for i, event_a in enumerate(events_list):
-            for event_b in events_list[i + 1:]:
+            for event_b in events_list[i + 1 :]:
                 if event_a.timestamp == event_b.timestamp and event_a.duration == event_b.duration:
                     relation = TemporalRelation(
                         event_a_id=event_a.event_id,
@@ -399,13 +389,9 @@ class TemporalEventGraph:
     def from_dict(cls, data: Dict[str, Any]) -> TemporalEventGraph:
         """Create from dictionary."""
         events = {
-            eid: TemporalEvent.from_dict(edata)
-            for eid, edata in data.get("events", {}).items()
+            eid: TemporalEvent.from_dict(edata) for eid, edata in data.get("events", {}).items()
         }
-        relations = [
-            TemporalRelation.from_dict(rdata)
-            for rdata in data.get("relations", [])
-        ]
+        relations = [TemporalRelation.from_dict(rdata) for rdata in data.get("relations", [])]
         return cls(events=events, relations=relations)
 
     def merge(self, other: TemporalEventGraph) -> TemporalEventGraph:
@@ -535,10 +521,7 @@ class ObjectStateTransitionGraph:
         end_time: float,
     ) -> List[StateTransition]:
         """Get transitions in a time range."""
-        return [
-            t for t in self.transitions
-            if start_time <= t.timestamp <= end_time
-        ]
+        return [t for t in self.transitions if start_time <= t.timestamp <= end_time]
 
     def get_transition_counts(self) -> Dict[str, int]:
         """Count occurrences of each state."""
@@ -628,10 +611,7 @@ class ObjectStateTransitionGraph:
         """Create from dictionary."""
         return cls(
             object_id=data["object_id"],
-            transitions=[
-                StateTransition.from_dict(t)
-                for t in data.get("transitions", [])
-            ],
+            transitions=[StateTransition.from_dict(t) for t in data.get("transitions", [])],
         )
 
     def merge(self, other: ObjectStateTransitionGraph) -> ObjectStateTransitionGraph:
@@ -641,8 +621,7 @@ class ObjectStateTransitionGraph:
         """
         if other.object_id != self.object_id:
             raise ValueError(
-                f"Cannot merge graphs for different objects: "
-                f"{self.object_id} vs {other.object_id}"
+                f"Cannot merge graphs for different objects: {self.object_id} vs {other.object_id}"
             )
 
         merged_transitions = self.transitions + other.transitions
@@ -690,8 +669,7 @@ class MultiObjectTransitionGraph:
     def get_states_at_time(self, timestamp: float) -> Dict[str, str]:
         """Get all object states at a specific time."""
         return {
-            oid: graph.get_state_at_time(timestamp)
-            for oid, graph in self.object_graphs.items()
+            oid: graph.get_state_at_time(timestamp) for oid, graph in self.object_graphs.items()
         }
 
     def find_correlated_transitions(
@@ -743,9 +721,7 @@ class MultiObjectTransitionGraph:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return {
-            "object_graphs": {
-                oid: g.to_dict() for oid, g in self.object_graphs.items()
-            },
+            "object_graphs": {oid: g.to_dict() for oid, g in self.object_graphs.items()},
         }
 
     @classmethod

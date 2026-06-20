@@ -156,13 +156,15 @@ class RegressionBenchmark(BaseBenchmark):
 
             if change < -self.regression_threshold:
                 severity = "critical" if abs(change) > self.critical_threshold else "warning"
-                alerts.append(RegressionAlert(
-                    metric_name=metric,
-                    baseline_value=baseline,
-                    current_value=current,
-                    change_percent=change * 100,
-                    severity=severity,
-                ))
+                alerts.append(
+                    RegressionAlert(
+                        metric_name=metric,
+                        baseline_value=baseline,
+                        current_value=current,
+                        change_percent=change * 100,
+                        severity=severity,
+                    )
+                )
 
         return alerts
 
@@ -194,12 +196,14 @@ class RegressionBenchmark(BaseBenchmark):
             change = (current - baseline) / baseline
 
             if change > self.regression_threshold:
-                improvements.append({
-                    "metric_name": metric,
-                    "baseline_value": baseline,
-                    "current_value": current,
-                    "change_percent": change * 100,
-                })
+                improvements.append(
+                    {
+                        "metric_name": metric,
+                        "baseline_value": baseline,
+                        "current_value": current,
+                        "change_percent": change * 100,
+                    }
+                )
 
         return improvements
 
@@ -278,10 +282,7 @@ class RegressionBenchmark(BaseBenchmark):
         results = self._load_results(benchmark_name)
         cutoff = datetime.utcnow() - timedelta(days=days)
 
-        model_results = [
-            r for r in results
-            if r.model_id == model_id and r.timestamp >= cutoff
-        ]
+        model_results = [r for r in results if r.model_id == model_id and r.timestamp >= cutoff]
 
         model_results.sort(key=lambda r: r.timestamp)
         return model_results

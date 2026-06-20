@@ -47,10 +47,11 @@ class RetryConfig:
         elif self.policy == RetryPolicy.LINEAR_BACKOFF:
             delay = self.base_delay_seconds * retry_count
         else:
-            delay = self.base_delay_seconds * (self.backoff_multiplier ** retry_count)
+            delay = self.base_delay_seconds * (self.backoff_multiplier**retry_count)
         delay = min(delay, self.max_delay_seconds)
         if self.jitter:
             import random
+
             jitter_factor = 0.75 + random.random() * 0.5
             delay *= jitter_factor
         return delay
@@ -110,6 +111,7 @@ class TaskLifecycleManager:
         max_retries: Optional[int] = None,
     ) -> Task:
         from dvas.api.task_store import TaskType
+
         task = Task(
             type=task_type if isinstance(task_type, TaskType) else TaskType.ANNOTATION,
             payload=payload,

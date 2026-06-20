@@ -272,7 +272,9 @@ class AlertManager:
                     return True
             return False
 
-    def evaluate(self, metric_name: str, value: float, labels: Optional[Dict[str, str]] = None) -> List[AlertEvent]:
+    def evaluate(
+        self, metric_name: str, value: float, labels: Optional[Dict[str, str]] = None
+    ) -> List[AlertEvent]:
         """Evaluate all rules for a metric.
 
         Args:
@@ -402,7 +404,8 @@ class AlertManager:
         """
         with self._lock:
             return [
-                a for a in self._alerts
+                a
+                for a in self._alerts
                 if a.status in (AlertStatus.FIRING, AlertStatus.ACKNOWLEDGED)
             ]
 
@@ -422,7 +425,8 @@ class AlertManager:
         """
         with self._lock:
             return [
-                a for a in self._alerts
+                a
+                for a in self._alerts
                 if (rule_name is None or a.rule_name == rule_name)
                 and (severity is None or a.severity == severity)
             ]

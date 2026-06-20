@@ -148,7 +148,11 @@ class VideoAnnotationState:
         # Update timestamps
         if new_state == AnnotationState.LOADING and self.started_at is None:
             self.started_at = datetime.now(timezone.utc)
-        elif new_state in (AnnotationState.COMPLETED, AnnotationState.FAILED, AnnotationState.PARTIAL):
+        elif new_state in (
+            AnnotationState.COMPLETED,
+            AnnotationState.FAILED,
+            AnnotationState.PARTIAL,
+        ):
             self.completed_at = datetime.now(timezone.utc)
 
         logger.debug(

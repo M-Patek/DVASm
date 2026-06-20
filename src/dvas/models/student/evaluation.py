@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 # Global metrics calculator instance
 _metrics_calc = MetricsCalculator()
 
+
 def _calculate_bleu(references: List[str], predictions: List[str]) -> float:
     """Calculate average BLEU score."""
     scores = []
@@ -26,6 +27,7 @@ def _calculate_bleu(references: List[str], predictions: List[str]) -> float:
         bleu_scores = _metrics_calc.bleu(ref, pred)
         scores.append(bleu_scores.get("bleu_4", 0.0))
     return sum(scores) / len(scores) if scores else 0.0
+
 
 def _calculate_rouge(reference: str, prediction: str) -> Dict:
     """Calculate ROUGE scores."""
@@ -125,7 +127,9 @@ class ComparisonReport:
             "n_samples": self.n_samples,
             "quality_metrics": [m.to_dict() for m in self.quality_metrics],
             "cost_comparison": self.cost_comparison.to_dict() if self.cost_comparison else None,
-            "latency_comparison": self.latency_comparison.to_dict() if self.latency_comparison else None,
+            "latency_comparison": self.latency_comparison.to_dict()
+            if self.latency_comparison
+            else None,
             "exact_match_rate": self.exact_match_rate,
             "semantic_match_rate": self.semantic_match_rate,
         }
@@ -149,14 +153,20 @@ class ComparisonReport:
             c = self.cost_comparison
             print(f"Teacher cost/sample: ${c.teacher_cost_per_sample:.4f}")
             print(f"Student cost/sample: ${c.student_cost_per_sample:.4f}")
-            print(f"Savings: {c.cost_savings_percent:.1%} (${c.cost_savings_per_sample:.4f}/sample)")
+            print(
+                f"Savings: {c.cost_savings_percent:.1%} (${c.cost_savings_per_sample:.4f}/sample)"
+            )
             print(f"Est. savings @ 10k samples: ${c.estimated_savings_10k_samples:.2f}")
 
         if self.latency_comparison:
             print("\n--- LATENCY COMPARISON ---")
             lat = self.latency_comparison
-            print(f"Teacher latency: {lat.teacher_latency_ms:.1f}ms (p95: {lat.teacher_p95_ms:.1f}ms)")
-            print(f"Student latency: {lat.student_latency_ms:.1f}ms (p95: {lat.student_p95_ms:.1f}ms)")
+            print(
+                f"Teacher latency: {lat.teacher_latency_ms:.1f}ms (p95: {lat.teacher_p95_ms:.1f}ms)"
+            )
+            print(
+                f"Student latency: {lat.student_latency_ms:.1f}ms (p95: {lat.student_p95_ms:.1f}ms)"
+            )
             print(f"Speedup: {lat.speedup_ratio:.1f}x")
 
         print("\n--- AGREEMENT ---")
@@ -209,57 +219,70 @@ class TeacherStudentEvaluator:
             teacher_bleu = _calculate_bleu(ground_truth, teacher_texts)
             student_bleu = _calculate_bleu(ground_truth, student_texts)
 
-            results.append(QualityComparisonResult(
-                metric_name="BLEU",
-                teacher_score=teacher_bleu,
-                student_score=student_bleu,
-                relative_improvement=(student_bleu - teacher_bleu) / (teacher_bleu + 1e-8),
-                absolute_gap=student_bleu - teacher_bleu,
-            ))
+            results.append(
+                QualityComparisonResult(
+                    metric_name="BLEU",
+                    teacher_score=teacher_bleu,
+                    student_score=student_bleu,
+                    relative_improvement=(student_bleu - teacher_bleu) / (teacher_bleu + 1e-8),
+                    absolute_gap=student_bleu - teacher_bleu,
+                )
+            )
 
             # ROUGE scores
-            teacher_rouge_scores = [_calculate_rouge(gt, pred) for gt, pred in zip(ground_truth, teacher_texts)]
-            student_rouge_scores = [_calculate_rouge(gt, pred) for gt, pred in zip(ground_truth, student_texts)]
+            teacher_rouge_scores = [
+                _calculate_rouge(gt, pred) for gt, pred in zip(ground_truth, teacher_texts)
+            ]
+            student_rouge_scores = [
+                _calculate_rouge(gt, pred) for gt, pred in zip(ground_truth, student_texts)
+            ]
             teacher_rouge = np.mean([s.get("rougeL_f", 0.0) for s in teacher_rouge_scores])
             student_rouge = np.mean([s.get("rougeL_f", 0.0) for s in student_rouge_scores])
 
-            results.append(QualityComparisonResult(
-                metric_name="ROUGE-L",
-                teacher_score=teacher_rouge,
-                student_score=student_rouge,
-                relative_improvement=(student_rouge - teacher_rouge) / (teacher_rouge + 1e-8),
-                absolute_gap=student_rouge - teacher_rouge,
-            ))
+            results.append(
+                QualityComparisonResult(
+                    metric_name="ROUGE-L",
+                    teacher_score=teacher_rouge,
+                    student_score=student_rouge,
+                    relative_improvement=(student_rouge - teacher_rouge) / (teacher_rouge + 1e-8),
+                    absolute_gap=student_rouge - teacher_rouge,
+                )
+            )
 
         # Direct teacher-student comparison metrics
         # Agreement rate
         agreements = sum(
-            1 for t, s in zip(teacher_texts, student_texts)
-            if self._compute_similarity(t, s) > 0.8
+            1 for t, s in zip(teacher_texts, student_texts) if self._compute_similarity(t, s) > 0.8
         )
         agreement_rate = agreements / len(teacher_texts) if teacher_texts else 0
 
-        results.append(QualityComparisonResult(
-            metric_name="Agreement Rate",
-            teacher_score=1.0,  # Teacher is reference
-            student_score=agreement_rate,
-            relative_improvement=agreement_rate - 1.0,
-            absolute_gap=agreement_rate - 1.0,
-        ))
+        results.append(
+            QualityComparisonResult(
+                metric_name="Agreement Rate",
+                teacher_score=1.0,  # Teacher is reference
+                student_score=agreement_rate,
+                relative_improvement=agreement_rate - 1.0,
+                absolute_gap=agreement_rate - 1.0,
+            )
+        )
 
         # Confidence calibration comparison
         teacher_confidences = [p.confidence for p in teacher_predictions if p.confidence]
         student_confidences = [p.confidence for p in student_predictions if p.confidence]
 
         if teacher_confidences and student_confidences:
-            results.append(QualityComparisonResult(
-                metric_name="Avg Confidence",
-                teacher_score=np.mean(teacher_confidences),
-                student_score=np.mean(student_confidences),
-                relative_improvement=(np.mean(student_confidences) - np.mean(teacher_confidences))
+            results.append(
+                QualityComparisonResult(
+                    metric_name="Avg Confidence",
+                    teacher_score=np.mean(teacher_confidences),
+                    student_score=np.mean(student_confidences),
+                    relative_improvement=(
+                        np.mean(student_confidences) - np.mean(teacher_confidences)
+                    )
                     / (np.mean(teacher_confidences) + 1e-8),
-                absolute_gap=np.mean(student_confidences) - np.mean(teacher_confidences),
-            ))
+                    absolute_gap=np.mean(student_confidences) - np.mean(teacher_confidences),
+                )
+            )
 
         logger.info(
             "Quality evaluation complete",
@@ -422,9 +445,7 @@ class TeacherStudentEvaluator:
         report = ComparisonReport(n_samples=len(test_videos))
 
         # Quality comparison
-        report.quality_metrics = self.evaluate_quality(
-            teacher_preds, student_preds, ground_truth
-        )
+        report.quality_metrics = self.evaluate_quality(teacher_preds, student_preds, ground_truth)
 
         # Cost comparison
         report.cost_comparison = self.evaluate_cost(teacher_preds, student_preds)
@@ -441,8 +462,7 @@ class TeacherStudentEvaluator:
 
         # Semantic matches (using similarity)
         semantic_matches = sum(
-            self._compute_similarity(t, s) > 0.7
-            for t, s in zip(teacher_texts, student_texts)
+            self._compute_similarity(t, s) > 0.7 for t, s in zip(teacher_texts, student_texts)
         )
         report.semantic_match_rate = semantic_matches / len(teacher_texts) if teacher_texts else 0
 
@@ -483,14 +503,10 @@ class TeacherStudentEvaluator:
         )
 
         # Cost comparison
-        report.cost_comparison = self.evaluate_cost(
-            teacher_predictions, student_predictions
-        )
+        report.cost_comparison = self.evaluate_cost(teacher_predictions, student_predictions)
 
         # Latency comparison
-        report.latency_comparison = self.evaluate_latency(
-            teacher_predictions, student_predictions
-        )
+        report.latency_comparison = self.evaluate_latency(teacher_predictions, student_predictions)
 
         # Agreement statistics
         teacher_texts = [p.text for p in teacher_predictions]
@@ -500,8 +516,7 @@ class TeacherStudentEvaluator:
         report.exact_match_rate = exact_matches / len(teacher_texts) if teacher_texts else 0
 
         semantic_matches = sum(
-            self._compute_similarity(t, s) > 0.7
-            for t, s in zip(teacher_texts, student_texts)
+            self._compute_similarity(t, s) > 0.7 for t, s in zip(teacher_texts, student_texts)
         )
         report.semantic_match_rate = semantic_matches / len(teacher_texts) if teacher_texts else 0
 

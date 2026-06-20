@@ -163,14 +163,10 @@ class LoRAAdapterRegistry:
 
         # Compute hashes
         training_data_hash = (
-            self._compute_data_hash(training_data_path)
-            if training_data_path
-            else "unknown"
+            self._compute_data_hash(training_data_path) if training_data_path else "unknown"
         )
         training_config_hash = (
-            self._compute_config_hash(training_config)
-            if training_config
-            else "unknown"
+            self._compute_config_hash(training_config) if training_config else "unknown"
         )
 
         # Create metadata

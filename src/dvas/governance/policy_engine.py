@@ -182,14 +182,16 @@ class Policy:
             if passed:
                 passed_weight += rule.weight
 
-            rule_results.append({
-                "name": rule.name,
-                "passed": passed,
-                "field": rule.field,
-                "operator": rule.operator.value,
-                "expected": rule.value,
-                "actual": data.get(rule.field),
-            })
+            rule_results.append(
+                {
+                    "name": rule.name,
+                    "passed": passed,
+                    "field": rule.field,
+                    "operator": rule.operator.value,
+                    "expected": rule.value,
+                    "actual": data.get(rule.field),
+                }
+            )
 
         all_passed = all(r["passed"] for r in rule_results)
         weighted_score = passed_weight / total_weight if total_weight > 0 else 1.0
@@ -362,7 +364,9 @@ class PolicyEngine:
                 results[policy_id] = self.evaluate(policy_id, data)
         return results
 
-    def evaluate_by_scope(self, scope: PolicyScope, data: Dict[str, Any]) -> Dict[str, PolicyResult]:
+    def evaluate_by_scope(
+        self, scope: PolicyScope, data: Dict[str, Any]
+    ) -> Dict[str, PolicyResult]:
         """Evaluate all policies in a scope.
 
         Args:
@@ -451,7 +455,7 @@ class PolicyEngine:
         """Add a result to history, maintaining size limit."""
         self._history.append(result)
         if len(self._history) > self._history_limit:
-            self._history = self._history[-self._history_limit:]
+            self._history = self._history[-self._history_limit :]
 
     def clear_history(self) -> None:
         """Clear evaluation history."""

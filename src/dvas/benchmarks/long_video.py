@@ -79,9 +79,9 @@ class LongVideoBenchmark(BaseBenchmark):
 
     # Duration categories
     DURATION_CATEGORIES = {
-        "short": (0, 60),      # 0-60 seconds
-        "medium": (60, 300),   # 1-5 minutes
-        "long": (300, 1800),   # 5-30 minutes
+        "short": (0, 60),  # 0-60 seconds
+        "medium": (60, 300),  # 1-5 minutes
+        "long": (300, 1800),  # 5-30 minutes
         "extended": (1800, float("inf")),  # 30+ minutes
     }
 
@@ -235,7 +235,11 @@ class LongVideoBenchmark(BaseBenchmark):
 
         avg_precision = total_precision / len(predicted_events)
         avg_recall = total_recall / len(predicted_events)
-        f1 = 2 * avg_precision * avg_recall / (avg_precision + avg_recall) if (avg_precision + avg_recall) > 0 else 0.0
+        f1 = (
+            2 * avg_precision * avg_recall / (avg_precision + avg_recall)
+            if (avg_precision + avg_recall) > 0
+            else 0.0
+        )
 
         return {
             "event_precision": avg_precision,

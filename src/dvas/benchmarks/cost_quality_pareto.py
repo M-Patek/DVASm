@@ -193,7 +193,8 @@ class CostQualityPareto(BaseBenchmark):
             Best model ID within budget, or None if none qualify
         """
         candidates = [
-            p for p in self._points
+            p
+            for p in self._points
             if p.cost_per_sample <= budget and p.quality_score >= min_quality
         ]
 

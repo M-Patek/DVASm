@@ -179,7 +179,9 @@ class TeacherLeaderboard(BaseBenchmark):
 
         scores = {}
         for name, latency in latencies.items():
-            scores[name] = 100.0 * (max_latency - latency) / latency_range if latency_range > 0 else 50.0
+            scores[name] = (
+                100.0 * (max_latency - latency) / latency_range if latency_range > 0 else 50.0
+            )
 
         return scores
 
@@ -235,7 +237,12 @@ class TeacherLeaderboard(BaseBenchmark):
         Returns:
             Dictionary mapping model name to overall score
         """
-        model_names = set(quality_scores.keys()) | set(cost_scores.keys()) | set(latency_scores.keys()) | set(feature_scores.keys())
+        model_names = (
+            set(quality_scores.keys())
+            | set(cost_scores.keys())
+            | set(latency_scores.keys())
+            | set(feature_scores.keys())
+        )
 
         scores = {}
         for name in model_names:
@@ -245,10 +252,10 @@ class TeacherLeaderboard(BaseBenchmark):
             f = feature_scores.get(name, 0.0)
 
             overall = (
-                self.weights["quality"] * q +
-                self.weights["cost"] * c +
-                self.weights["latency"] * lat +
-                self.weights["features"] * f
+                self.weights["quality"] * q
+                + self.weights["cost"] * c
+                + self.weights["latency"] * lat
+                + self.weights["features"] * f
             )
             scores[name] = overall
 
@@ -431,7 +438,9 @@ class TeacherLeaderboard(BaseBenchmark):
             if profile and profile.overall_score >= min_quality:
                 pricing = self.pricing_registry.get_pricing(name)
                 if pricing:
-                    cost = pricing.calculate_cost(input_tokens=2000, output_tokens=500, num_images=16)
+                    cost = pricing.calculate_cost(
+                        input_tokens=2000, output_tokens=500, num_images=16
+                    )
                     if cost < lowest_cost:
                         lowest_cost = cost
                         cheapest = name

@@ -249,7 +249,6 @@ class AnnotationStore:
             logger.warning("index_not_enabled")
             return []
 
-
         results = self.index_store.search(query_text, limit=limit)
         return [
             {

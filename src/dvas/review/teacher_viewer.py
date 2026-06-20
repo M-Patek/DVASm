@@ -194,14 +194,16 @@ class TeacherOutputViewer:
         result = []
 
         for step in chain:
-            result.append({
-                "step": step.step_index,
-                "model": step.model_name,
-                "status": step.status,
-                "latency_ms": step.latency_ms,
-                "has_error": step.error_message is not None,
-                "output_preview": step.output_preview,
-            })
+            result.append(
+                {
+                    "step": step.step_index,
+                    "model": step.model_name,
+                    "status": step.status,
+                    "latency_ms": step.latency_ms,
+                    "has_error": step.error_message is not None,
+                    "output_preview": step.output_preview,
+                }
+            )
 
         return result
 

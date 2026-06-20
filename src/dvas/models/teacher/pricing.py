@@ -101,7 +101,6 @@ MODEL_PRICING: Dict[str, PricingInfo] = {
         image_price=0.005,
         batch_discount=0.5,
     ),
-
     # Anthropic models
     "claude-opus-4-8": PricingInfo(
         model_name="claude-opus-4-8",
@@ -117,7 +116,6 @@ MODEL_PRICING: Dict[str, PricingInfo] = {
         image_price=0.003,
         cached_token_price=0.000375,
     ),
-
     # Together AI models (approximate)
     "meta-llama/Llama-3.2-90B-Vision-Instruct": PricingInfo(
         model_name="meta-llama/Llama-3.2-90B-Vision-Instruct",

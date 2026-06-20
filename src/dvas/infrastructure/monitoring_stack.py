@@ -124,8 +124,13 @@ class AlertmanagerConfig:
             "inhibit_rules": self.inhibit_rules,
         }
 
-    def add_email_receiver(self, name: str, to: str, from_addr: str = "alerts@dvas.local",
-                           smarthost: str = "localhost:25") -> "AlertmanagerConfig":
+    def add_email_receiver(
+        self,
+        name: str,
+        to: str,
+        from_addr: str = "alerts@dvas.local",
+        smarthost: str = "localhost:25",
+    ) -> "AlertmanagerConfig":
         """Add an email receiver.
 
         Args:
@@ -137,19 +142,24 @@ class AlertmanagerConfig:
         Returns:
             Self for chaining.
         """
-        self.receivers.append({
-            "name": name,
-            "email_configs": [{
-                "to": to,
-                "from": from_addr,
-                "smarthost": smarthost,
-                "headers": {"Subject": "DVAS Alert"},
-            }],
-        })
+        self.receivers.append(
+            {
+                "name": name,
+                "email_configs": [
+                    {
+                        "to": to,
+                        "from": from_addr,
+                        "smarthost": smarthost,
+                        "headers": {"Subject": "DVAS Alert"},
+                    }
+                ],
+            }
+        )
         return self
 
-    def add_slack_receiver(self, name: str, webhook_url: str,
-                           channel: str = "#alerts") -> "AlertmanagerConfig":
+    def add_slack_receiver(
+        self, name: str, webhook_url: str, channel: str = "#alerts"
+    ) -> "AlertmanagerConfig":
         """Add a Slack receiver.
 
         Args:
@@ -160,15 +170,19 @@ class AlertmanagerConfig:
         Returns:
             Self for chaining.
         """
-        self.receivers.append({
-            "name": name,
-            "slack_configs": [{
-                "api_url": webhook_url,
-                "channel": channel,
-                "title": "DVAS Alert",
-                "text": "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}",
-            }],
-        })
+        self.receivers.append(
+            {
+                "name": name,
+                "slack_configs": [
+                    {
+                        "api_url": webhook_url,
+                        "channel": channel,
+                        "title": "DVAS Alert",
+                        "text": "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}",
+                    }
+                ],
+            }
+        )
         return self
 
 
@@ -356,9 +370,9 @@ class MonitoringStack:
         logger.info("prometheus_configured", interval=scrape_interval)
         return self
 
-    def add_scrape_target(self, job_name: str, targets: List[str],
-                         port: int = 8000,
-                         metrics_path: str = "/metrics") -> "MonitoringStack":
+    def add_scrape_target(
+        self, job_name: str, targets: List[str], port: int = 8000, metrics_path: str = "/metrics"
+    ) -> "MonitoringStack":
         """Add a scrape target to Prometheus.
 
         Args:
@@ -373,17 +387,25 @@ class MonitoringStack:
         if self._prometheus is None:
             self.configure_prometheus()
 
-        self._prometheus.targets.append({
-            "job_name": job_name,
-            "static_configs": [{"targets": [f"{t}:{port}" for t in targets]}],
-            "metrics_path": metrics_path,
-        })
+        self._prometheus.targets.append(
+            {
+                "job_name": job_name,
+                "static_configs": [{"targets": [f"{t}:{port}" for t in targets]}],
+                "metrics_path": metrics_path,
+            }
+        )
         logger.info("scrape_target_added", job=job_name, targets=targets)
         return self
 
-    def add_alert_rule(self, name: str, expr: str, duration: str = "5m",
-                       severity: str = "warning", summary: str = "",
-                       description: str = "") -> "MonitoringStack":
+    def add_alert_rule(
+        self,
+        name: str,
+        expr: str,
+        duration: str = "5m",
+        severity: str = "warning",
+        summary: str = "",
+        description: str = "",
+    ) -> "MonitoringStack":
         """Add an alert rule.
 
         Args:
@@ -445,36 +467,47 @@ class MonitoringStack:
             uid="dvas-overview",
             tags=["dvas", "overview"],
         )
-        dashboard.add_panel(DashboardConfig(
-            title="Request Rate",
-            query='rate(http_requests_total{job="dvas"}[5m])',
-            unit="reqps",
-        ))
-        dashboard.add_panel(DashboardConfig(
-            title="Latency (p95)",
-            query='histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))',
-            unit="s",
-        ))
-        dashboard.add_panel(DashboardConfig(
-            title="Error Rate",
-            query='rate(http_requests_total{job="dvas",status=~"5.."}[5m])',
-            unit="percentunit",
-        ))
-        dashboard.add_panel(DashboardConfig(
-            title="GPU Utilization",
-            query='nvidia_gpu_utilization_gpu{job="dvas"}',
-            unit="percent",
-        ))
-        dashboard.add_panel(DashboardConfig(
-            title="Queue Depth",
-            query='dvas_queue_depth{job="dvas"}',
-            unit="short",
-        ))
+        dashboard.add_panel(
+            DashboardConfig(
+                title="Request Rate",
+                query='rate(http_requests_total{job="dvas"}[5m])',
+                unit="reqps",
+            )
+        )
+        dashboard.add_panel(
+            DashboardConfig(
+                title="Latency (p95)",
+                query="histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+                unit="s",
+            )
+        )
+        dashboard.add_panel(
+            DashboardConfig(
+                title="Error Rate",
+                query='rate(http_requests_total{job="dvas",status=~"5.."}[5m])',
+                unit="percentunit",
+            )
+        )
+        dashboard.add_panel(
+            DashboardConfig(
+                title="GPU Utilization",
+                query='nvidia_gpu_utilization_gpu{job="dvas"}',
+                unit="percent",
+            )
+        )
+        dashboard.add_panel(
+            DashboardConfig(
+                title="Queue Depth",
+                query='dvas_queue_depth{job="dvas"}',
+                unit="short",
+            )
+        )
         self.add_grafana_dashboard(dashboard)
         return dashboard
 
-    def configure_loki(self, retention_period: str = "720h",
-                       storage_path: str = "/loki") -> "MonitoringStack":
+    def configure_loki(
+        self, retention_period: str = "720h", storage_path: str = "/loki"
+    ) -> "MonitoringStack":
         """Configure Loki for log aggregation.
 
         Args:
@@ -491,8 +524,9 @@ class MonitoringStack:
         logger.info("loki_configured", retention=retention_period)
         return self
 
-    def configure_tracing(self, service_name: str = "dvas",
-                          agent_host: str = "jaeger-agent") -> "MonitoringStack":
+    def configure_tracing(
+        self, service_name: str = "dvas", agent_host: str = "jaeger-agent"
+    ) -> "MonitoringStack":
         """Configure distributed tracing.
 
         Args:

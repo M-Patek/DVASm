@@ -47,6 +47,7 @@ class Tenant:
 
 class TenantIsolationError(Exception):
     """Raised when a tenant isolation rule is violated."""
+
     pass
 
 
@@ -300,9 +301,7 @@ class TenantManager:
         """
         user_tenant = self._user_tenants.get(user_id)
         if user_tenant is None:
-            raise TenantIsolationError(
-                f"User {user_id} is not assigned to any tenant"
-            )
+            raise TenantIsolationError(f"User {user_id} is not assigned to any tenant")
 
         if user_tenant != target_tenant_id:
             raise TenantIsolationError(

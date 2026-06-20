@@ -56,6 +56,8 @@ NEED ops commands?
 | 12-security | Security & Privacy | stable | green | [12-security.md](subsystems/12-security.md) | `src/dvas/security/` |
 | 13-prompts | Adaptive Prompts | stable | green | [13-prompts.md](subsystems/13-prompts.md) | `src/dvas/prompts/` |
 | 14-deployment | Edge Deployment | draft | green | [14-deployment.md](subsystems/14-deployment.md) | `src/dvas/deployment/` |
+| 15-infrastructure | Infrastructure | stable | green | [15-infrastructure.md](subsystems/15-infrastructure.md) | `src/dvas/infrastructure/` |
+| 16-governance | Governance | stable | green | [16-governance.md](subsystems/16-governance.md) | `src/dvas/governance/` |
 
 **Status values**: `stable`, `active-dev`, `experimental`, `deprecated`
 **Health values**: `green`, `yellow`, `red`

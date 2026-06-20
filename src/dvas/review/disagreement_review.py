@@ -92,7 +92,9 @@ class DisagreementCase:
     resolution: Optional[Resolution] = None
     resolution_notes: Optional[str] = None
     reviewer_id: Optional[str] = None
-    created_at: str = field(default_factory=lambda: __import__("datetime").datetime.utcnow().isoformat())
+    created_at: str = field(
+        default_factory=lambda: __import__("datetime").datetime.utcnow().isoformat()
+    )
     resolved_at: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -192,24 +194,30 @@ class DisagreementReview:
         common = teacher_words & student_words
 
         if only_teacher:
-            differences.append({
-                "type": "teacher_only",
-                "words": list(only_teacher)[:20],
-                "description": f"{len(only_teacher)} words unique to teacher output",
-            })
+            differences.append(
+                {
+                    "type": "teacher_only",
+                    "words": list(only_teacher)[:20],
+                    "description": f"{len(only_teacher)} words unique to teacher output",
+                }
+            )
 
         if only_student:
-            differences.append({
-                "type": "student_only",
-                "words": list(only_student)[:20],
-                "description": f"{len(only_student)} words unique to student output",
-            })
+            differences.append(
+                {
+                    "type": "student_only",
+                    "words": list(only_student)[:20],
+                    "description": f"{len(only_student)} words unique to student output",
+                }
+            )
 
-        differences.append({
-            "type": "common",
-            "word_count": len(common),
-            "description": f"{len(common)} common words",
-        })
+        differences.append(
+            {
+                "type": "common",
+                "word_count": len(common),
+                "description": f"{len(common)} common words",
+            }
+        )
 
         return differences
 
@@ -249,7 +257,9 @@ class DisagreementReview:
         )
         return case
 
-    def escalate_case(self, case_id: str, reason: Optional[str] = None) -> Optional[DisagreementCase]:
+    def escalate_case(
+        self, case_id: str, reason: Optional[str] = None
+    ) -> Optional[DisagreementCase]:
         """Escalate a disagreement case.
 
         Args:
@@ -270,7 +280,9 @@ class DisagreementReview:
         logger.info("disagreement_escalated", case_id=case_id, reason=reason)
         return case
 
-    def dismiss_case(self, case_id: str, reason: Optional[str] = None) -> Optional[DisagreementCase]:
+    def dismiss_case(
+        self, case_id: str, reason: Optional[str] = None
+    ) -> Optional[DisagreementCase]:
         """Dismiss a disagreement case.
 
         Args:

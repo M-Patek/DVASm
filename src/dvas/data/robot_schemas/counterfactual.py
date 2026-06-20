@@ -343,9 +343,7 @@ class SingleCounterfactual:
         if self.expected_outcomes:
             # Return outcome with highest probability
             sorted_outcomes = sorted(
-                self.expected_outcomes,
-                key=lambda o: o.probability or 0.0,
-                reverse=True
+                self.expected_outcomes, key=lambda o: o.probability or 0.0, reverse=True
             )
             return sorted_outcomes[0].description
         return "No outcome specified"
@@ -467,9 +465,7 @@ class CounterfactualAnnotation:
             counterfactuals=[
                 SingleCounterfactual.from_dict(cf) for cf in data.get("counterfactuals", [])
             ],
-            what_if_queries=[
-                WhatIfQuery.from_dict(q) for q in data.get("what_if_queries", [])
-            ],
+            what_if_queries=[WhatIfQuery.from_dict(q) for q in data.get("what_if_queries", [])],
             cf_relations=data.get("cf_relations", []),
             num_valid_cfs=data.get("num_valid_cfs", 0),
             num_invalid_cfs=data.get("num_invalid_cfs", 0),
@@ -494,16 +490,15 @@ class CounterfactualAnnotation:
         """Get all counterfactuals valid for training."""
         return [cf for cf in self.counterfactuals if cf.is_valid_for_training()]
 
-    def get_counterfactuals_by_type(self, cf_type: CounterfactualType) -> List[SingleCounterfactual]:
+    def get_counterfactuals_by_type(
+        self, cf_type: CounterfactualType
+    ) -> List[SingleCounterfactual]:
         """Get counterfactuals of a specific type."""
         return [cf for cf in self.counterfactuals if cf.cf_type == cf_type]
 
     def get_counterfactuals_for_action(self, action_id: str) -> List[SingleCounterfactual]:
         """Get all counterfactuals related to a specific action."""
-        return [
-            cf for cf in self.counterfactuals
-            if cf.original_action_id == action_id
-        ]
+        return [cf for cf in self.counterfactuals if cf.original_action_id == action_id]
 
     def find_alternative_actions(self, action_id: str) -> List[AlternativeAction]:
         """Find all alternative actions for a given action."""

@@ -116,9 +116,8 @@ class InMemoryTaskQueue(TaskQueue):
         self._shutdown = False
 
     def _calculate_retry_delay(self, retry_count: int) -> float:
-        delay = (
-            self.config.retry_delay_base_seconds
-            * (self.config.retry_backoff_multiplier ** retry_count)
+        delay = self.config.retry_delay_base_seconds * (
+            self.config.retry_backoff_multiplier**retry_count
         )
         return min(delay, self.config.retry_delay_max_seconds)
 
@@ -299,6 +298,7 @@ class CeleryTaskQueue(TaskQueue):
         if self._celery_app is None:
             try:
                 from celery import Celery
+
                 self._celery_app = Celery(
                     "dvas",
                     broker=self.broker_url,
@@ -367,9 +367,8 @@ class CeleryTaskQueue(TaskQueue):
         return None
 
     def _calculate_retry_delay(self, retry_count: int) -> float:
-        delay = (
-            self.config.retry_delay_base_seconds
-            * (self.config.retry_backoff_multiplier ** retry_count)
+        delay = self.config.retry_delay_base_seconds * (
+            self.config.retry_backoff_multiplier**retry_count
         )
         return min(delay, self.config.retry_delay_max_seconds)
 

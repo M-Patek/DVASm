@@ -89,9 +89,7 @@ class SemanticExampleIndex:
     def add_example(self, example: Example) -> None:
         """Add an example to the index."""
         if example.embedding is None:
-            example.embedding = _simple_embedding(
-                example.input_text, self._embedding_dim
-            )
+            example.embedding = _simple_embedding(example.input_text, self._embedding_dim)
 
         self._examples[example.id] = example
 
@@ -239,54 +237,64 @@ def create_domain_example_packs() -> Dict[PromptDomain, ExamplePack]:
 
     # Kitchen domain examples
     kitchen_pack = ExamplePack("kitchen_default", PromptDomain.KITCHEN)
-    kitchen_pack.add(Example(
-        id="kitchen_ex_1",
-        input_text="Video of person chopping onions on a cutting board",
-        output_text="The person uses their right hand to grip the knife and their left hand to steady the onion. They make several downward cutting motions to dice the onion into small pieces.",
-        domain=PromptDomain.KITCHEN,
-        tags=["chopping", "knife"],
-        quality_score=0.9,
-    ))
-    kitchen_pack.add(Example(
-        id="kitchen_ex_2",
-        input_text="Video of person stirring soup in a pot",
-        output_text="The person holds a wooden spoon in their right hand and stirs the soup in a circular motion inside the pot on the stove.",
-        domain=PromptDomain.KITCHEN,
-        tags=["stirring", "pot"],
-        quality_score=0.85,
-    ))
+    kitchen_pack.add(
+        Example(
+            id="kitchen_ex_1",
+            input_text="Video of person chopping onions on a cutting board",
+            output_text="The person uses their right hand to grip the knife and their left hand to steady the onion. They make several downward cutting motions to dice the onion into small pieces.",
+            domain=PromptDomain.KITCHEN,
+            tags=["chopping", "knife"],
+            quality_score=0.9,
+        )
+    )
+    kitchen_pack.add(
+        Example(
+            id="kitchen_ex_2",
+            input_text="Video of person stirring soup in a pot",
+            output_text="The person holds a wooden spoon in their right hand and stirs the soup in a circular motion inside the pot on the stove.",
+            domain=PromptDomain.KITCHEN,
+            tags=["stirring", "pot"],
+            quality_score=0.85,
+        )
+    )
     packs[PromptDomain.KITCHEN] = kitchen_pack
 
     # Robot domain examples
     robot_pack = ExamplePack("robot_default", PromptDomain.ROBOT)
-    robot_pack.add(Example(
-        id="robot_ex_1",
-        input_text="Video of robotic arm picking up a red block",
-        output_text="The robotic arm moves to position above the red block, opens the gripper, descends, and closes the gripper to grasp the block firmly.",
-        domain=PromptDomain.ROBOT,
-        tags=["grasp", "block"],
-        quality_score=0.92,
-    ))
-    robot_pack.add(Example(
-        id="robot_ex_2",
-        input_text="Video of robot placing object on shelf",
-        output_text="The robot arm extends forward while holding the object, positions it above the shelf, and releases the gripper to place the object down.",
-        domain=PromptDomain.ROBOT,
-        tags=["place", "shelf"],
-        quality_score=0.88,
-    ))
+    robot_pack.add(
+        Example(
+            id="robot_ex_1",
+            input_text="Video of robotic arm picking up a red block",
+            output_text="The robotic arm moves to position above the red block, opens the gripper, descends, and closes the gripper to grasp the block firmly.",
+            domain=PromptDomain.ROBOT,
+            tags=["grasp", "block"],
+            quality_score=0.92,
+        )
+    )
+    robot_pack.add(
+        Example(
+            id="robot_ex_2",
+            input_text="Video of robot placing object on shelf",
+            output_text="The robot arm extends forward while holding the object, positions it above the shelf, and releases the gripper to place the object down.",
+            domain=PromptDomain.ROBOT,
+            tags=["place", "shelf"],
+            quality_score=0.88,
+        )
+    )
     packs[PromptDomain.ROBOT] = robot_pack
 
     # General domain examples
     general_pack = ExamplePack("general_default", PromptDomain.GENERAL)
-    general_pack.add(Example(
-        id="general_ex_1",
-        input_text="Video of a person walking in a park",
-        output_text="A person is walking along a path in a park. Trees and grass are visible in the background. The person moves at a steady pace.",
-        domain=PromptDomain.GENERAL,
-        tags=["walking", "outdoor"],
-        quality_score=0.8,
-    ))
+    general_pack.add(
+        Example(
+            id="general_ex_1",
+            input_text="Video of a person walking in a park",
+            output_text="A person is walking along a path in a park. Trees and grass are visible in the background. The person moves at a steady pace.",
+            domain=PromptDomain.GENERAL,
+            tags=["walking", "outdoor"],
+            quality_score=0.8,
+        )
+    )
     packs[PromptDomain.GENERAL] = general_pack
 
     return packs

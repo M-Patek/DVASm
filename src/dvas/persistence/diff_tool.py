@@ -168,7 +168,13 @@ def format_diff(diff: AnnotationDiff, verbose: bool = False) -> str:
     if diff.segment_changes:
         lines.append("Segment Changes:")
         for change in diff.segment_changes:
-            prefix = "+" if change.change_type == "added" else "-" if change.change_type == "removed" else "~"
+            prefix = (
+                "+"
+                if change.change_type == "added"
+                else "-"
+                if change.change_type == "removed"
+                else "~"
+            )
             lines.append(f"  [{prefix}] Segment {change.index}")
 
             if change.fields_changed and verbose:

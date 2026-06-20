@@ -167,7 +167,9 @@ class IndexManager:
             return self.backend.get_frames_by_hash(content_hash)
         return []
 
-    def find_duplicate_frames(self, content_hash: str, exclude_video_id: Optional[str] = None) -> List[Dict]:
+    def find_duplicate_frames(
+        self, content_hash: str, exclude_video_id: Optional[str] = None
+    ) -> List[Dict]:
         """Find duplicate frames across videos.
 
         Args:
@@ -186,17 +188,23 @@ class IndexManager:
     # Version Indexes
     # -------------------------------------------------------------------------
 
-    def query_by_model_version(self, model_version: str, limit: int = 100) -> Tuple[List[Dict], int]:
+    def query_by_model_version(
+        self, model_version: str, limit: int = 100
+    ) -> Tuple[List[Dict], int]:
         """Query annotations by model version."""
         query = QueryFilter(model_version=model_version, limit=limit)
         return self.query_annotations(query)
 
-    def query_by_prompt_version(self, prompt_version: str, limit: int = 100) -> Tuple[List[Dict], int]:
+    def query_by_prompt_version(
+        self, prompt_version: str, limit: int = 100
+    ) -> Tuple[List[Dict], int]:
         """Query annotations by prompt version."""
         query = QueryFilter(prompt_version=prompt_version, limit=limit)
         return self.query_annotations(query)
 
-    def query_by_dataset_version(self, dataset_version: str, limit: int = 100) -> Tuple[List[Dict], int]:
+    def query_by_dataset_version(
+        self, dataset_version: str, limit: int = 100
+    ) -> Tuple[List[Dict], int]:
         """Query annotations by dataset version."""
         query = QueryFilter(dataset_version=dataset_version, limit=limit)
         return self.query_annotations(query)

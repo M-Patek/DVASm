@@ -93,7 +93,6 @@ MODEL_REGISTRY: Dict[str, ModelSpec] = {
             "recommended_for": ["complex_reasoning"],
         },
     ),
-
     # Anthropic models
     "claude-opus-4-8": ModelSpec(
         name="claude-opus-4-8",
@@ -119,7 +118,6 @@ MODEL_REGISTRY: Dict[str, ModelSpec] = {
             "recommended_for": ["general", "balanced"],
         },
     ),
-
     # Together AI models
     "meta-llama/Llama-3.2-90B-Vision-Instruct": ModelSpec(
         name="meta-llama/Llama-3.2-90B-Vision-Instruct",
@@ -251,10 +249,7 @@ class ModelRegistry:
 
     def get_recommended_models(self, task: str) -> List[ModelSpec]:
         """Get models recommended for a specific task."""
-        return [
-            m for m in self._models.values()
-            if task in m.metadata.get("recommended_for", [])
-        ]
+        return [m for m in self._models.values() if task in m.metadata.get("recommended_for", [])]
 
 
 # Global registry instance

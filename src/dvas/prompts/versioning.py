@@ -101,9 +101,7 @@ class PromptVersion:
 
     def bump_patch(self) -> "PromptVersion":
         """Bump patch version."""
-        return PromptVersion(
-            major=self.major, minor=self.minor, patch=self.patch + 1
-        )
+        return PromptVersion(major=self.major, minor=self.minor, patch=self.patch + 1)
 
 
 def is_compatible(
@@ -126,11 +124,7 @@ def is_compatible(
     if compatibility == "major":
         return version.major == target.major and version >= target
     if compatibility == "minor":
-        return (
-            version.major == target.major
-            and version.minor == target.minor
-            and version >= target
-        )
+        return version.major == target.major and version.minor == target.minor and version >= target
     return False
 
 

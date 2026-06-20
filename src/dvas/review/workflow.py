@@ -14,6 +14,7 @@ logger = get_logger(__name__)
 
 class WorkflowStage(str, Enum):
     """Stages in the approval workflow."""
+
     INITIAL = "initial"
     AUTOMATED_REVIEW = "automated_review"
     HUMAN_REVIEW = "human_review"
@@ -24,6 +25,7 @@ class WorkflowStage(str, Enum):
 
 class RejectionReason(str, Enum):
     """Predefined rejection reasons."""
+
     QUALITY_SCORE = "quality_score"
     INCOMPLETE = "incomplete"
     INCORRECT = "incorrect"
@@ -36,6 +38,7 @@ class RejectionReason(str, Enum):
 @dataclass
 class StageTransition:
     """Record of a workflow stage transition."""
+
     from_stage: WorkflowStage
     to_stage: WorkflowStage
     actor: str
@@ -59,6 +62,7 @@ class StageTransition:
 @dataclass
 class RejectionRecord:
     """Record of an annotation rejection."""
+
     annotation_id: str
     reason: RejectionReason
     details: str
@@ -86,6 +90,7 @@ class RejectionRecord:
 @dataclass
 class WorkflowAnnotation:
     """Annotation with workflow state."""
+
     annotation_id: str
     current_stage: WorkflowStage = WorkflowStage.INITIAL
     approved: bool = False
@@ -128,7 +133,9 @@ class ApprovalWorkflow:
         logger.info("annotation_registered", annotation_id=annotation_id)
         return wf
 
-    def transition(self, annotation_id: str, to_stage: WorkflowStage, actor: str, notes: Optional[str] = None) -> Optional[WorkflowAnnotation]:
+    def transition(
+        self, annotation_id: str, to_stage: WorkflowStage, actor: str, notes: Optional[str] = None
+    ) -> Optional[WorkflowAnnotation]:
         wf = self._annotations.get(annotation_id)
         if not wf:
             return None
@@ -143,10 +150,18 @@ class ApprovalWorkflow:
         wf.transitions.append(transition)
         wf.current_stage = to_stage
 
-        logger.info("stage_transition", annotation_id=annotation_id, from_stage=from_stage.value, to_stage=to_stage.value, actor=actor)
+        logger.info(
+            "stage_transition",
+            annotation_id=annotation_id,
+            from_stage=from_stage.value,
+            to_stage=to_stage.value,
+            actor=actor,
+        )
         return wf
 
-    def approve(self, annotation_id: str, approved_by: str, notes: Optional[str] = None) -> Optional[WorkflowAnnotation]:
+    def approve(
+        self, annotation_id: str, approved_by: str, notes: Optional[str] = None
+    ) -> Optional[WorkflowAnnotation]:
         wf = self._annotations.get(annotation_id)
         if not wf:
             return None
@@ -160,7 +175,9 @@ class ApprovalWorkflow:
         logger.info("annotation_approved", annotation_id=annotation_id, approved_by=approved_by)
         return wf
 
-    def reject(self, annotation_id: str, reason: RejectionReason, rejected_by: str, details: str = "") -> Optional[WorkflowAnnotation]:
+    def reject(
+        self, annotation_id: str, reason: RejectionReason, rejected_by: str, details: str = ""
+    ) -> Optional[WorkflowAnnotation]:
         wf = self._annotations.get(annotation_id)
         if not wf:
             return None
@@ -175,7 +192,12 @@ class ApprovalWorkflow:
         wf.rejection_history.append(rejection)
 
         self.transition(annotation_id, WorkflowStage.REJECTED, rejected_by, details)
-        logger.info("annotation_rejected", annotation_id=annotation_id, reason=reason.value, rejected_by=rejected_by)
+        logger.info(
+            "annotation_rejected",
+            annotation_id=annotation_id,
+            reason=reason.value,
+            rejected_by=rejected_by,
+        )
         return wf
 
     def can_approve(self, annotation_id: str) -> bool:
@@ -197,7 +219,9 @@ class ApprovalWorkflow:
         return [wf for wf in self._annotations.values() if wf.approved]
 
     def get_rejected_annotations(self) -> List[WorkflowAnnotation]:
-        return [wf for wf in self._annotations.values() if wf.current_stage == WorkflowStage.REJECTED]
+        return [
+            wf for wf in self._annotations.values() if wf.current_stage == WorkflowStage.REJECTED
+        ]
 
     def get_rejection_reasons(self, annotation_id: str) -> List[RejectionRecord]:
         wf = self._annotations.get(annotation_id)
@@ -206,7 +230,9 @@ class ApprovalWorkflow:
     def get_statistics(self) -> Dict[str, Any]:
         total = len(self._annotations)
         approved = sum(1 for wf in self._annotations.values() if wf.approved)
-        rejected = sum(1 for wf in self._annotations.values() if wf.current_stage == WorkflowStage.REJECTED)
+        rejected = sum(
+            1 for wf in self._annotations.values() if wf.current_stage == WorkflowStage.REJECTED
+        )
         pending = total - approved - rejected
         return {
             "total_annotations": total,

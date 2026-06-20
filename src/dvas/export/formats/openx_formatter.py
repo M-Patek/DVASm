@@ -102,9 +102,7 @@ class OpenXFormatter:
         """
         return [self.format_annotation(ann) for ann in annotations]
 
-    def _convert_segment_to_step(
-        self, segment, annotation: Annotation
-    ) -> Dict[str, Any]:
+    def _convert_segment_to_step(self, segment, annotation: Annotation) -> Dict[str, Any]:
         """Convert a segment to an Open X step.
 
         Args:
@@ -142,9 +140,7 @@ class OpenXFormatter:
 
         return step
 
-    def _build_observation(
-        self, segment, annotation: Annotation
-    ) -> Dict[str, Any]:
+    def _build_observation(self, segment, annotation: Annotation) -> Dict[str, Any]:
         """Build observation dictionary for a segment.
 
         Args:

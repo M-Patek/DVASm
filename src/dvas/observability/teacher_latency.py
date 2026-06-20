@@ -115,9 +115,7 @@ class TeacherLatencyMonitor:
             except Exception as e:
                 logger.error("alert_handler_failed", error=str(e))
 
-    def add_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> None:
+    def add_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> None:
         """Add an alert handler callback.
 
         Args:
@@ -125,9 +123,7 @@ class TeacherLatencyMonitor:
         """
         self._alert_handlers.append(handler)
 
-    def remove_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> bool:
+    def remove_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> bool:
         """Remove an alert handler.
 
         Returns:

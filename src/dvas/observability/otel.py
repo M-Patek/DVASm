@@ -62,8 +62,7 @@ class OTelMetric:
             "data_points": [
                 {
                     "attributes": [
-                        {"key": k, "value": {"stringValue": v}}
-                        for k, v in self.labels.items()
+                        {"key": k, "value": {"stringValue": v}} for k, v in self.labels.items()
                     ],
                     "time_unix_nano": self.timestamp,
                     "value": {"doubleValue": self.value},
@@ -94,8 +93,7 @@ class OTelTrace:
             "kind": "SPAN_KIND_INTERNAL",
             "startTimeUnixNano": self.start_time_ns,
             "attributes": [
-                {"key": k, "value": {"stringValue": v}}
-                for k, v in self.attributes.items()
+                {"key": k, "value": {"stringValue": v}} for k, v in self.attributes.items()
             ],
             "status": {"code": "STATUS_CODE_OK" if self.status == "ok" else "STATUS_CODE_ERROR"},
         }

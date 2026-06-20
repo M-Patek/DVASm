@@ -14,6 +14,7 @@ logger = get_logger(__name__)
 
 class DiffType(str, Enum):
     """Types of differences between annotations."""
+
     ADDED = "added"
     REMOVED = "removed"
     MODIFIED = "modified"
@@ -23,6 +24,7 @@ class DiffType(str, Enum):
 @dataclass
 class FieldDiff:
     """Difference for a single field."""
+
     field_name: str
     diff_type: DiffType
     old_value: Any
@@ -40,6 +42,7 @@ class FieldDiff:
 @dataclass
 class SegmentDiff:
     """Difference between two segments."""
+
     segment_idx: int
     diff_type: DiffType
     caption_diff: Optional[FieldDiff] = None
@@ -67,6 +70,7 @@ class SegmentDiff:
 @dataclass
 class AnnotationDiffResult:
     """Complete diff result between two annotations."""
+
     annotation_a_id: str
     annotation_b_id: str
     segment_diffs: List[SegmentDiff] = field(default_factory=list)
@@ -131,7 +135,9 @@ class AnnotationDiff:
 
         return result
 
-    def _compare_segments(self, segment_idx: int, segment_a: Segment, segment_b: Segment) -> SegmentDiff:
+    def _compare_segments(
+        self, segment_idx: int, segment_a: Segment, segment_b: Segment
+    ) -> SegmentDiff:
         """Compare two segments and return their diff."""
         seg_diff = SegmentDiff(
             segment_idx=segment_idx,
@@ -178,8 +184,11 @@ class AnnotationDiff:
 
         return seg_diff
 
-    def _compare_lists(self, list_a: List[Dict[str, Any]], list_b: List[Dict[str, Any]], key_fields: List[str]) -> Dict[str, Any]:
+    def _compare_lists(
+        self, list_a: List[Dict[str, Any]], list_b: List[Dict[str, Any]], key_fields: List[str]
+    ) -> Dict[str, Any]:
         """Compare two lists of dictionaries by key fields."""
+
         def make_key(item: Dict[str, Any]) -> str:
             return "|".join(str(item.get(f, "")) for f in key_fields)
 

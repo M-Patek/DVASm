@@ -280,10 +280,7 @@ class HumanAgreementBenchmark(BaseBenchmark):
             if h == a:
                 class_correct[h] += 1
 
-        return {
-            cls: class_correct.get(cls, 0) / count
-            for cls, count in class_counts.items()
-        }
+        return {cls: class_correct.get(cls, 0) / count for cls, count in class_counts.items()}
 
     def run_benchmark(
         self,
@@ -385,7 +382,9 @@ class HumanAgreementBenchmark(BaseBenchmark):
             h_labels, a_labels = zip(*pairs)
             results[difficulty] = {
                 "cohens_kappa": self.compute_cohens_kappa(list(h_labels), list(a_labels)),
-                "percentage_agreement": self.compute_percentage_agreement(list(h_labels), list(a_labels)),
+                "percentage_agreement": self.compute_percentage_agreement(
+                    list(h_labels), list(a_labels)
+                ),
                 "n_samples": len(pairs),
             }
 

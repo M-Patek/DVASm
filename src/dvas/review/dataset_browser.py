@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 
 class SortField(str, Enum):
     """Fields available for sorting."""
+
     CREATED_AT = "created_at"
     UPDATED_AT = "updated_at"
     QUALITY_SCORE = "quality_score"
@@ -28,6 +29,7 @@ class SortField(str, Enum):
 
 class SortOrder(str, Enum):
     """Sort direction."""
+
     ASC = "asc"
     DESC = "desc"
 
@@ -35,6 +37,7 @@ class SortOrder(str, Enum):
 @dataclass
 class DatasetFilter:
     """Filter criteria for dataset browsing."""
+
     min_quality_score: Optional[float] = None
     max_quality_score: Optional[float] = None
     status: Optional[str] = None
@@ -49,7 +52,9 @@ class DatasetFilter:
     min_segments: Optional[int] = None
     max_segments: Optional[int] = None
 
-    def matches(self, annotation: Annotation, quality_scores: Optional[QualityScores] = None) -> bool:
+    def matches(
+        self, annotation: Annotation, quality_scores: Optional[QualityScores] = None
+    ) -> bool:
         """Check if an annotation matches this filter."""
         score = annotation.quality_score
         if quality_scores:
@@ -108,6 +113,7 @@ class DatasetFilter:
 @dataclass
 class PaginationResult:
     """Result of a paginated query."""
+
     items: List[Annotation] = field(default_factory=list)
     total: int = 0
     page: int = 1
@@ -127,6 +133,7 @@ class PaginationResult:
 @dataclass
 class DatasetStatistics:
     """Aggregated statistics for a dataset."""
+
     total_annotations: int = 0
     avg_quality_score: float = 0.0
     min_quality_score: float = 0.0
@@ -160,16 +167,22 @@ class DatasetBrowser:
         self._annotations: List[Annotation] = annotations or []
         self._quality_map: Dict[str, QualityScores] = {}
 
-    def add_annotation(self, annotation: Annotation, quality: Optional[QualityScores] = None) -> None:
+    def add_annotation(
+        self, annotation: Annotation, quality: Optional[QualityScores] = None
+    ) -> None:
         self._annotations.append(annotation)
         if quality:
             self._quality_map[annotation.id] = quality
 
-    def add_annotations(self, annotations: List[Annotation], quality_map: Optional[Dict[str, QualityScores]] = None) -> None:
+    def add_annotations(
+        self, annotations: List[Annotation], quality_map: Optional[Dict[str, QualityScores]] = None
+    ) -> None:
         for ann in annotations:
             self.add_annotation(ann, quality_map.get(ann.id) if quality_map else None)
 
-    def filter_annotations(self, dataset_filter: Optional[DatasetFilter] = None) -> List[Annotation]:
+    def filter_annotations(
+        self, dataset_filter: Optional[DatasetFilter] = None
+    ) -> List[Annotation]:
         """Filter annotations by criteria."""
         if dataset_filter is None:
             return list(self._annotations)
@@ -180,7 +193,12 @@ class DatasetBrowser:
                 results.append(ann)
         return results
 
-    def sort_annotations(self, annotations: List[Annotation], sort_field: SortField = SortField.CREATED_AT, sort_order: SortOrder = SortOrder.DESC) -> List[Annotation]:
+    def sort_annotations(
+        self,
+        annotations: List[Annotation],
+        sort_field: SortField = SortField.CREATED_AT,
+        sort_order: SortOrder = SortOrder.DESC,
+    ) -> List[Annotation]:
         """Sort annotations by field."""
         reverse = sort_order == SortOrder.DESC
 
@@ -198,7 +216,9 @@ class DatasetBrowser:
 
         return sorted(annotations, key=sort_key, reverse=reverse)
 
-    def paginate(self, annotations: List[Annotation], page: int = 1, page_size: int = 20) -> PaginationResult:
+    def paginate(
+        self, annotations: List[Annotation], page: int = 1, page_size: int = 20
+    ) -> PaginationResult:
         """Paginate a list of annotations."""
         if page < 1:
             page = 1
@@ -218,7 +238,14 @@ class DatasetBrowser:
             total_pages=total_pages,
         )
 
-    def browse(self, dataset_filter: Optional[DatasetFilter] = None, sort_field: SortField = SortField.CREATED_AT, sort_order: SortOrder = SortOrder.DESC, page: int = 1, page_size: int = 20) -> PaginationResult:
+    def browse(
+        self,
+        dataset_filter: Optional[DatasetFilter] = None,
+        sort_field: SortField = SortField.CREATED_AT,
+        sort_order: SortOrder = SortOrder.DESC,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> PaginationResult:
         """Browse annotations with filtering, sorting, and pagination."""
         filtered = self.filter_annotations(dataset_filter)
         sorted_results = self.sort_annotations(filtered, sort_field, sort_order)

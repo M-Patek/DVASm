@@ -54,8 +54,18 @@ class ExportFormatInfo(BaseModel):
 _export_jobs: Dict[str, Dict[str, Any]] = {}
 
 SUPPORTED_FORMATS = {
-    "llava": {"name": "llava", "description": "LLaVA training format", "content_type": "application/jsonlines+json", "file_extension": ".jsonl"},
-    "openai": {"name": "openai", "description": "OpenAI fine-tuning format", "content_type": "application/jsonlines+json", "file_extension": ".jsonl"},
+    "llava": {
+        "name": "llava",
+        "description": "LLaVA training format",
+        "content_type": "application/jsonlines+json",
+        "file_extension": ".jsonl",
+    },
+    "openai": {
+        "name": "openai",
+        "description": "OpenAI fine-tuning format",
+        "content_type": "application/jsonlines+json",
+        "file_extension": ".jsonl",
+    },
 }
 
 

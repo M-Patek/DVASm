@@ -96,7 +96,9 @@ class PostgreSQLBackend(MetadataBackend):
         )
         self._create_tables()
         self._closed = False
-        logger.info("postgresql_backend_opened", host=self.config.host, database=self.config.database)
+        logger.info(
+            "postgresql_backend_opened", host=self.config.host, database=self.config.database
+        )
 
     def close(self) -> None:
         """Close PostgreSQL connection."""
@@ -156,10 +158,14 @@ class PostgreSQLBackend(MetadataBackend):
         cur.execute("CREATE INDEX IF NOT EXISTS idx_source ON annotations(source)")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_model_version ON annotations(model_version)")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_prompt_version ON annotations(prompt_version)")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_dataset_version ON annotations(dataset_version)")
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dataset_version ON annotations(dataset_version)"
+        )
         cur.execute("CREATE INDEX IF NOT EXISTS idx_quality ON annotations(quality_score)")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_content_hash ON annotations(content_hash)")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_annotations_gin ON annotations USING GIN(json_data)")
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_annotations_gin ON annotations USING GIN(json_data)"
+        )
 
         # Full-text search
         if self.config.enable_fts:
@@ -292,7 +298,9 @@ class PostgreSQLBackend(MetadataBackend):
                 annotation.created_at,
                 annotation.updated_at,
                 len(annotation.segments),
-                annotation.get_total_duration() if hasattr(annotation, 'get_total_duration') else 0.0,
+                annotation.get_total_duration()
+                if hasattr(annotation, "get_total_duration")
+                else 0.0,
                 json.dumps(annotation.tags),
                 annotation.parent_id,
                 content_hash,
@@ -308,12 +316,15 @@ class PostgreSQLBackend(MetadataBackend):
         self.ensure_open()
 
         cur = self._sync_conn.cursor()
-        cur.execute("""
+        cur.execute(
+            """
             SELECT id, video_id, video_path, source, model_version,
                    quality_score, created_at, updated_at, num_segments,
                    total_duration, tags, parent_id, content_hash, storage_path
             FROM annotations WHERE id = %s
-        """, (annotation_id,))
+        """,
+            (annotation_id,),
+        )
 
         row = cur.fetchone()
         if row is None:
@@ -429,13 +440,16 @@ class PostgreSQLBackend(MetadataBackend):
             return []
 
         cur = self._sync_conn.cursor()
-        cur.execute("""
+        cur.execute(
+            """
             SELECT id, json_data, ts_rank(to_tsvector('english', json_data::text), plainto_tsquery('english', %s)) as score
             FROM annotations
             WHERE to_tsvector('english', json_data::text) @@ plainto_tsquery('english', %s)
             ORDER BY score DESC
             LIMIT %s
-        """, (query_text, query_text, limit))
+        """,
+            (query_text, query_text, limit),
+        )
 
         rows = cur.fetchall()
         results = []
@@ -652,7 +666,10 @@ class PostgreSQLBackend(MetadataBackend):
             segments_added=segments_added,
             segments_removed=segments_removed,
             segments_modified=segments_modified,
-            unchanged=len(field_changes) == 0 and not segments_added and not segments_removed and not segments_modified,
+            unchanged=len(field_changes) == 0
+            and not segments_added
+            and not segments_removed
+            and not segments_modified,
         )
 
     def get_statistics(self) -> BackendStats:
@@ -718,11 +735,16 @@ class PostgreSQLBackend(MetadataBackend):
 
         cmd = [
             "pg_dump",
-            "-h", self.config.host,
-            "-p", str(self.config.port),
-            "-U", self.config.user,
-            "-d", self.config.database,
-            "-f", str(backup_path),
+            "-h",
+            self.config.host,
+            "-p",
+            str(self.config.port),
+            "-U",
+            self.config.user,
+            "-d",
+            self.config.database,
+            "-f",
+            str(backup_path),
         ]
 
         env = {"PGPASSWORD": self.config.password}
@@ -742,11 +764,16 @@ class PostgreSQLBackend(MetadataBackend):
 
         cmd = [
             "psql",
-            "-h", self.config.host,
-            "-p", str(self.config.port),
-            "-U", self.config.user,
-            "-d", self.config.database,
-            "-f", str(source),
+            "-h",
+            self.config.host,
+            "-p",
+            str(self.config.port),
+            "-U",
+            self.config.user,
+            "-d",
+            self.config.database,
+            "-f",
+            str(source),
         ]
 
         env = {"PGPASSWORD": self.config.password}
@@ -755,8 +782,14 @@ class PostgreSQLBackend(MetadataBackend):
         logger.info("postgresql_restored", source=str(source))
 
     # Hash index methods
-    def index_video_hash(self, video_id: str, video_path: str, content_hash: str,
-                        frame_count: Optional[int] = None, duration: Optional[float] = None) -> None:
+    def index_video_hash(
+        self,
+        video_id: str,
+        video_path: str,
+        content_hash: str,
+        frame_count: Optional[int] = None,
+        duration: Optional[float] = None,
+    ) -> None:
         """Index video hash."""
         self.ensure_open()
 

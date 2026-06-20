@@ -129,10 +129,7 @@ class TenantRateLimiter:
         }
 
     def get_all_stats(self) -> Dict[str, Any]:
-        return {
-            tenant_id: self.get_tenant_stats(tenant_id)
-            for tenant_id in self._tenant_configs
-        }
+        return {tenant_id: self.get_tenant_stats(tenant_id) for tenant_id in self._tenant_configs}
 
 
 class TenantRateLimitMiddleware(BaseHTTPMiddleware):

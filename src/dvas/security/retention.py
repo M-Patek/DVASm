@@ -188,7 +188,9 @@ class DataRetentionPolicy:
             rule: The retention rule to add.
         """
         self._rules[rule.data_type] = rule
-        logger.info("retention_rule_added", data_type=rule.data_type.value, days=rule.retention_days)
+        logger.info(
+            "retention_rule_added", data_type=rule.data_type.value, days=rule.retention_days
+        )
 
     def remove_rule(self, data_type: DataType) -> bool:
         """Remove a retention rule.

@@ -132,15 +132,13 @@ class QualityGate:
         # Validate action count
         if action_count < self.config.min_actions_per_segment:
             issues.append(
-                f"action_count {action_count} below minimum "
-                f"{self.config.min_actions_per_segment}"
+                f"action_count {action_count} below minimum {self.config.min_actions_per_segment}"
             )
 
         # Validate object count
         if object_count < self.config.min_objects_per_segment:
             issues.append(
-                f"object_count {object_count} below minimum "
-                f"{self.config.min_objects_per_segment}"
+                f"object_count {object_count} below minimum {self.config.min_objects_per_segment}"
             )
 
         # Calculate score (simplified)
@@ -211,7 +209,8 @@ class QualityGate:
             "failed_segments": total_segments - passed_segments,
             "avg_parse_confidence": (
                 sum(s.parse_confidence for s in segment_results) / total_segments
-                if total_segments > 0 else 0.0
+                if total_segments > 0
+                else 0.0
             ),
             "total_actions": sum(s.action_count for s in segment_results),
             "total_objects": sum(s.object_count for s in segment_results),
@@ -291,9 +290,7 @@ class ExportGate:
             quality_result = self.quality_gate.validate_annotation(annotation)
             if not quality_result.passed:
                 issues.extend(quality_result.issues)
-                issues.append(
-                    f"quality_score {quality_result.overall_score:.2f} below threshold"
-                )
+                issues.append(f"quality_score {quality_result.overall_score:.2f} below threshold")
 
         approved = len(issues) == 0
 
@@ -388,8 +385,7 @@ class QualityGateRegistry:
         """Get a predefined quality gate configuration."""
         if name not in cls._configs:
             raise ValueError(
-                f"Unknown quality gate: {name}. "
-                f"Available: {list(cls._configs.keys())}"
+                f"Unknown quality gate: {name}. Available: {list(cls._configs.keys())}"
             )
         return cls._configs[name]
 

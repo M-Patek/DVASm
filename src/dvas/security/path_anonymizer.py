@@ -46,7 +46,9 @@ class VideoPathAnonymizer:
         ),
         # Windows user profiles
         PathAnonymizationRule(
-            pattern=re.compile(r"(?i)([A-Za-z]:[\\\\\\\\]|[\\\\\\\\])Users[\\\\\\\\]([^\\\\\\\\]+)([\\\\\\\\].*)?"),
+            pattern=re.compile(
+                r"(?i)([A-Za-z]:[\\\\\\\\]|[\\\\\\\\])Users[\\\\\\\\]([^\\\\\\\\]+)([\\\\\\\\].*)?"
+            ),
             replacement=r"\1Users\\<USER>\3",
             description="Replace Windows username",
         ),
@@ -241,8 +243,7 @@ class VideoPathAnonymizer:
     def _anonymize_remaining_components(self, path: str) -> str:
         """Apply additional anonymization to remaining components."""
         # Anonymize any remaining email-like patterns in path
-        path = re.sub(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}",
-                      "<EMAIL>", path)
+        path = re.sub(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}", "<EMAIL>", path)
 
         # Anonymize phone number-like patterns
         path = re.sub(r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b", "<PHONE>", path)
@@ -278,11 +279,13 @@ class VideoPathAnonymizer:
             replacement: Replacement string with capture groups.
             description: Human-readable description of the rule.
         """
-        self.rules.append(PathAnonymizationRule(
-            pattern=pattern,
-            replacement=replacement,
-            description=description,
-        ))
+        self.rules.append(
+            PathAnonymizationRule(
+                pattern=pattern,
+                replacement=replacement,
+                description=description,
+            )
+        )
 
     def clear_cache(self) -> None:
         """Clear the path anonymization cache."""

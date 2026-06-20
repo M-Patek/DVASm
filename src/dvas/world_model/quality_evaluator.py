@@ -129,9 +129,7 @@ class WorldModelQualityReport:
     """
 
     annotation_id: str
-    state_prediction: StatePredictionMetrics = field(
-        default_factory=StatePredictionMetrics
-    )
+    state_prediction: StatePredictionMetrics = field(default_factory=StatePredictionMetrics)
     counterfactual: CounterfactualMetrics = field(default_factory=CounterfactualMetrics)
     dynamics: DynamicsQualityMetrics = field(default_factory=DynamicsQualityMetrics)
     overall_score: float = 0.0
@@ -214,7 +212,7 @@ class WorldModelQualityEvaluator:
                     velocity_errors.append(vel_error)
 
         if position_errors:
-            metrics.mse = float(np.mean([e ** 2 for e in position_errors]))
+            metrics.mse = float(np.mean([e**2 for e in position_errors]))
             metrics.mae = float(np.mean(position_errors))
             metrics.rmse = float(np.sqrt(metrics.mse))
             metrics.end_position_error = float(position_errors[-1])
@@ -297,9 +295,7 @@ class WorldModelQualityEvaluator:
 
         # Contact detection F1
         if ground_truth_contacts:
-            metrics.contact_detection_f1 = self._compute_contact_f1(
-                dynamics, ground_truth_contacts
-            )
+            metrics.contact_detection_f1 = self._compute_contact_f1(dynamics, ground_truth_contacts)
 
         # Trajectory errors from motion predictions
         trajectories = []
@@ -531,9 +527,7 @@ class WorldModelQualityEvaluator:
         final_displacements = []
         for t in trajectories:
             if len(t.positions) >= 2:
-                final_displacements.append(
-                    np.linalg.norm(t.positions[-1] - t.positions[-2])
-                )
+                final_displacements.append(np.linalg.norm(t.positions[-1] - t.positions[-2]))
         return float(np.mean(final_displacements)) if final_displacements else 0.0
 
     def _check_physical_consistency(self, dynamics: PhysicalDynamics) -> bool:
@@ -614,9 +608,7 @@ class WorldModelQualityEvaluator:
         issues = []
 
         if report.state_prediction.mae > self.position_threshold:
-            issues.append(
-                f"High position prediction error: {report.state_prediction.mae:.3f}m"
-            )
+            issues.append(f"High position prediction error: {report.state_prediction.mae:.3f}m")
 
         if report.counterfactual.physical_plausibility < 0.5:
             issues.append("Low counterfactual physical plausibility")
@@ -639,18 +631,12 @@ class WorldModelQualityEvaluator:
             )
 
         if report.counterfactual.diversity < 0.5:
-            recommendations.append(
-                "Increase counterfactual diversity by varying action parameters"
-            )
+            recommendations.append("Increase counterfactual diversity by varying action parameters")
 
         if report.dynamics.force_accuracy < 0.7:
-            recommendations.append(
-                "Improve force estimation using physics-based priors"
-            )
+            recommendations.append("Improve force estimation using physics-based priors")
 
         if not recommendations and report.overall_score < 0.7:
-            recommendations.append(
-                "Consider re-training world model with higher quality data"
-            )
+            recommendations.append("Consider re-training world model with higher quality data")
 
         return recommendations

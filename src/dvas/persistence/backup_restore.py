@@ -250,12 +250,14 @@ class BackupManager:
                 else:
                     manifest = {"name": item.stem}
 
-                backups.append({
-                    "name": manifest.get("name", item.stem),
-                    "path": str(item),
-                    "created_at": manifest.get("created_at"),
-                    "size_bytes": item.stat().st_size if item.exists() else 0,
-                })
+                backups.append(
+                    {
+                        "name": manifest.get("name", item.stem),
+                        "path": str(item),
+                        "created_at": manifest.get("created_at"),
+                        "size_bytes": item.stat().st_size if item.exists() else 0,
+                    }
+                )
 
         return sorted(backups, key=lambda x: x.get("created_at", ""), reverse=True)
 

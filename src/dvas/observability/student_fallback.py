@@ -158,15 +158,11 @@ class StudentFallbackMonitor:
             except Exception as e:
                 logger.error("alert_handler_failed", error=str(e))
 
-    def add_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> None:
+    def add_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> None:
         """Add an alert handler callback."""
         self._alert_handlers.append(handler)
 
-    def remove_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> bool:
+    def remove_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> bool:
         """Remove an alert handler.
 
         Returns:
@@ -194,7 +190,8 @@ class StudentFallbackMonitor:
         cutoff = time.time() - window_seconds
         with self._lock:
             fallbacks = [
-                f for f in self._fallbacks
+                f
+                for f in self._fallbacks
                 if f.timestamp >= cutoff
                 and (student_model is None or f.student_model == student_model)
             ]
@@ -242,7 +239,8 @@ class StudentFallbackMonitor:
         """
         with self._lock:
             records = [
-                f for f in self._fallbacks
+                f
+                for f in self._fallbacks
                 if student_model is None or f.student_model == student_model
             ]
             if not records:
@@ -263,11 +261,13 @@ class StudentFallbackMonitor:
                 for r in bucket_records:
                     reason_counts[r.reason] = reason_counts.get(r.reason, 0) + 1
 
-                trends.append({
-                    "timestamp": min_time + bucket * interval_seconds,
-                    "count": len(bucket_records),
-                    "reason_breakdown": reason_counts,
-                })
+                trends.append(
+                    {
+                        "timestamp": min_time + bucket * interval_seconds,
+                        "count": len(bucket_records),
+                        "reason_breakdown": reason_counts,
+                    }
+                )
 
             return trends
 
@@ -302,10 +302,7 @@ class StudentFallbackMonitor:
         """
         counts = self.get_fallback_by_reason()
         sorted_reasons = sorted(counts.items(), key=lambda x: x[1], reverse=True)
-        return [
-            {"reason": reason, "count": count}
-            for reason, count in sorted_reasons[:n]
-        ]
+        return [{"reason": reason, "count": count} for reason, count in sorted_reasons[:n]]
 
     def is_healthy(self, student_model: Optional[str] = None) -> bool:
         """Check if fallback rate is healthy.
@@ -344,9 +341,7 @@ class StudentFallbackMonitor:
         """
         with self._lock:
             if student_model:
-                self._fallbacks = [
-                    f for f in self._fallbacks if f.student_model != student_model
-                ]
+                self._fallbacks = [f for f in self._fallbacks if f.student_model != student_model]
             else:
                 self._fallbacks.clear()
                 self._total_student_calls = 0

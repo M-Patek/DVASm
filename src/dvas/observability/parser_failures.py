@@ -141,15 +141,11 @@ class ParserFailureMonitor:
             except Exception as e:
                 logger.error("alert_handler_failed", error=str(e))
 
-    def add_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> None:
+    def add_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> None:
         """Add an alert handler callback."""
         self._alert_handlers.append(handler)
 
-    def remove_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> bool:
+    def remove_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> bool:
         """Remove an alert handler.
 
         Returns:
@@ -177,9 +173,9 @@ class ParserFailureMonitor:
         cutoff = time.time() - window_seconds
         with self._lock:
             failures = [
-                f for f in self._failures
-                if f.timestamp >= cutoff
-                and (parser_type is None or f.parser_type == parser_type)
+                f
+                for f in self._failures
+                if f.timestamp >= cutoff and (parser_type is None or f.parser_type == parser_type)
             ]
             total = self._total_parsed + len(self._failures)
             if total == 0:
@@ -243,11 +239,13 @@ class ParserFailureMonitor:
                 for f in failures:
                     error_counts[f.error_type] = error_counts.get(f.error_type, 0) + 1
 
-                trends.append({
-                    "timestamp": bucket_time,
-                    "count": len(failures),
-                    "error_breakdown": error_counts,
-                })
+                trends.append(
+                    {
+                        "timestamp": bucket_time,
+                        "count": len(failures),
+                        "error_breakdown": error_counts,
+                    }
+                )
 
             return trends
 
@@ -262,10 +260,7 @@ class ParserFailureMonitor:
         """
         counts = self.get_failure_counts()
         sorted_errors = sorted(counts.items(), key=lambda x: x[1], reverse=True)
-        return [
-            {"error_type": error, "count": count}
-            for error, count in sorted_errors[:n]
-        ]
+        return [{"error_type": error, "count": count} for error, count in sorted_errors[:n]]
 
     def get_stats(self) -> Dict[str, Any]:
         """Get comprehensive parser failure statistics.

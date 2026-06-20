@@ -136,11 +136,13 @@ class SecretManager:
             return None
 
         # Log access
-        self._access_log.append({
-            "name": name,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "action": "read",
-        })
+        self._access_log.append(
+            {
+                "name": name,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "action": "read",
+            }
+        )
 
         return secret.value
 
@@ -306,9 +308,7 @@ class EnvironmentSecretProvider:
             List of secret names.
         """
         return [
-            key[len(self.prefix):].lower()
-            for key in os.environ
-            if key.startswith(self.prefix)
+            key[len(self.prefix) :].lower() for key in os.environ if key.startswith(self.prefix)
         ]
 
 

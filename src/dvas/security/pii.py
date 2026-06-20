@@ -107,13 +107,30 @@ class PIIDetector:
 
     # Keywords that suggest a name or address nearby
     NAME_CONTEXT_KEYWORDS: Set[str] = {
-        "name", "called", "signed by", "author", "creator",
-        "annotator", "reviewer", "submitted by", "owner",
+        "name",
+        "called",
+        "signed by",
+        "author",
+        "creator",
+        "annotator",
+        "reviewer",
+        "submitted by",
+        "owner",
     }
 
     ADDRESS_CONTEXT_KEYWORDS: Set[str] = {
-        "address", "street", "avenue", "road", "lane", "drive",
-        "city", "state", "zip", "postal", "located at", "residence",
+        "address",
+        "street",
+        "avenue",
+        "road",
+        "lane",
+        "drive",
+        "city",
+        "state",
+        "zip",
+        "postal",
+        "located at",
+        "residence",
     }
 
     SENSITIVE_OBJECT_NAMES: Set[str] = {

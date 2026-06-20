@@ -144,15 +144,11 @@ class ExportThroughputMonitor:
             except Exception as e:
                 logger.error("alert_handler_failed", error=str(e))
 
-    def add_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> None:
+    def add_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> None:
         """Add an alert handler callback."""
         self._alert_handlers.append(handler)
 
-    def remove_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> bool:
+    def remove_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> bool:
         """Remove an alert handler.
 
         Returns:
@@ -210,7 +206,8 @@ class ExportThroughputMonitor:
 
         with self._lock:
             records = [
-                r for r in self._exports
+                r
+                for r in self._exports
                 if r.timestamp >= cutoff
                 and (export_format is None or r.export_format == export_format)
             ]
@@ -254,10 +251,7 @@ class ExportThroughputMonitor:
         with self._lock:
             formats: set[str] = set(r.export_format for r in self._exports)
 
-        return {
-            fmt: self.get_export_stats(export_format=fmt)
-            for fmt in formats
-        }
+        return {fmt: self.get_export_stats(export_format=fmt) for fmt in formats}
 
     def get_slow_exports(
         self,

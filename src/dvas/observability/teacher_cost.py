@@ -138,15 +138,11 @@ class TeacherCostMonitor:
             except Exception as e:
                 logger.error("alert_handler_failed", error=str(e))
 
-    def add_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> None:
+    def add_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> None:
         """Add an alert handler callback."""
         self._alert_handlers.append(handler)
 
-    def remove_alert_handler(
-        self, handler: Callable[[str, Dict[str, Any]], None]
-    ) -> bool:
+    def remove_alert_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> bool:
         """Remove an alert handler.
 
         Returns:
@@ -181,9 +177,7 @@ class TeacherCostMonitor:
         cutoff = time.time() - 86400
         return self._get_cost_since(cutoff, model_name)
 
-    def _get_cost_since(
-        self, timestamp: float, model_name: Optional[str] = None
-    ) -> float:
+    def _get_cost_since(self, timestamp: float, model_name: Optional[str] = None) -> float:
         """Get total cost since a timestamp."""
         total = 0.0
         with self._lock:
@@ -268,13 +262,8 @@ class TeacherCostMonitor:
             List of dicts with model name and total cost
         """
         by_model = self.get_cost_by_model()
-        sorted_models = sorted(
-            by_model.items(), key=lambda x: x[1], reverse=True
-        )
-        return [
-            {"model": name, "total_cost_usd": cost}
-            for name, cost in sorted_models[:n]
-        ]
+        sorted_models = sorted(by_model.items(), key=lambda x: x[1], reverse=True)
+        return [{"model": name, "total_cost_usd": cost} for name, cost in sorted_models[:n]]
 
     def estimate_remaining_budget(self) -> Dict[str, Any]:
         """Estimate remaining budget for the day.

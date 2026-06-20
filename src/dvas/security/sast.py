@@ -268,12 +268,16 @@ class SASTGate:
         """
         # Filter by confidence
         filtered = [
-            f for f in findings
-            if self._confidence_value(f.confidence) >= self._confidence_value(self.config.min_confidence)
+            f
+            for f in findings
+            if self._confidence_value(f.confidence)
+            >= self._confidence_value(self.config.min_confidence)
         ]
 
         # Count by severity
-        high_count = sum(1 for f in filtered if f.severity == Severity.HIGH or f.severity == Severity.CRITICAL)
+        high_count = sum(
+            1 for f in filtered if f.severity == Severity.HIGH or f.severity == Severity.CRITICAL
+        )
         medium_count = sum(1 for f in filtered if f.severity == Severity.MEDIUM)
         low_count = sum(1 for f in filtered if f.severity == Severity.LOW)
 

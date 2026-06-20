@@ -12,7 +12,6 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
 
-
 class StandardFieldType(str, Enum):
     """Types of fields in annotation standards."""
 
@@ -127,83 +126,115 @@ class StandardRegistry:
     def _register_builtin_standards(self) -> None:
         """Register built-in annotation standards."""
         # EPIC-KITCHENS
-        self.register(AnnotationStandardDef(
-            name="EPIC-KITCHENS",
-            version=StandardVersion(2, 0, 0),
-            description="EPIC-KITCHENS action recognition standard",
-            fields=[
-                StandardField("verb", StandardFieldType.REQUIRED, "Action verb"),
-                StandardField("noun", StandardFieldType.REQUIRED, "Action noun"),
-                StandardField("hand", StandardFieldType.REQUIRED, "Hand used"),
-                StandardField("start_time", StandardFieldType.REQUIRED, "Start timestamp"),
-                StandardField("end_time", StandardFieldType.REQUIRED, "End timestamp"),
-                StandardField("participant_id", StandardFieldType.CONDITIONAL, "Participant ID"),
-                StandardField("narration", StandardFieldType.OPTIONAL, "Text narration"),
-            ],
-            supported_formats=["json", "csv", "pkl"],
-        ))
+        self.register(
+            AnnotationStandardDef(
+                name="EPIC-KITCHENS",
+                version=StandardVersion(2, 0, 0),
+                description="EPIC-KITCHENS action recognition standard",
+                fields=[
+                    StandardField("verb", StandardFieldType.REQUIRED, "Action verb"),
+                    StandardField("noun", StandardFieldType.REQUIRED, "Action noun"),
+                    StandardField("hand", StandardFieldType.REQUIRED, "Hand used"),
+                    StandardField("start_time", StandardFieldType.REQUIRED, "Start timestamp"),
+                    StandardField("end_time", StandardFieldType.REQUIRED, "End timestamp"),
+                    StandardField(
+                        "participant_id", StandardFieldType.CONDITIONAL, "Participant ID"
+                    ),
+                    StandardField("narration", StandardFieldType.OPTIONAL, "Text narration"),
+                ],
+                supported_formats=["json", "csv", "pkl"],
+            )
+        )
 
         # Ego4D
-        self.register(AnnotationStandardDef(
-            name="Ego4D",
-            version=StandardVersion(1, 0, 0),
-            description="Ego4D egocentric video understanding standard",
-            fields=[
-                StandardField("narration", StandardFieldType.REQUIRED, "Text narration"),
-                StandardField("start_time", StandardFieldType.REQUIRED, "Start timestamp"),
-                StandardField("end_time", StandardFieldType.REQUIRED, "End timestamp"),
-                StandardField("spatial_info", StandardFieldType.OPTIONAL, "3D spatial information"),
-                StandardField("hand_interaction", StandardFieldType.OPTIONAL, "Hand-object interaction"),
-                StandardField("instrument", StandardFieldType.OPTIONAL, "Instrument used"),
-                StandardField("state_changes", StandardFieldType.OPTIONAL, "State change annotations"),
-            ],
-            supported_formats=["json", "jsonl"],
-        ))
+        self.register(
+            AnnotationStandardDef(
+                name="Ego4D",
+                version=StandardVersion(1, 0, 0),
+                description="Ego4D egocentric video understanding standard",
+                fields=[
+                    StandardField("narration", StandardFieldType.REQUIRED, "Text narration"),
+                    StandardField("start_time", StandardFieldType.REQUIRED, "Start timestamp"),
+                    StandardField("end_time", StandardFieldType.REQUIRED, "End timestamp"),
+                    StandardField(
+                        "spatial_info", StandardFieldType.OPTIONAL, "3D spatial information"
+                    ),
+                    StandardField(
+                        "hand_interaction", StandardFieldType.OPTIONAL, "Hand-object interaction"
+                    ),
+                    StandardField("instrument", StandardFieldType.OPTIONAL, "Instrument used"),
+                    StandardField(
+                        "state_changes", StandardFieldType.OPTIONAL, "State change annotations"
+                    ),
+                ],
+                supported_formats=["json", "jsonl"],
+            )
+        )
 
         # Open X-Embodiment
-        self.register(AnnotationStandardDef(
-            name="Open X-Embodiment",
-            version=StandardVersion(1, 0, 0),
-            description="Open X-Embodiment robot learning standard",
-            fields=[
-                StandardField("language_instruction", StandardFieldType.REQUIRED, "Natural language instruction"),
-                StandardField("action_space", StandardFieldType.REQUIRED, "Robot action space definition"),
-                StandardField("gripper_pose", StandardFieldType.OPTIONAL, "Gripper pose"),
-                StandardField("joint_target", StandardFieldType.OPTIONAL, "Joint target positions"),
-                StandardField("gripper_state", StandardFieldType.OPTIONAL, "Gripper open/close state"),
-                StandardField("embodiment_type", StandardFieldType.CONDITIONAL, "Robot embodiment type"),
-            ],
-            supported_formats=["json", "tfrecord"],
-        ))
+        self.register(
+            AnnotationStandardDef(
+                name="Open X-Embodiment",
+                version=StandardVersion(1, 0, 0),
+                description="Open X-Embodiment robot learning standard",
+                fields=[
+                    StandardField(
+                        "language_instruction",
+                        StandardFieldType.REQUIRED,
+                        "Natural language instruction",
+                    ),
+                    StandardField(
+                        "action_space", StandardFieldType.REQUIRED, "Robot action space definition"
+                    ),
+                    StandardField("gripper_pose", StandardFieldType.OPTIONAL, "Gripper pose"),
+                    StandardField(
+                        "joint_target", StandardFieldType.OPTIONAL, "Joint target positions"
+                    ),
+                    StandardField(
+                        "gripper_state", StandardFieldType.OPTIONAL, "Gripper open/close state"
+                    ),
+                    StandardField(
+                        "embodiment_type", StandardFieldType.CONDITIONAL, "Robot embodiment type"
+                    ),
+                ],
+                supported_formats=["json", "tfrecord"],
+            )
+        )
 
         # Something-Something
-        self.register(AnnotationStandardDef(
-            name="Something-Something",
-            version=StandardVersion(2, 0, 0),
-            description="Something-Something video understanding standard",
-            fields=[
-                StandardField("template", StandardFieldType.REQUIRED, "Action template"),
-                StandardField("placeholders", StandardFieldType.REQUIRED, "Template placeholders"),
-                StandardField("video_id", StandardFieldType.REQUIRED, "Video identifier"),
-                StandardField("objects", StandardFieldType.OPTIONAL, "Object annotations"),
-            ],
-            supported_formats=["json", "csv"],
-        ))
+        self.register(
+            AnnotationStandardDef(
+                name="Something-Something",
+                version=StandardVersion(2, 0, 0),
+                description="Something-Something video understanding standard",
+                fields=[
+                    StandardField("template", StandardFieldType.REQUIRED, "Action template"),
+                    StandardField(
+                        "placeholders", StandardFieldType.REQUIRED, "Template placeholders"
+                    ),
+                    StandardField("video_id", StandardFieldType.REQUIRED, "Video identifier"),
+                    StandardField("objects", StandardFieldType.OPTIONAL, "Object annotations"),
+                ],
+                supported_formats=["json", "csv"],
+            )
+        )
 
         # AVA
-        self.register(AnnotationStandardDef(
-            name="AVA",
-            version=StandardVersion(2, 2, 0),
-            description="AVA atomic visual actions standard",
-            fields=[
-                StandardField("action_id", StandardFieldType.REQUIRED, "Action class ID"),
-                StandardField("person_id", StandardFieldType.REQUIRED, "Person identifier"),
-                StandardField("bbox", StandardFieldType.REQUIRED, "Bounding box [x1,y1,x2,y2]"),
-                StandardField("timestamp", StandardFieldType.REQUIRED, "Central timestamp"),
-                StandardField("confidence", StandardFieldType.OPTIONAL, "Detection confidence"),
-            ],
-            supported_formats=["csv", "json"],
-        ))
+        self.register(
+            AnnotationStandardDef(
+                name="AVA",
+                version=StandardVersion(2, 2, 0),
+                description="AVA atomic visual actions standard",
+                fields=[
+                    StandardField("action_id", StandardFieldType.REQUIRED, "Action class ID"),
+                    StandardField("person_id", StandardFieldType.REQUIRED, "Person identifier"),
+                    StandardField("bbox", StandardFieldType.REQUIRED, "Bounding box [x1,y1,x2,y2]"),
+                    StandardField("timestamp", StandardFieldType.REQUIRED, "Central timestamp"),
+                    StandardField("confidence", StandardFieldType.OPTIONAL, "Detection confidence"),
+                ],
+                supported_formats=["csv", "json"],
+            )
+        )
 
     def register(self, standard: AnnotationStandardDef) -> None:
         """Register a new annotation standard.
@@ -293,7 +324,9 @@ class StandardRegistry:
             del self._versions[name]
         return removed
 
-    def validate_data(self, name: str, data: Dict[str, Any], version: Optional[str] = None) -> List[str]:
+    def validate_data(
+        self, name: str, data: Dict[str, Any], version: Optional[str] = None
+    ) -> List[str]:
         """Validate data against a standard.
 
         Args:
@@ -310,7 +343,9 @@ class StandardRegistry:
             return [str(e)]
 
         errors: List[str] = []
-        required_fields = {f.name for f in standard.fields if f.field_type == StandardFieldType.REQUIRED}
+        required_fields = {
+            f.name for f in standard.fields if f.field_type == StandardFieldType.REQUIRED
+        }
 
         for field_name in required_fields:
             if field_name not in data or data[field_name] is None:
@@ -318,7 +353,9 @@ class StandardRegistry:
 
         return errors
 
-    def check_compliance(self, name: str, data: Dict[str, Any], version: Optional[str] = None) -> Dict[str, Any]:
+    def check_compliance(
+        self, name: str, data: Dict[str, Any], version: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Check compliance of data against a standard.
 
         Args:
@@ -400,7 +437,12 @@ class StandardRegistry:
 
         # Also copy fields from source data that exist in source but not in target
         for field_name in data:
-            if field_name not in result and field_name not in ("_converted_from", "_converted_to", "_source_version", "_target_version"):
+            if field_name not in result and field_name not in (
+                "_converted_from",
+                "_converted_to",
+                "_source_version",
+                "_target_version",
+            ):
                 result[field_name] = data[field_name]
 
         return result

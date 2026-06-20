@@ -122,7 +122,6 @@ class RLDSFormatter:
             "is_terminal": is_terminal,
             "is_first": is_first,
             "is_last": is_terminal,
-
             # Additional metadata
             "language_instruction": segment.caption,
         }
@@ -231,7 +230,6 @@ class RLDSFormatter:
             "rotation_delta": self._extract_rotation(segment.actions),
             "gripper_closedness": self._extract_gripper_state(segment.actions),
             "terminate_episode": 0,
-
             # Semantic actions
             "actions": actions_list,
             "natural_language": segment.caption,

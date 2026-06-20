@@ -168,7 +168,9 @@ class ApprovalWorkflow:
         self._log_event("submitted", annotation_id)
         logger.info("annotation_submitted", annotation_id=annotation_id)
 
-    def assign_reviewer(self, annotation_id: str, reviewer_id: Optional[str] = None) -> Optional[str]:
+    def assign_reviewer(
+        self, annotation_id: str, reviewer_id: Optional[str] = None
+    ) -> Optional[str]:
         """Assign a reviewer to an annotation.
 
         Args:
@@ -219,6 +221,7 @@ class ApprovalWorkflow:
             return self._expertise_assign(annotation_id, available)
         elif self.assignment_strategy == AssignmentStrategy.RANDOM:
             import random
+
             return random.choice([r.id for r in available]).id
 
         return available[0].id
@@ -279,7 +282,8 @@ class ApprovalWorkflow:
 
         # Check if enough approvals
         approvals = sum(
-            1 for r in self._annotation_records[annotation_id]
+            1
+            for r in self._annotation_records[annotation_id]
             if r.status == WorkflowStatus.APPROVED
         )
         if approvals >= self.required_approvals:
@@ -332,16 +336,20 @@ class ApprovalWorkflow:
     def get_queue(self) -> List[str]:
         """Get all annotations in the review queue."""
         return [
-            aid for aid in self._reviewer_queue
-            if self._annotation_status.get(aid) in (WorkflowStatus.PENDING_REVIEW, WorkflowStatus.IN_REVIEW)
+            aid
+            for aid in self._reviewer_queue
+            if self._annotation_status.get(aid)
+            in (WorkflowStatus.PENDING_REVIEW, WorkflowStatus.IN_REVIEW)
         ]
 
     def get_reviewer_queue_size(self, reviewer_id: str) -> int:
         """Get the number of annotations assigned to a reviewer."""
         return sum(
-            1 for aid, reviewers in self._annotation_assignments.items()
+            1
+            for aid, reviewers in self._annotation_assignments.items()
             if reviewer_id in reviewers
-            and self._annotation_status.get(aid) in (WorkflowStatus.PENDING_REVIEW, WorkflowStatus.IN_REVIEW)
+            and self._annotation_status.get(aid)
+            in (WorkflowStatus.PENDING_REVIEW, WorkflowStatus.IN_REVIEW)
         )
 
     def check_escalation(self, annotation_id: str) -> bool:
@@ -353,7 +361,10 @@ class ApprovalWorkflow:
         Returns:
             True if the annotation should be escalated.
         """
-        if self._annotation_status.get(annotation_id) not in (WorkflowStatus.PENDING_REVIEW, WorkflowStatus.IN_REVIEW):
+        if self._annotation_status.get(annotation_id) not in (
+            WorkflowStatus.PENDING_REVIEW,
+            WorkflowStatus.IN_REVIEW,
+        ):
             return False
 
         submitted_at = self._annotation_submitted_at.get(annotation_id, 0)
@@ -395,9 +406,15 @@ class ApprovalWorkflow:
         total = len(self._annotation_status)
         approved = sum(1 for s in self._annotation_status.values() if s == WorkflowStatus.APPROVED)
         rejected = sum(1 for s in self._annotation_status.values() if s == WorkflowStatus.REJECTED)
-        pending = sum(1 for s in self._annotation_status.values() if s == WorkflowStatus.PENDING_REVIEW)
-        in_review = sum(1 for s in self._annotation_status.values() if s == WorkflowStatus.IN_REVIEW)
-        escalated = sum(1 for s in self._annotation_status.values() if s == WorkflowStatus.ESCALATED)
+        pending = sum(
+            1 for s in self._annotation_status.values() if s == WorkflowStatus.PENDING_REVIEW
+        )
+        in_review = sum(
+            1 for s in self._annotation_status.values() if s == WorkflowStatus.IN_REVIEW
+        )
+        escalated = sum(
+            1 for s in self._annotation_status.values() if s == WorkflowStatus.ESCALATED
+        )
 
         return {
             "workflow_id": self.workflow_id,

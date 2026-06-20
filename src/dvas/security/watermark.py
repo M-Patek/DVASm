@@ -91,10 +91,10 @@ class Watermarker:
     """
 
     # Zero-width Unicode characters for invisible watermarking
-    ZW_SPACE = "​"      # Zero width space
+    ZW_SPACE = "​"  # Zero width space
     ZW_NON_JOINER = "‌"  # Zero width non-joiner
-    ZW_JOINER = "‍"     # Zero width joiner
-    BOM = "﻿"           # Byte order mark
+    ZW_JOINER = "‍"  # Zero width joiner
+    BOM = "﻿"  # Byte order mark
 
     def __init__(
         self,
@@ -108,9 +108,10 @@ class Watermarker:
             secret_key: Secret key for HMAC-based watermarking.
         """
         self.organization_id = organization_id
-        self.secret_key = secret_key or hashlib.sha256(
-            f"dvas_watermark_{organization_id}".encode()
-        ).hexdigest()[:32]
+        self.secret_key = (
+            secret_key
+            or hashlib.sha256(f"dvas_watermark_{organization_id}".encode()).hexdigest()[:32]
+        )
 
     def embed_watermark(
         self,
@@ -294,7 +295,7 @@ class Watermarker:
             return None
 
         try:
-            watermark_data = data[idx + len(marker):].decode()
+            watermark_data = data[idx + len(marker) :].decode()
             payload_str, signature = watermark_data.rsplit(":", 1)
             payload = json.loads(payload_str)
 
@@ -360,12 +361,12 @@ class Watermarker:
 
         if len(binary) % 16 != 0:
             # Pad to multiple of 16
-            binary = binary[:len(binary) - (len(binary) % 16)]
+            binary = binary[: len(binary) - (len(binary) % 16)]
 
         # Convert binary back to string
         chars = []
         for i in range(0, len(binary), 16):
-            chunk = binary[i:i + 16]
+            chunk = binary[i : i + 16]
             if len(chunk) == 16:
                 char_code = int(chunk, 2)
                 if 0 <= char_code <= 0x10FFFF:
@@ -473,9 +474,10 @@ class BatchWatermarker:
             elif isinstance(value, list):
                 result[key] = [
                     self._watermark_dict(item, recipient_id, export_id, user_id, depth + 1)
-                    if isinstance(item, dict) else
-                    self.watermarker.embed_watermark(item, recipient_id, export_id, user_id)
-                    if isinstance(item, str) and len(item) > 10 else item
+                    if isinstance(item, dict)
+                    else self.watermarker.embed_watermark(item, recipient_id, export_id, user_id)
+                    if isinstance(item, str) and len(item) > 10
+                    else item
                     for item in value
                 ]
             else:

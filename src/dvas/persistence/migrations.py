@@ -109,9 +109,7 @@ class SQLiteMigrationBackend(MigrationBackend):
     def list_applied_migrations(self) -> List[str]:
         """List applied migrations."""
         conn = sqlite3.connect(str(self.db_path))
-        rows = conn.execute(
-            "SELECT version FROM schema_migrations ORDER BY version"
-        ).fetchall()
+        rows = conn.execute("SELECT version FROM schema_migrations ORDER BY version").fetchall()
         conn.close()
         return [row[0] for row in rows]
 

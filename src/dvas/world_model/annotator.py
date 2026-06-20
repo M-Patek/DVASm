@@ -281,17 +281,17 @@ class WorldModelAnnotator:
         for dyn in dynamics_list:
             # Extract physical constraints
             if dyn.properties.mass is not None:
-                physical_constraints.append(
-                    f"{dyn.object_id} mass: {dyn.properties.mass:.2f}kg"
-                )
+                physical_constraints.append(f"{dyn.object_id} mass: {dyn.properties.mass:.2f}kg")
 
             # Extract causal links from contact events
             for event in dyn.contact_events:
-                causal_links.append({
-                    "cause": f"{event.subject_id} {event.contact_type.value}",
-                    "effect": f"{event.object_id} response",
-                    "confidence": str(event.is_stable),
-                })
+                causal_links.append(
+                    {
+                        "cause": f"{event.subject_id} {event.contact_type.value}",
+                        "effect": f"{event.object_id} response",
+                        "confidence": str(event.is_stable),
+                    }
+                )
 
         return DynamicsAnnotation(
             physical_constraints=physical_constraints,
@@ -354,9 +354,7 @@ class WorldModelAnnotator:
         # Generate counterfactuals if actions exist
         counterfactuals = []
         if segment.actions:
-            counterfactuals = await self.generate_counterfactuals(
-                segment, segment.actions[0]
-            )
+            counterfactuals = await self.generate_counterfactuals(segment, segment.actions[0])
 
         # Build annotation
         annotation = Annotation(
@@ -496,9 +494,7 @@ class WorldModelAnnotator:
 
             # Would need frames for actual implementation
             # For now, use rule-based
-            cf = self._generate_single_counterfactual(
-                segment, actual_action, alt_action
-            )
+            cf = self._generate_single_counterfactual(segment, actual_action, alt_action)
             counterfactuals.append(cf)
 
         return counterfactuals
@@ -544,7 +540,7 @@ class WorldModelAnnotator:
         # Add relationships based on scene context
         objects = list(state.scene_graph.objects.values())
         for i, obj1 in enumerate(objects):
-            for obj2 in objects[i + 1:]:
+            for obj2 in objects[i + 1 :]:
                 # Simple proximity-based relationships
                 rel = self._infer_relationship(obj1, obj2)
                 if rel:
@@ -643,19 +639,23 @@ class WorldModelAnnotator:
             # Action -> Object state change
             for obj in segment.objects:
                 if obj.name in action.noun:
-                    causal_relations.append({
-                        "cause": f"{action.verb} {action.noun}",
-                        "effect": f"{obj.name} state change",
-                        "type": "action_effect",
-                    })
+                    causal_relations.append(
+                        {
+                            "cause": f"{action.verb} {action.noun}",
+                            "effect": f"{obj.name} state change",
+                            "type": "action_effect",
+                        }
+                    )
 
             # Tool -> Action enablement
             if action.instrument:
-                causal_relations.append({
-                    "cause": f"grasp {action.instrument}",
-                    "effect": f"enable {action.verb}",
-                    "type": "enablement",
-                })
+                causal_relations.append(
+                    {
+                        "cause": f"grasp {action.instrument}",
+                        "effect": f"enable {action.verb}",
+                        "type": "enablement",
+                    }
+                )
 
         return causal_relations
 
@@ -669,9 +669,7 @@ class WorldModelAnnotator:
         counterfactuals = []
 
         for alt_action in alternative_actions:
-            cf = self._generate_single_counterfactual(
-                segment, actual_action, alt_action
-            )
+            cf = self._generate_single_counterfactual(segment, actual_action, alt_action)
             counterfactuals.append(cf)
 
         return counterfactuals
@@ -695,10 +693,7 @@ class WorldModelAnnotator:
             "fill": "contains liquid",
         }
 
-        outcome = verb_outcomes.get(
-            alternative_action.verb,
-            "changes state"
-        )
+        outcome = verb_outcomes.get(alternative_action.verb, "changes state")
 
         return {
             "if": f"{alternative_action.verb} {alternative_action.noun}",
@@ -881,8 +876,8 @@ class WorldModelAnnotator:
         Describe the scene state {timing} the action.
 
         Segment: {segment.caption}
-        Objects: {', '.join(obj.name for obj in segment.objects)}
-        Actions: {', '.join(f"{a.verb} {a.noun}" for a in segment.actions)}
+        Objects: {", ".join(obj.name for obj in segment.objects)}
+        Actions: {", ".join(f"{a.verb} {a.noun}" for a in segment.actions)}
 
         Describe:
         1. Object positions and states

@@ -230,9 +230,7 @@ class Trajectory:
         for i in range(len(self.timestamps) - 1):
             if self.timestamps[i] <= timestamp <= self.timestamps[i + 1]:
                 # Linear interpolation
-                t = (timestamp - self.timestamps[i]) / (
-                    self.timestamps[i + 1] - self.timestamps[i]
-                )
+                t = (timestamp - self.timestamps[i]) / (self.timestamps[i + 1] - self.timestamps[i])
                 pos = (1 - t) * self.positions[i] + t * self.positions[i + 1]
                 # Simple slerp approximation
                 orient = (1 - t) * self.orientations[i] + t * self.orientations[i + 1]
@@ -627,8 +625,12 @@ class MotionPrediction:
         return {
             "object_id": self.object_id,
             "prediction_horizon": self.prediction_horizon,
-            "predicted_trajectory": self.predicted_trajectory.to_dict() if self.predicted_trajectory else None,
-            "actual_trajectory": self.actual_trajectory.to_dict() if self.actual_trajectory else None,
+            "predicted_trajectory": self.predicted_trajectory.to_dict()
+            if self.predicted_trajectory
+            else None,
+            "actual_trajectory": self.actual_trajectory.to_dict()
+            if self.actual_trajectory
+            else None,
             "start_state": self.start_state,
             "prediction_time": self.prediction_time,
             "model_name": self.model_name,
@@ -641,8 +643,12 @@ class MotionPrediction:
         prediction = cls(
             object_id=data["object_id"],
             prediction_horizon=data.get("prediction_horizon", 0.0),
-            predicted_trajectory=Trajectory.from_dict(data["predicted_trajectory"]) if data.get("predicted_trajectory") else None,
-            actual_trajectory=Trajectory.from_dict(data["actual_trajectory"]) if data.get("actual_trajectory") else None,
+            predicted_trajectory=Trajectory.from_dict(data["predicted_trajectory"])
+            if data.get("predicted_trajectory")
+            else None,
+            actual_trajectory=Trajectory.from_dict(data["actual_trajectory"])
+            if data.get("actual_trajectory")
+            else None,
             start_state=data.get("start_state"),
             prediction_time=data.get("prediction_time", 0.0),
             model_name=data.get("model_name", "unknown"),

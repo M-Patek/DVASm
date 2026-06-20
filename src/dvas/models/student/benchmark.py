@@ -102,8 +102,10 @@ class RegressionReport:
         for metric, change in self.metric_changes.items():
             current = self.current_metrics.get(metric, 0)
             baseline = self.baseline_metrics.get(metric, 0)
-            symbol = "!" if metric in self.significant_regressions else (
-                "+" if metric in self.significant_improvements else " "
+            symbol = (
+                "!"
+                if metric in self.significant_regressions
+                else ("+" if metric in self.significant_improvements else " ")
             )
             print(f"{symbol} {metric}: {baseline:.3f} -> {current:.3f} ({change:+.1%})")
 
@@ -275,7 +277,9 @@ class StudentRegressionBenchmark:
 
         # BLEU
         try:
-            bleu_scores = [metrics_calc.bleu(ref, pred) for ref, pred in zip(references, predictions)]
+            bleu_scores = [
+                metrics_calc.bleu(ref, pred) for ref, pred in zip(references, predictions)
+            ]
             bleu = np.mean([s.get("bleu_4", 0.0) for s in bleu_scores])
         except Exception:
             bleu = 0.0
@@ -283,8 +287,7 @@ class StudentRegressionBenchmark:
         # ROUGE-L
         try:
             rouge_scores = [
-                metrics_calc.rouge(ref, pred)
-                for ref, pred in zip(references, predictions)
+                metrics_calc.rouge(ref, pred) for ref, pred in zip(references, predictions)
             ]
             rouge_l = np.mean([s.get("rougeL_f", 0.0) for s in rouge_scores])
         except Exception:
@@ -300,8 +303,7 @@ class StudentRegressionBenchmark:
         """Save benchmark result."""
         timestamp = result.timestamp.strftime("%Y%m%d_%H%M%S")
         result_path = (
-            self.results_dir /
-            f"{result.benchmark_name}_{result.model_id}_{timestamp}.json"
+            self.results_dir / f"{result.benchmark_name}_{result.model_id}_{timestamp}.json"
         )
 
         with open(result_path, "w", encoding="utf-8") as f:
@@ -385,9 +387,7 @@ class StudentRegressionBenchmark:
         baseline = self.load_baseline(current_result.benchmark_name)
 
         if baseline is None:
-            raise ValueError(
-                f"No baseline set for {current_result.benchmark_name}"
-            )
+            raise ValueError(f"No baseline set for {current_result.benchmark_name}")
 
         # Compare metrics
         metric_changes = {}
@@ -480,21 +480,27 @@ class StudentRegressionBenchmark:
         test_cases = [
             {
                 "id": "simple_action",
-                "video_path": str(video_dir / "simple_action.mp4") if video_dir else "test_videos/simple_action.mp4",
+                "video_path": str(video_dir / "simple_action.mp4")
+                if video_dir
+                else "test_videos/simple_action.mp4",
                 "prompt": "Describe the action in this video.",
                 "reference": "A person is cutting vegetables on a cutting board.",
                 "category": "action_recognition",
             },
             {
                 "id": "object_interaction",
-                "video_path": str(video_dir / "object_interaction.mp4") if video_dir else "test_videos/object_interaction.mp4",
+                "video_path": str(video_dir / "object_interaction.mp4")
+                if video_dir
+                else "test_videos/object_interaction.mp4",
                 "prompt": "What objects are being used and how?",
                 "reference": "The person is using a knife to chop carrots and onions.",
                 "category": "object_interaction",
             },
             {
                 "id": "temporal_sequence",
-                "video_path": str(video_dir / "temporal_sequence.mp4") if video_dir else "test_videos/temporal_sequence.mp4",
+                "video_path": str(video_dir / "temporal_sequence.mp4")
+                if video_dir
+                else "test_videos/temporal_sequence.mp4",
                 "prompt": "Describe the sequence of actions.",
                 "reference": "First washing hands, then preparing ingredients, then cooking.",
                 "category": "temporal",
@@ -549,6 +555,7 @@ class StudentRegressionBenchmark:
         metadata_path = target_dir / "checkpoint_metadata.json"
         with open(metadata_path, "w", encoding="utf-8") as f:
             import json
+
             json.dump(metadata, f, indent=2)
 
         return target_dir

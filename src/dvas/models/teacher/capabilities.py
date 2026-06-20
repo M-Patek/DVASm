@@ -113,7 +113,7 @@ PROVIDER_CAPABILITIES: Dict[str, ProviderCapabilities] = {
         },
         output_formats={OutputFormat.TEXT, OutputFormat.JSON},
         max_batch_size=0,
-        rate_limit_requests_per_minute= 100,
+        rate_limit_requests_per_minute=100,
         rate_limit_tokens_per_minute=500000,
         structured_output_schema="none",
         features={
@@ -202,8 +202,7 @@ class CapabilityRegistry:
     def list_providers_with_capability(self, capability: Capability) -> List[str]:
         """List all providers that support a capability."""
         return [
-            name for name, caps in self._provider_caps.items()
-            if capability in caps.capabilities
+            name for name, caps in self._provider_caps.items() if capability in caps.capabilities
         ]
 
     def get_batch_size_limit(self, provider: str) -> int:
@@ -229,7 +228,8 @@ class CapabilityRegistry:
                 capabilities=set(provider_caps.capabilities),
                 output_formats=set(provider_caps.output_formats),
                 max_frames=max_frames,
-                supports_structured_output=provider_caps.structured_output_schema in ("full", "partial"),
+                supports_structured_output=provider_caps.structured_output_schema
+                in ("full", "partial"),
             )
         else:
             caps = ModelCapabilities(

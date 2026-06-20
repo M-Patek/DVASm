@@ -15,6 +15,7 @@ logger = get_logger(__name__)
 
 class ChangeType(str, Enum):
     """Type of change made to an annotation."""
+
     ADD_ACTION = "add_action"
     REMOVE_ACTION = "remove_action"
     EDIT_ACTION = "edit_action"
@@ -31,6 +32,7 @@ class ChangeType(str, Enum):
 @dataclass
 class ChangeRecord:
     """Record of a single change to an annotation."""
+
     change_type: ChangeType
     segment_index: Optional[int] = None
     action_index: Optional[int] = None
@@ -58,6 +60,7 @@ class ChangeRecord:
 @dataclass
 class AnnotationEdit:
     """Complete edit session for an annotation."""
+
     annotation_id: str
     changes: List[ChangeRecord] = field(default_factory=list)
     started_at: datetime = field(default_factory=datetime.utcnow)
@@ -135,7 +138,9 @@ class AnnotationEditor:
         self._redo_stack.clear()
         logger.info("action_added", annotation_id=self._annotation.id, segment_index=segment_index)
 
-    def remove_action(self, segment_index: int, action_index: int, reason: Optional[str] = None) -> Optional[Action]:
+    def remove_action(
+        self, segment_index: int, action_index: int, reason: Optional[str] = None
+    ) -> Optional[Action]:
         if segment_index < 0 or segment_index >= len(self._annotation.segments):
             raise IndexError(f"Segment index {segment_index} out of range")
         segment = self._annotation.segments[segment_index]
@@ -154,10 +159,21 @@ class AnnotationEditor:
         self._edit.add_change(change)
         self._undo_stack.append(change)
         self._redo_stack.clear()
-        logger.info("action_removed", annotation_id=self._annotation.id, segment_index=segment_index, action_index=action_index)
+        logger.info(
+            "action_removed",
+            annotation_id=self._annotation.id,
+            segment_index=segment_index,
+            action_index=action_index,
+        )
         return removed
 
-    def edit_action(self, segment_index: int, action_index: int, new_action: Action, reason: Optional[str] = None) -> None:
+    def edit_action(
+        self,
+        segment_index: int,
+        action_index: int,
+        new_action: Action,
+        reason: Optional[str] = None,
+    ) -> None:
         if segment_index < 0 or segment_index >= len(self._annotation.segments):
             raise IndexError(f"Segment index {segment_index} out of range")
         segment = self._annotation.segments[segment_index]
@@ -177,7 +193,12 @@ class AnnotationEditor:
         self._edit.add_change(change)
         self._undo_stack.append(change)
         self._redo_stack.clear()
-        logger.info("action_edited", annotation_id=self._annotation.id, segment_index=segment_index, action_index=action_index)
+        logger.info(
+            "action_edited",
+            annotation_id=self._annotation.id,
+            segment_index=segment_index,
+            action_index=action_index,
+        )
 
     def add_object(self, segment_index: int, obj: Object, reason: Optional[str] = None) -> None:
         if segment_index < 0 or segment_index >= len(self._annotation.segments):
@@ -196,9 +217,16 @@ class AnnotationEditor:
         self._edit.add_change(change)
         self._undo_stack.append(change)
         self._redo_stack.clear()
-        logger.info("object_added", annotation_id=self._annotation.id, segment_index=segment_index, object_name=obj.name)
+        logger.info(
+            "object_added",
+            annotation_id=self._annotation.id,
+            segment_index=segment_index,
+            object_name=obj.name,
+        )
 
-    def remove_object(self, segment_index: int, object_index: int, reason: Optional[str] = None) -> Optional[Object]:
+    def remove_object(
+        self, segment_index: int, object_index: int, reason: Optional[str] = None
+    ) -> Optional[Object]:
         if segment_index < 0 or segment_index >= len(self._annotation.segments):
             raise IndexError(f"Segment index {segment_index} out of range")
         segment = self._annotation.segments[segment_index]
@@ -217,10 +245,17 @@ class AnnotationEditor:
         self._edit.add_change(change)
         self._undo_stack.append(change)
         self._redo_stack.clear()
-        logger.info("object_removed", annotation_id=self._annotation.id, segment_index=segment_index, object_index=object_index)
+        logger.info(
+            "object_removed",
+            annotation_id=self._annotation.id,
+            segment_index=segment_index,
+            object_index=object_index,
+        )
         return removed
 
-    def edit_caption(self, segment_index: int, new_caption: str, reason: Optional[str] = None) -> None:
+    def edit_caption(
+        self, segment_index: int, new_caption: str, reason: Optional[str] = None
+    ) -> None:
         if segment_index < 0 or segment_index >= len(self._annotation.segments):
             raise IndexError(f"Segment index {segment_index} out of range")
         segment = self._annotation.segments[segment_index]
@@ -237,7 +272,9 @@ class AnnotationEditor:
         self._edit.add_change(change)
         self._undo_stack.append(change)
         self._redo_stack.clear()
-        logger.info("caption_edited", annotation_id=self._annotation.id, segment_index=segment_index)
+        logger.info(
+            "caption_edited", annotation_id=self._annotation.id, segment_index=segment_index
+        )
 
     def undo(self) -> Optional[ChangeRecord]:
         if not self._undo_stack:
@@ -245,7 +282,9 @@ class AnnotationEditor:
         change = self._undo_stack.pop()
         self._redo_stack.append(change)
         self._revert_change(change)
-        logger.info("change_undone", annotation_id=self._annotation.id, change_type=change.change_type.value)
+        logger.info(
+            "change_undone", annotation_id=self._annotation.id, change_type=change.change_type.value
+        )
         return change
 
     def redo(self) -> Optional[ChangeRecord]:
@@ -254,7 +293,9 @@ class AnnotationEditor:
         change = self._redo_stack.pop()
         self._undo_stack.append(change)
         self._apply_change(change)
-        logger.info("change_redone", annotation_id=self._annotation.id, change_type=change.change_type.value)
+        logger.info(
+            "change_redone", annotation_id=self._annotation.id, change_type=change.change_type.value
+        )
         return change
 
     def _revert_change(self, change: ChangeRecord) -> None:
@@ -315,5 +356,9 @@ class AnnotationEditor:
     def finalize(self) -> Annotation:
         self._annotation.updated_at = datetime.now(timezone.utc)
         self._edit.completed_at = datetime.utcnow()
-        logger.info("annotation_edit_finalized", annotation_id=self._annotation.id, change_count=self._edit.change_count)
+        logger.info(
+            "annotation_edit_finalized",
+            annotation_id=self._annotation.id,
+            change_count=self._edit.change_count,
+        )
         return self._annotation

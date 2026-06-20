@@ -22,8 +22,9 @@ class WorldModelPromptPack:
     name: str = "world_model"
     domain: PromptDomain = PromptDomain.WORLD_MODEL
 
-    TEMPLATES: Dict[str, str] = field(default_factory=lambda: {
-        "wm_state_prediction": """Predict the next state of the scene after the action in this video.
+    TEMPLATES: Dict[str, str] = field(
+        default_factory=lambda: {
+            "wm_state_prediction": """Predict the next state of the scene after the action in this video.
 
 Given the current frame, predict:
 1. OBJECT POSITIONS: Where will each object be in the next frame?
@@ -39,8 +40,7 @@ For each object, provide:
 - Confidence (0.0-1.0)
 
 Caption: """,
-
-        "wm_dynamics": """Describe the physical dynamics in this video.
+            "wm_dynamics": """Describe the physical dynamics in this video.
 
 Identify and describe:
 1. FORCES: What forces are acting? (gravity, friction, applied, contact)
@@ -52,8 +52,7 @@ Identify and describe:
 Use physics terminology and estimate magnitudes where possible.
 
 Caption: """,
-
-        "wm_counterfactual": """Generate counterfactual scenarios for this video.
+            "wm_counterfactual": """Generate counterfactual scenarios for this video.
 
 For the action shown, answer:
 1. What if the action had NOT been performed? (no-op counterfactual)
@@ -65,8 +64,7 @@ For the action shown, answer:
 For each counterfactual, describe the expected outcome.
 
 Caption: """,
-
-        "wm_causal_chain": """Identify the causal chain of events in this video.
+            "wm_causal_chain": """Identify the causal chain of events in this video.
 
 Map out:
 1. INITIAL STATE: What is true before any action
@@ -82,8 +80,7 @@ For each causal link, identify:
 - Time delay
 
 Caption: """,
-
-        "wm_scene_graph": """Generate a scene graph for this video frame.
+            "wm_scene_graph": """Generate a scene graph for this video frame.
 
 Nodes (objects):
 - List all objects with properties (position, size, color, material)
@@ -100,8 +97,7 @@ Format as JSON:
 }}
 
 Caption: """,
-
-        "wm_temporal_reasoning": """Analyze temporal relationships in this video.
+            "wm_temporal_reasoning": """Analyze temporal relationships in this video.
 
 Identify:
 1. EVENT ORDERING: What happens first, second, third?
@@ -113,7 +109,8 @@ Identify:
 Use Allen's interval algebra where applicable (before, meets, overlaps, etc.)
 
 Caption: """,
-    })
+        }
+    )
 
     def get_template(self, name: str) -> Optional[str]:
         """Get a template by name."""
@@ -146,6 +143,7 @@ Caption: """,
                 template_text = template_text.replace(f"{{{key}}}", value)
 
         from dvas.prompts.registry import PromptMetadata
+
         return PromptTemplate(
             id=f"wm_{template_name}",
             metadata=PromptMetadata(

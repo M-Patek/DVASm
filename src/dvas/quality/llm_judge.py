@@ -206,7 +206,9 @@ Provide scores for ALL dimensions (0.0 to 1.0):
         lines = [f"Annotation ID: {annotation.id}", f"Source: {annotation.source}"]
 
         for i, segment in enumerate(annotation.segments):
-            lines.append(f"\nSegment {i + 1} ({segment.start_time:.1f}s - {segment.end_time:.1f}s):")
+            lines.append(
+                f"\nSegment {i + 1} ({segment.start_time:.1f}s - {segment.end_time:.1f}s):"
+            )
             lines.append(f"  Caption: {segment.caption}")
 
             if segment.actions:
@@ -279,7 +281,9 @@ Provide scores for ALL dimensions (0.0 to 1.0):
         for i, seg in enumerate(segments):
             if seg.actions:
                 for action in seg.actions:
-                    obj_list = [obj.name for obj in seg.objects] if seg.objects else ["unknown object"]
+                    obj_list = (
+                        [obj.name for obj in seg.objects] if seg.objects else ["unknown object"]
+                    )
                     s = f"Segment {i + 1}: {action.verb} {action.noun}"
                     if action.instrument:
                         s += f" with {action.instrument}"
@@ -290,9 +294,7 @@ Provide scores for ALL dimensions (0.0 to 1.0):
     @classmethod
     def format_captions(cls, segments: List[Segment]) -> str:
         """Format captions for prompt."""
-        return "\n".join(
-            f"Segment {i + 1}: {seg.caption}" for i, seg in enumerate(segments)
-        )
+        return "\n".join(f"Segment {i + 1}: {seg.caption}" for i, seg in enumerate(segments))
 
 
 class LLMJudgePipeline:

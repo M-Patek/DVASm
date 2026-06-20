@@ -267,7 +267,8 @@ class SceneGraph:
         if object_id in self.objects:
             del self.objects[object_id]
             self.relationships = [
-                r for r in self.relationships
+                r
+                for r in self.relationships
                 if r.subject_id != object_id and r.object_id != object_id
             ]
             self._edge_index = None
@@ -288,8 +289,7 @@ class SceneGraph:
     def get_relationships(self, object_id: str) -> List[Relationship]:
         """Get all relationships involving the given object."""
         return [
-            r for r in self.relationships
-            if r.subject_id == object_id or r.object_id == object_id
+            r for r in self.relationships if r.subject_id == object_id or r.object_id == object_id
         ]
 
     def get_related_objects(
@@ -326,8 +326,10 @@ class SceneGraph:
         for obj in self.objects.values():
             if AffordanceState.CONTAINER in obj.affordances or obj.role == ObjectRole.SUPPORT:
                 surfaces.append(obj)
-            elif any(r.relation_type == "supported_by" and r.object_id == obj.object_id
-                    for r in self.relationships):
+            elif any(
+                r.relation_type == "supported_by" and r.object_id == obj.object_id
+                for r in self.relationships
+            ):
                 surfaces.append(obj)
         return surfaces
 
@@ -343,13 +345,9 @@ class SceneGraph:
     def from_dict(cls, data: Dict[str, Any]) -> SceneGraph:
         """Create from dictionary."""
         objects = {
-            oid: ObjectState.from_dict(odata)
-            for oid, odata in data.get("objects", {}).items()
+            oid: ObjectState.from_dict(odata) for oid, odata in data.get("objects", {}).items()
         }
-        relationships = [
-            Relationship.from_dict(rdata)
-            for rdata in data.get("relationships", [])
-        ]
+        relationships = [Relationship.from_dict(rdata) for rdata in data.get("relationships", [])]
         return cls(
             objects=objects,
             relationships=relationships,
@@ -443,9 +441,7 @@ class WorldState:
         # Object descriptions
         visible_objects = [obj for obj in self.scene_graph.objects.values() if obj.is_visible]
         if visible_objects:
-            obj_desc = ", ".join([
-                f"{obj.name} ({obj.state})" for obj in visible_objects[:5]
-            ])
+            obj_desc = ", ".join([f"{obj.name} ({obj.state})" for obj in visible_objects[:5]])
             parts.append(f"Objects: {obj_desc}")
 
         # Key relationships
@@ -510,9 +506,7 @@ class WorldState:
                 # Interpolate position
                 current = result.scene_graph.objects[obj_id]
                 current.position = (1 - alpha) * current.position + alpha * obj.position
-                current.orientation = self._slerp(
-                    current.orientation, obj.orientation, alpha
-                )
+                current.orientation = self._slerp(current.orientation, obj.orientation, alpha)
                 current.velocity = (1 - alpha) * current.velocity + alpha * obj.velocity
 
         return result

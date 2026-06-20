@@ -324,14 +324,16 @@ class AdaptiveFallback(LowConfidenceFallback):
         )
 
         # Track result for adaptation
-        self._recent_results.append({
-            "used_fallback": result.metadata.get("fallback", False),
-            "success": result.is_success(),
-        })
+        self._recent_results.append(
+            {
+                "used_fallback": result.metadata.get("fallback", False),
+                "success": result.is_success(),
+            }
+        )
 
         # Keep window size bounded
         if len(self._recent_results) > self._window_size:
-            self._recent_results = self._recent_results[-self._window_size:]
+            self._recent_results = self._recent_results[-self._window_size :]
 
         # Adapt threshold periodically
         if len(self._recent_results) % 20 == 0:
@@ -355,22 +357,19 @@ class AdaptiveFallback(LowConfidenceFallback):
             if fallback_rate > self.target_fallback_rate:
                 # Too many fallbacks, raise threshold (be more confident)
                 self.confidence_threshold = min(
-                    1.0,
-                    self.confidence_threshold + self.adjustment_rate
+                    1.0, self.confidence_threshold + self.adjustment_rate
                 )
             elif fallback_rate < self.target_fallback_rate * 0.8:
                 # Too few fallbacks, lower threshold
                 self.confidence_threshold = max(
-                    0.0,
-                    self.confidence_threshold - self.adjustment_rate
+                    0.0, self.confidence_threshold - self.adjustment_rate
                 )
 
         if self.target_accuracy is not None:
             if success_rate < self.target_accuracy:
                 # Accuracy too low, raise threshold
                 self.confidence_threshold = min(
-                    1.0,
-                    self.confidence_threshold + self.adjustment_rate
+                    1.0, self.confidence_threshold + self.adjustment_rate
                 )
 
         if self.confidence_threshold != old_threshold:

@@ -221,7 +221,7 @@ class AuditLog:
 
         # Keep only last N events in memory
         if len(self._events) > self._max_memory_events:
-            self._events = self._events[-self._max_memory_events:]
+            self._events = self._events[-self._max_memory_events :]
 
         # Write to file if configured
         if self.log_dir and self._events_since_flush >= self._flush_interval:
@@ -455,7 +455,7 @@ class AuditLog:
 
         # Group events by date
         events_by_date: Dict[str, List[AuditEvent]] = {}
-        for event in self._events[-self._events_since_flush:]:
+        for event in self._events[-self._events_since_flush :]:
             date_str = datetime.fromtimestamp(event.timestamp).strftime("%Y-%m-%d")
             if date_str not in events_by_date:
                 events_by_date[date_str] = []
@@ -514,6 +514,7 @@ class AuditDecorator:
         Returns:
             Decorator function.
         """
+
         def decorator(func: Callable) -> Callable:
             def wrapper(*args, **kwargs):
                 # Try to extract user_id from args or kwargs
@@ -544,6 +545,7 @@ class AuditDecorator:
                     raise
 
             return wrapper
+
         return decorator
 
 

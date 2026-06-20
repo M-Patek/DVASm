@@ -88,14 +88,16 @@ class UncertaintySampling(SelectionStrategy):
             else:
                 uncertainty = 1 - confidence
 
-            scores.append(SampleScore(
-                sample_id=candidate.get("id", candidate.get("video_id", "unknown")),
-                score=uncertainty,
-                metadata={
-                    "confidence": confidence,
-                    "method": self.method,
-                },
-            ))
+            scores.append(
+                SampleScore(
+                    sample_id=candidate.get("id", candidate.get("video_id", "unknown")),
+                    score=uncertainty,
+                    metadata={
+                        "confidence": confidence,
+                        "method": self.method,
+                    },
+                )
+            )
 
         # Sort by uncertainty (descending) and take top n
         scores.sort(key=lambda x: x.score, reverse=True)
@@ -151,14 +153,16 @@ class DiversitySampling(SelectionStrategy):
         for idx in selected_indices:
             candidate_idx = valid_indices[idx]
             candidate = candidates[candidate_idx]
-            scores.append(SampleScore(
-                sample_id=candidate.get("id", candidate.get("video_id", "unknown")),
-                score=1.0,  # All selected are equally "good" for diversity
-                metadata={
-                    "selection_method": "diversity",
-                    "embedding_norm": float(np.linalg.norm(embeddings[idx])),
-                },
-            ))
+            scores.append(
+                SampleScore(
+                    sample_id=candidate.get("id", candidate.get("video_id", "unknown")),
+                    score=1.0,  # All selected are equally "good" for diversity
+                    metadata={
+                        "selection_method": "diversity",
+                        "embedding_norm": float(np.linalg.norm(embeddings[idx])),
+                    },
+                )
+            )
 
         return scores
 
@@ -189,10 +193,7 @@ class DiversitySampling(SelectionStrategy):
                     score = np.linalg.norm(embeddings[idx])
                 else:
                     # Score = min distance to any selected point
-                    distances = [
-                        np.linalg.norm(embeddings[idx] - embeddings[s])
-                        for s in selected
-                    ]
+                    distances = [np.linalg.norm(embeddings[idx] - embeddings[s]) for s in selected]
                     score = min(distances)
 
                 if score > best_score:
@@ -237,15 +238,17 @@ class ExpectedModelChange(SelectionStrategy):
 
             expected_change = uncertainty * complexity
 
-            scores.append(SampleScore(
-                sample_id=candidate.get("id", candidate.get("video_id", "unknown")),
-                score=expected_change,
-                metadata={
-                    "uncertainty": uncertainty,
-                    "complexity": complexity,
-                    "text_length": text_length,
-                },
-            ))
+            scores.append(
+                SampleScore(
+                    sample_id=candidate.get("id", candidate.get("video_id", "unknown")),
+                    score=expected_change,
+                    metadata={
+                        "uncertainty": uncertainty,
+                        "complexity": complexity,
+                        "text_length": text_length,
+                    },
+                )
+            )
 
         scores.sort(key=lambda x: x.score, reverse=True)
         return scores[:n_select]
@@ -285,35 +288,32 @@ class QueryByCommittee(SelectionStrategy):
                 texts = [p.text for p in committee_preds]
                 unique_texts = list(set(texts))
                 votes = [texts.count(t) for t in unique_texts]
-                probs = np.array(votes) / len(votes)
+                total_votes = len(committee_preds)
+                probs = np.array(votes) / total_votes
                 disagreement = -np.sum(probs * np.log2(probs + 1e-10))
 
             elif self.disagreement_metric == "average_kl":
                 # Average confidence divergence
-                confidences = [
-                    p.confidence if p.confidence else 0.5
-                    for p in committee_preds
-                ]
+                confidences = [p.confidence if p.confidence else 0.5 for p in committee_preds]
                 _ = np.mean(confidences)  # mean_conf calculated for reference
                 # Variance as proxy for KL divergence
                 disagreement = np.var(confidences)
 
             else:
                 # Default: variance in confidences
-                confidences = [
-                    p.confidence if p.confidence else 0.5
-                    for p in committee_preds
-                ]
+                confidences = [p.confidence if p.confidence else 0.5 for p in committee_preds]
                 disagreement = np.var(confidences)
 
-            scores.append(SampleScore(
-                sample_id=candidate.get("id", candidate.get("video_id", "unknown")),
-                score=disagreement,
-                metadata={
-                    "committee_size": len(committee_preds),
-                    "disagreement_metric": self.disagreement_metric,
-                },
-            ))
+            scores.append(
+                SampleScore(
+                    sample_id=candidate.get("id", candidate.get("video_id", "unknown")),
+                    score=disagreement,
+                    metadata={
+                        "committee_size": len(committee_preds),
+                        "disagreement_metric": self.disagreement_metric,
+                    },
+                )
+            )
 
         scores.sort(key=lambda x: x.score, reverse=True)
         return scores[:n_select]
@@ -488,9 +488,6 @@ def create_strategy(
     }
 
     if strategy_name not in strategies:
-        raise ValueError(
-            f"Unknown strategy: {strategy_name}. "
-            f"Available: {list(strategies.keys())}"
-        )
+        raise ValueError(f"Unknown strategy: {strategy_name}. Available: {list(strategies.keys())}")
 
     return strategies[strategy_name](**kwargs)

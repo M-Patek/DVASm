@@ -193,7 +193,8 @@ class LatencyQualityPareto(BaseBenchmark):
             Best model ID within latency budget, or None if none qualify
         """
         candidates = [
-            p for p in self._points
+            p
+            for p in self._points
             if p.latency_ms <= max_latency_ms and p.quality_score >= min_quality
         ]
 
@@ -272,13 +273,17 @@ class LatencyQualityPareto(BaseBenchmark):
             if point.model_id == baseline_model:
                 continue
 
-            speedup = baseline.latency_ms / point.latency_ms if point.latency_ms > 0 else float("inf")
+            speedup = (
+                baseline.latency_ms / point.latency_ms if point.latency_ms > 0 else float("inf")
+            )
             quality_loss = baseline.quality_score - point.quality_score
 
             results[point.model_id] = {
                 "speedup": speedup,
                 "quality_loss": quality_loss,
-                "quality_loss_percent": (quality_loss / baseline.quality_score * 100) if baseline.quality_score > 0 else 0.0,
+                "quality_loss_percent": (quality_loss / baseline.quality_score * 100)
+                if baseline.quality_score > 0
+                else 0.0,
             }
 
         return results

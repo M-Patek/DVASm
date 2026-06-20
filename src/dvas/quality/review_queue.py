@@ -195,9 +195,9 @@ class HumanReviewQueue:
                 video_id=annotation.video_id,
                 priority=priority,
                 quality_scores=quality_scores,
-                failed_dimensions=[
-                    d.value for d in quality_scores.failed_dimensions
-                ] if quality_scores else [],
+                failed_dimensions=[d.value for d in quality_scores.failed_dimensions]
+                if quality_scores
+                else [],
                 source=source,
                 tags=tags or [],
             )

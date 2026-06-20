@@ -39,11 +39,11 @@ class TerraformVariable:
     def to_hcl(self) -> str:
         """Generate HCL variable block."""
         lines = [f'variable "{self.name}" {{']
-        lines.append(f'  type        = {self.type}')
+        lines.append(f"  type        = {self.type}")
         if self.description:
             lines.append(f'  description = "{self.description}"')
         if self.default is not None:
-            lines.append(f'  default     = {json.dumps(self.default)}')
+            lines.append(f"  default     = {json.dumps(self.default)}")
         if self.sensitive:
             lines.append("  sensitive   = true")
         lines.append("}")
@@ -62,7 +62,7 @@ class TerraformOutput:
     def to_hcl(self) -> str:
         """Generate HCL output block."""
         lines = [f'output "{self.name}" {{']
-        lines.append(f'  value = {self.value}')
+        lines.append(f"  value = {self.value}")
         if self.description:
             lines.append(f'  description = "{self.description}"')
         if self.sensitive:
@@ -88,9 +88,9 @@ class TerraformModule:
         if self.version:
             lines.append(f'  version = "{self.version}"')
         for key, value in self.variables.items():
-            lines.append(f'  {key} = {json.dumps(value)}')
+            lines.append(f"  {key} = {json.dumps(value)}")
         for key, value in self.providers.items():
-            lines.append(f'  providers = {{ {key} = {value} }}')
+            lines.append(f"  providers = {{ {key} = {value} }}")
         lines.append("}")
         return "\n".join(lines)
 
@@ -105,9 +105,9 @@ class TerraformState:
     def to_hcl(self) -> str:
         """Generate HCL backend block."""
         lines = ["terraform {"]
-        lines.append("  backend \"{}\" {{".format(self.backend))
+        lines.append('  backend "{}" {{'.format(self.backend))
         for key, value in self.config.items():
-            lines.append(f'    {key} = {json.dumps(value)}')
+            lines.append(f"    {key} = {json.dumps(value)}")
         lines.append("  }")
         lines.append("}")
         return "\n".join(lines)
@@ -148,8 +148,9 @@ class TerraformManager:
         self._current_workspace: str = "default"
         self._last_plan: Optional[Dict[str, Any]] = None
 
-    def _run_cmd(self, args: List[str], input_text: Optional[str] = None,
-                 capture: bool = True) -> subprocess.CompletedProcess:
+    def _run_cmd(
+        self, args: List[str], input_text: Optional[str] = None, capture: bool = True
+    ) -> subprocess.CompletedProcess:
         """Execute a Terraform command."""
         cmd = [self.terraform_cmd] + args
         logger.debug("terraform_cmd", command=" ".join(cmd), cwd=str(self.working_dir))
@@ -162,8 +163,9 @@ class TerraformManager:
             check=False,
         )
 
-    def init(self, backend_config: Optional[Dict[str, str]] = None,
-             upgrade: bool = False) -> subprocess.CompletedProcess:
+    def init(
+        self, backend_config: Optional[Dict[str, str]] = None, upgrade: bool = False
+    ) -> subprocess.CompletedProcess:
         """Run terraform init.
 
         Args:
@@ -186,9 +188,12 @@ class TerraformManager:
             logger.error("terraform_init_failed", error=result.stderr)
         return result
 
-    def plan(self, vars_file: Optional[Path] = None,
-             targets: Optional[List[str]] = None,
-             destroy: bool = False) -> subprocess.CompletedProcess:
+    def plan(
+        self,
+        vars_file: Optional[Path] = None,
+        targets: Optional[List[str]] = None,
+        destroy: bool = False,
+    ) -> subprocess.CompletedProcess:
         """Run terraform plan.
 
         Args:
@@ -216,8 +221,9 @@ class TerraformManager:
             logger.error("terraform_plan_failed", error=result.stderr)
         return result
 
-    def apply(self, auto_approve: bool = False,
-              plan_file: Optional[Path] = None) -> subprocess.CompletedProcess:
+    def apply(
+        self, auto_approve: bool = False, plan_file: Optional[Path] = None
+    ) -> subprocess.CompletedProcess:
         """Run terraform apply.
 
         Args:
@@ -349,10 +355,12 @@ class TerraformManager:
                     continue
                 current = line.startswith("* ")
                 name = line.lstrip("* ").strip()
-                workspaces.append(TerraformWorkspace(
-                    name=name,
-                    current=current,
-                ))
+                workspaces.append(
+                    TerraformWorkspace(
+                        name=name,
+                        current=current,
+                    )
+                )
         return workspaces
 
     def select_workspace(self, name: str) -> bool:
@@ -459,13 +467,16 @@ class TerraformManager:
         """
         lines: List[str] = []
         for key, value in variables.items():
-            lines.append(f'{key} = {json.dumps(value)}')
+            lines.append(f"{key} = {json.dumps(value)}")
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
         logger.info("variables_file_written", path=str(path))
 
-    def generate_provider_config(self, provider: TerraformProvider,
-                                  region: str = "us-east-1",
-                                  version_constraint: str = "~> 5.0") -> str:
+    def generate_provider_config(
+        self,
+        provider: TerraformProvider,
+        region: str = "us-east-1",
+        version_constraint: str = "~> 5.0",
+    ) -> str:
         """Generate provider configuration.
 
         Args:
@@ -479,11 +490,17 @@ class TerraformManager:
         lines = ["terraform {"]
         lines.append("  required_providers {")
         if provider == TerraformProvider.AWS:
-            lines.append(f'    aws = {{\n      source  = "hashicorp/aws"\n      version = "{version_constraint}"\n    }}')
+            lines.append(
+                f'    aws = {{\n      source  = "hashicorp/aws"\n      version = "{version_constraint}"\n    }}'
+            )
         elif provider == TerraformProvider.GCP:
-            lines.append(f'    google = {{\n      source  = "hashicorp/google"\n      version = "{version_constraint}"\n    }}')
+            lines.append(
+                f'    google = {{\n      source  = "hashicorp/google"\n      version = "{version_constraint}"\n    }}'
+            )
         elif provider == TerraformProvider.AZURE:
-            lines.append(f'    azurerm = {{\n      source  = "hashicorp/azurerm"\n      version = "{version_constraint}"\n    }}')
+            lines.append(
+                f'    azurerm = {{\n      source  = "hashicorp/azurerm"\n      version = "{version_constraint}"\n    }}'
+            )
         lines.append("  }")
         lines.append("}")
         lines.append("")
@@ -507,10 +524,10 @@ class TerraformManager:
         lines = [f'module "{module_name}" {{']
         lines.append('  source = "./modules/aws"')
         lines.append('  vpc_cidr = "10.0.0.0/16"')
-        lines.append('  az_count = 2')
-        lines.append('  enable_gpu = true')
+        lines.append("  az_count = 2")
+        lines.append("  enable_gpu = true")
         lines.append('  instance_type = "g4dn.xlarge"')
-        lines.append('}')
+        lines.append("}")
         return "\n".join(lines)
 
     def generate_gcp_module(self, module_name: str = "dvas-gcp") -> str:
@@ -524,12 +541,12 @@ class TerraformManager:
         """
         lines = [f'module "{module_name}" {{']
         lines.append('  source = "./modules/gcp"')
-        lines.append('  project_id = var.gcp_project_id')
-        lines.append('  region = var.gcp_region')
-        lines.append('  enable_gpu = true')
+        lines.append("  project_id = var.gcp_project_id")
+        lines.append("  region = var.gcp_region")
+        lines.append("  enable_gpu = true")
         lines.append('  machine_type = "n1-standard-4"')
         lines.append('  accelerator_type = "nvidia-tesla-t4"')
-        lines.append('}')
+        lines.append("}")
         return "\n".join(lines)
 
     def generate_azure_module(self, module_name: str = "dvas-azure") -> str:
@@ -543,11 +560,11 @@ class TerraformManager:
         """
         lines = [f'module "{module_name}" {{']
         lines.append('  source = "./modules/azure"')
-        lines.append('  resource_group_name = var.azurerm_resource_group')
-        lines.append('  location = var.azurerm_location')
-        lines.append('  enable_gpu = true')
+        lines.append("  resource_group_name = var.azurerm_resource_group")
+        lines.append("  location = var.azurerm_location")
+        lines.append("  enable_gpu = true")
         lines.append('  vm_size = "Standard_NC4as_T4_v3"')
-        lines.append('}')
+        lines.append("}")
         return "\n".join(lines)
 
     def write_main_tf(self, path: Optional[Path] = None) -> None:

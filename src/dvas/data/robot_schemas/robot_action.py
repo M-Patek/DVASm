@@ -553,9 +553,7 @@ class EnhancedRobotAction:
                 else None
             ),
             final_gripper=(
-                GripperData.from_dict(data["final_gripper"])
-                if data.get("final_gripper")
-                else None
+                GripperData.from_dict(data["final_gripper"]) if data.get("final_gripper") else None
             ),
             contact_events=[ContactEvent.from_dict(e) for e in data.get("contact_events", [])],
             action_primitive=ActionPrimitive(data.get("action_primitive", "unknown")),

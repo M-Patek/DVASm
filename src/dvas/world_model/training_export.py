@@ -143,11 +143,13 @@ class SarloExporter:
 
         for sample in samples:
             path = self.export_trajectory(sample)
-            manifest.append({
-                "trajectory_id": sample.trajectory_id,
-                "file": str(path.relative_to(batch_dir)),
-                "duration": sample.end_time - sample.start_time,
-            })
+            manifest.append(
+                {
+                    "trajectory_id": sample.trajectory_id,
+                    "file": str(path.relative_to(batch_dir)),
+                    "duration": sample.end_time - sample.start_time,
+                }
+            )
 
         # Write manifest
         manifest_path = batch_dir / "manifest.json"
@@ -348,12 +350,14 @@ class SapienExporter:
         for state in sample.states:
             for obj_id, obj in state.scene_graph.objects.items():
                 if "joint" in obj.attributes:
-                    articulations.append({
-                        "object_id": obj_id,
-                        "joint_type": obj.attributes.get("joint_type", "revolute"),
-                        "joint_limits": obj.attributes.get("joint_limits", [-3.14, 3.14]),
-                        "initial_qpos": obj.attributes.get("initial_qpos", 0.0),
-                    })
+                    articulations.append(
+                        {
+                            "object_id": obj_id,
+                            "joint_type": obj.attributes.get("joint_type", "revolute"),
+                            "joint_limits": obj.attributes.get("joint_limits", [-3.14, 3.14]),
+                            "initial_qpos": obj.attributes.get("initial_qpos", 0.0),
+                        }
+                    )
 
         return articulations
 
@@ -363,14 +367,16 @@ class SapienExporter:
 
         for dynamics in sample.dynamics:
             for event in dynamics.contact_events:
-                contacts.append({
-                    "object_a": event.subject_id,
-                    "object_b": event.object_id,
-                    "contact_type": event.contact_type.value,
-                    "start_time": event.start_time,
-                    "end_time": event.end_time,
-                    "force_magnitude": event.force.magnitude if event.force else None,
-                })
+                contacts.append(
+                    {
+                        "object_a": event.subject_id,
+                        "object_b": event.object_id,
+                        "contact_type": event.contact_type.value,
+                        "start_time": event.start_time,
+                        "end_time": event.end_time,
+                        "force_magnitude": event.force.magnitude if event.force else None,
+                    }
+                )
 
         return contacts
 
@@ -390,15 +396,9 @@ class SapienExporter:
                         "orientations": [],
                         "velocities": [],
                     }
-                motion["object_motions"][obj_id]["positions"].append(
-                    obj.position.tolist()
-                )
-                motion["object_motions"][obj_id]["orientations"].append(
-                    obj.orientation.tolist()
-                )
-                motion["object_motions"][obj_id]["velocities"].append(
-                    obj.velocity.tolist()
-                )
+                motion["object_motions"][obj_id]["positions"].append(obj.position.tolist())
+                motion["object_motions"][obj_id]["orientations"].append(obj.orientation.tolist())
+                motion["object_motions"][obj_id]["velocities"].append(obj.velocity.tolist())
 
         return motion
 

@@ -177,6 +177,7 @@ class InMemoryTaskStore(TaskStore):
     def _get_lock(self):
         if self._lock is None:
             import asyncio
+
             self._lock = asyncio.Lock()
         return self._lock
 
@@ -192,9 +193,7 @@ class InMemoryTaskStore(TaskStore):
         for tid in expired:
             self._tasks.pop(tid, None)
         if len(self._tasks) > self._max_tasks:
-            terminal_tasks = [
-                (tid, t) for tid, t in self._tasks.items() if t.status in terminal
-            ]
+            terminal_tasks = [(tid, t) for tid, t in self._tasks.items() if t.status in terminal]
             terminal_tasks.sort(key=lambda x: x[1].updated_at.timestamp())
             overflow = len(self._tasks) - self._max_tasks
             for tid, _ in terminal_tasks[:overflow]:
@@ -297,7 +296,16 @@ class RedisTaskStore(TaskStore):
     """Redis-backed task store (placeholder for production)."""
 
     def __init__(self, redis_url: str = "redis://localhost:6379/0") -> None:
-        raise NotImplementedError("RedisTaskStore not yet implemented")
+        self._redis_url = redis_url
+        self._key_prefix = "dvas:task:"
+
+    def _task_key(self, task_id: str) -> str:
+        """Generate Redis key for a task."""
+        return f"{self._key_prefix}{task_id}"
+
+    def _tenant_key(self, tenant_id: str) -> str:
+        """Generate Redis key for tenant task list."""
+        return f"{self._key_prefix}tenant:{tenant_id}"
 
     async def create(self, task: Task) -> Task:
         raise NotImplementedError
@@ -344,7 +352,19 @@ class PostgresTaskStore(TaskStore):
     """PostgreSQL-backed task store (placeholder for production)."""
 
     def __init__(self, dsn: str = "postgresql://localhost/dvas") -> None:
-        raise NotImplementedError("PostgresTaskStore not yet implemented")
+        self._dsn = dsn
+        self._table_name = "tasks"
+
+    def _row_to_task(self, row) -> Task:
+        """Convert a database row to a Task object."""
+        if hasattr(row, "_data"):
+            data = dict(row._data)
+            # Convert datetime objects to ISO strings for from_dict
+            for key in ["created_at", "updated_at"]:
+                if key in data and hasattr(data[key], "isoformat"):
+                    data[key] = data[key].isoformat()
+            return Task.from_dict(data)
+        return Task.from_dict(dict(row))
 
     async def create(self, task: Task) -> Task:
         raise NotImplementedError

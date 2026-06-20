@@ -127,9 +127,7 @@ class AcceptanceCriteria:
             threshold = threshold_map.get(dim, 0.5)
 
             if dim_score.score < threshold:
-                failures.append(
-                    f"{dim.value}_score {dim_score.score:.2f} < {threshold:.2f}"
-                )
+                failures.append(f"{dim.value}_score {dim_score.score:.2f} < {threshold:.2f}")
 
         # Check issue count
         if len(scores.all_issues) > self.max_issues:
@@ -392,8 +390,7 @@ class AcceptanceCriteriaRegistry:
         """
         if name not in cls._criteria:
             raise ValueError(
-                f"Unknown acceptance criteria: {name}. "
-                f"Available: {list(cls._criteria.keys())}"
+                f"Unknown acceptance criteria: {name}. Available: {list(cls._criteria.keys())}"
             )
         return cls._criteria[name]
 

@@ -296,16 +296,18 @@ class HorizontalPodAutoscaler:
             }
         ]
         if self.target_memory_utilization is not None:
-            metrics.append({
-                "type": "Resource",
-                "resource": {
-                    "name": "memory",
-                    "target": {
-                        "type": "Utilization",
-                        "averageUtilization": self.target_memory_utilization,
+            metrics.append(
+                {
+                    "type": "Resource",
+                    "resource": {
+                        "name": "memory",
+                        "target": {
+                            "type": "Utilization",
+                            "averageUtilization": self.target_memory_utilization,
+                        },
                     },
-                },
-            })
+                }
+            )
         return {
             "apiVersion": "autoscaling/v2",
             "kind": "HorizontalPodAutoscaler",
@@ -369,8 +371,9 @@ class KubernetesManager:
         self.kubectl_cmd = kubectl_cmd
         self._deployments: Dict[str, Dict[str, Any]] = {}
 
-    def _run_cmd(self, args: List[str], input_text: Optional[str] = None,
-                 capture: bool = True) -> subprocess.CompletedProcess:
+    def _run_cmd(
+        self, args: List[str], input_text: Optional[str] = None, capture: bool = True
+    ) -> subprocess.CompletedProcess:
         """Execute a kubectl command."""
         cmd = [self.kubectl_cmd] + args
         logger.debug("kubectl_cmd", command=" ".join(cmd))
@@ -444,9 +447,7 @@ class KubernetesManager:
         Returns:
             Status dictionary.
         """
-        result = self._run_cmd(
-            ["get", "deployment", name, "-n", namespace, "-o", "json"]
-        )
+        result = self._run_cmd(["get", "deployment", name, "-n", namespace, "-o", "json"])
         if result.returncode == 0 and result.stdout:
             try:
                 return json.loads(result.stdout)
@@ -454,8 +455,7 @@ class KubernetesManager:
                 pass
         return {}
 
-    def scale_deployment(self, name: str, replicas: int,
-                         namespace: str = "default") -> bool:
+    def scale_deployment(self, name: str, replicas: int, namespace: str = "default") -> bool:
         """Scale a deployment.
 
         Args:
@@ -487,16 +487,15 @@ class KubernetesManager:
         Returns:
             True if successful.
         """
-        result = self._run_cmd(
-            ["rollout", "restart", "deployment", name, "-n", namespace]
-        )
+        result = self._run_cmd(["rollout", "restart", "deployment", name, "-n", namespace])
         if result.returncode == 0:
             logger.info("rollout_restarted", name=name, namespace=namespace)
             return True
         return False
 
-    def rollout_undo(self, name: str, namespace: str = "default",
-                     revision: Optional[int] = None) -> bool:
+    def rollout_undo(
+        self, name: str, namespace: str = "default", revision: Optional[int] = None
+    ) -> bool:
         """Undo a rollout.
 
         Args:
@@ -653,8 +652,9 @@ class KubernetesManager:
         result = self._run_cmd(["delete", "namespace", name])
         return result.returncode == 0
 
-    def get_pods(self, namespace: str = "default",
-                 selector: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
+    def get_pods(
+        self, namespace: str = "default", selector: Optional[Dict[str, str]] = None
+    ) -> List[Dict[str, Any]]:
         """List pods in a namespace.
 
         Args:
@@ -678,8 +678,7 @@ class KubernetesManager:
                         "status": p["status"]["phase"],
                         "node": p["spec"].get("nodeName"),
                         "ready": all(
-                            c.get("ready", False)
-                            for c in p["status"].get("containerStatuses", [])
+                            c.get("ready", False) for c in p["status"].get("containerStatuses", [])
                         ),
                     }
                     for p in data.get("items", [])
@@ -688,8 +687,13 @@ class KubernetesManager:
                 pass
         return []
 
-    def get_logs(self, pod_name: str, namespace: str = "default",
-                 container: Optional[str] = None, tail: int = 100) -> List[str]:
+    def get_logs(
+        self,
+        pod_name: str,
+        namespace: str = "default",
+        container: Optional[str] = None,
+        tail: int = 100,
+    ) -> List[str]:
         """Get pod logs.
 
         Args:
@@ -709,8 +713,9 @@ class KubernetesManager:
             return result.stdout.splitlines()
         return []
 
-    def exec_in_pod(self, pod_name: str, command: List[str],
-                    namespace: str = "default") -> subprocess.CompletedProcess:
+    def exec_in_pod(
+        self, pod_name: str, command: List[str], namespace: str = "default"
+    ) -> subprocess.CompletedProcess:
         """Execute a command in a pod.
 
         Args:
@@ -765,9 +770,7 @@ class KubernetesManager:
         Returns:
             List of deployment summaries.
         """
-        result = self._run_cmd(
-            ["get", "deployments", "-n", namespace, "-o", "json"]
-        )
+        result = self._run_cmd(["get", "deployments", "-n", namespace, "-o", "json"])
         if result.returncode == 0 and result.stdout:
             try:
                 data = json.loads(result.stdout)

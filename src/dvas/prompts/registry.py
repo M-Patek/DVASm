@@ -71,7 +71,9 @@ class PromptMetadata:
             tags=data.get("tags", []),
             author=data.get("author", ""),
             created_at=datetime.fromisoformat(data["created_at"]),
-            updated_at=datetime.fromisoformat(data["updated_at"]) if data.get("updated_at") else None,
+            updated_at=datetime.fromisoformat(data["updated_at"])
+            if data.get("updated_at")
+            else None,
             parent_id=data.get("parent_id"),
         )
 

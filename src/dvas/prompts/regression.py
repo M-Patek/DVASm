@@ -87,7 +87,9 @@ class PromptRegressionTest:
         self._quality_threshold: float = 0.7
         self._max_regression: float = 0.1  # Max allowed quality drop
 
-    def add_golden_annotation(self, annotation: GoldenAnnotation, test_set: str = "default") -> None:
+    def add_golden_annotation(
+        self, annotation: GoldenAnnotation, test_set: str = "default"
+    ) -> None:
         """Add a golden annotation to a test set.
 
         Args:

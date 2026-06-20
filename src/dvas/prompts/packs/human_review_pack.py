@@ -23,8 +23,9 @@ class HumanReviewPromptPack:
     name: str = "human_review"
     domain: PromptDomain = PromptDomain.HUMAN_REVIEW
 
-    TEMPLATES: Dict[str, str] = field(default_factory=lambda: {
-        "review_overall_quality": """Review the following video annotation for overall quality.
+    TEMPLATES: Dict[str, str] = field(
+        default_factory=lambda: {
+            "review_overall_quality": """Review the following video annotation for overall quality.
 
 Video: {video_description}
 Annotation: {annotation_text}
@@ -44,8 +45,7 @@ For each dimension, provide:
 Overall score: {overall_score}/5
 
 Reviewer notes: """,
-
-        "review_factuality": """Fact-check this annotation against the video.
+            "review_factuality": """Fact-check this annotation against the video.
 
 Annotation: {annotation_text}
 
@@ -62,8 +62,7 @@ For each error found:
 - Suggest correction
 
 Fact-check result: """,
-
-        "review_vla_specific": """Review this annotation for VLA/Robot training suitability.
+            "review_vla_specific": """Review this annotation for VLA/Robot training suitability.
 
 Annotation: {annotation_text}
 
@@ -77,8 +76,7 @@ Assess for robot action learning:
 Score each from 1-5 and provide actionable feedback.
 
 VLA review: """,
-
-        "review_comparison": """Compare two annotations of the same video.
+            "review_comparison": """Compare two annotations of the same video.
 
 Annotation A: {annotation_a}
 
@@ -94,8 +92,7 @@ Compare them on:
 Declare a winner (A, B, or tie) for each dimension with justification.
 
 Comparison result: """,
-
-        "review_correction": """Provide a corrected version of this annotation.
+            "review_correction": """Provide a corrected version of this annotation.
 
 Original annotation: {annotation_text}
 
@@ -109,8 +106,7 @@ Please provide a corrected annotation that:
 5. Follows the annotation standard format
 
 Corrected annotation: """,
-
-        "review_consensus": """Evaluate consensus among multiple reviewers.
+            "review_consensus": """Evaluate consensus among multiple reviewers.
 
 Review 1: {review_1}
 Review 2: {review_2}
@@ -123,7 +119,8 @@ Determine:
 4. CONFIDENCE: How confident should we be in the consensus?
 
 Consensus evaluation: """,
-    })
+        }
+    )
 
     def get_template(self, name: str) -> Optional[str]:
         """Get a template by name."""
@@ -156,6 +153,7 @@ Consensus evaluation: """,
                 template_text = template_text.replace(f"{{{key}}}", value)
 
         from dvas.prompts.registry import PromptMetadata
+
         return PromptTemplate(
             id=f"hr_{template_name}",
             metadata=PromptMetadata(
@@ -216,7 +214,7 @@ Consensus evaluation: """,
         base = base.replace("{annotation_b}", annotation_b)
 
         if criteria:
-            criteria_text = "\n".join(f"{i+1}. {c}" for i, c in enumerate(criteria))
+            criteria_text = "\n".join(f"{i + 1}. {c}" for i, c in enumerate(criteria))
             base = base.replace(
                 "1. ACCURACY: Which is more accurate?",
                 criteria_text,
