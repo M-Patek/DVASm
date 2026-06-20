@@ -41,3 +41,4 @@ htmlcov/
 docs/_build/
 .tmp/
 tmp/
+.claude/worktrees/

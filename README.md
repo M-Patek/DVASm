@@ -19,6 +19,9 @@ DVAS generates high-quality temporal annotations for videos using a **teacher-st
 - **Streaming Video Processing** — Async frame streaming with `asyncio.Queue`, no full video load
 - **Performance Optimized** — Frame seeking, min-heap sampling, concurrent encoding, metadata caching
 - **Teacher-Student Distillation** — GPT/Claude → fine-tuned Qwen2-VL for cost-efficient inference
+- **Prompt System** — Registry, versioning, A/B testing, auto-selection, few-shot retrieval
+- **API & Task System** — FastAPI endpoints, task queue, tenant isolation, rate limiting
+- **Review Workbench** — Dataset browser, annotation editor, reviewer assignment, approval workflow
 - **Quality Loop** — 9-dimension analysis (factuality, grounding, temporal consistency) with LLM-as-judge
 - **VLA/Robot Data** — Hand pose, gripper state, affordance, counterfactual annotations for robotics
 - **World Model** — State prediction, dynamics annotation, causal relation extraction
@@ -133,6 +136,20 @@ DVAS
 │   ├── SFT/DPO training on distilled annotations
 │   ├── Confidence Calibration & Active Learning
 │   └── Teacher vs Student Evaluation & Regression Benchmark
+├── Prompt System       (Registry, versioning, A/B testing, auto-selection)
+│   ├── Prompt Registry with versioning & lineage
+│   ├── A/B Testing framework with quality attribution
+│   ├── Auto-selection based on domain & performance
+│   └── Few-shot example retrieval & domain-specific packs
+├── API & Task System   (FastAPI endpoints with task management)
+│   ├── Task queue with retry, cancel, resume
+│   ├── Batch job API & dataset API
+│   ├── Tenant isolation & rate limiting
+│   └── Audit logging & review workflow
+├── Review Workbench    (Human annotation review & approval)
+│   ├── Dataset browser & annotation editor
+│   ├── Reviewer assignment & workload balancing
+│   └── Approve/reject workflow & reviewer metrics
 ├── World Model         (State prediction & dynamics annotation)
 │   ├── State before/after generation
 │   ├── Physical dynamics annotation (mass, friction, contact)
@@ -157,10 +174,12 @@ DVAS
 | 08 | [Routing](docs/subsystems/08-routing.md) | ✅ Stable | Smart router with complexity-based model selection |
 | 09 | [Quality Loop](docs/subsystems/09-quality.md) | ✅ Enhanced | Auto analysis, LLM-as-judge, review queues, acceptance criteria |
 | 10 | [Lineage](docs/subsystems/10-lineage.md) | ✅ Stable | Schema version management, data provenance tracking |
-| 11 | [Prompts](docs/subsystems/13-prompts.md) | ✅ Stable | Adaptive prompt engineering, video classification |
+| 11 | [Prompts](docs/subsystems/11-prompts.md) | ✅ Enhanced | Registry, versioning, A/B testing, auto-selection, few-shot |
 | 12 | [Security](docs/subsystems/12-security.md) | ✅ Stable | PII detection, anonymization, watermarking, RBAC |
-| 13 | [Monitoring](docs/subsystems/11-monitoring.md) | ✅ Stable | A/B testing, drift detection, performance monitoring |
-| 14 | [World Model](docs/subsystems/14-world-model.md) | ✅ Enhanced | State prediction, dynamics annotation, causal extraction, benchmarks |
+| 13 | [Monitoring](docs/subsystems/13-monitoring.md) | ✅ Stable | A/B testing, drift detection, performance monitoring |
+| 14 | [API & Tasks](docs/subsystems/07-api.md) | ✅ Enhanced | FastAPI endpoints, task queue, tenant isolation, rate limiting |
+| 15 | [Review Workbench](docs/subsystems/05-evaluation.md) | ✅ Enhanced | Dataset browser, annotation editor, reviewer assignment |
+| 16 | [World Model](docs/subsystems/14-world-model.md) | ✅ Enhanced | State prediction, dynamics annotation, causal extraction, benchmarks |
 | 15 | [Infrastructure](docs/subsystems/15-infrastructure.md) | 📝 Draft | Data platform deployment, ops |
 | 16 | [Governance](docs/subsystems/16-governance.md) | ✅ Stable | Annotation standard management, multi-standard adapters |
 
@@ -218,8 +237,9 @@ DVASm/
 │   │   ├── parser.py      # Response parsing
 │   │   ├── quality_gate.py    # Quality validation gates
 │   │   └── state_machine.py   # Annotation lifecycle management
-│   ├── prompts/           # Adaptive prompt engineering
+│   ├── prompts/           # Prompt registry, versioning, A/B testing, auto-selection
 │   ├── quality/           # Quality loop (analyzer, llm_judge, review_queue, trend_dashboard)
+│   ├── review/            # Review workbench (browser, editor, assignment, workflow)
 │   ├── routing/           # SmartRouter, Ensemble, CostOptimizer
 │   ├── security/          # Privacy & access control, audit logging
 │   ├── world_model/       # State prediction, dynamics, causal extraction, training export

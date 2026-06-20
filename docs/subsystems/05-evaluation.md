@@ -81,8 +81,47 @@ Uses a `TeacherModel` judge and consumes the standardized `GenerationResult.text
 | Consistency checks | Complete | Temporal + action |
 | Batch evaluation | Complete | Async with concurrency |
 | Human correlation study | Missing | Validate LLM scores vs human |
+| Review Workbench | Complete | Phase 11: dataset browser, annotation editor, diff viewer, reviewer assignment, approval workflow |
 
 **Active known_gaps**: none
+
+## §6 — Review Workbench (Phase 11)
+
+The review workbench (`src/dvas/review/`) provides comprehensive tools for human review of annotations:
+
+- **DatasetBrowser**: Browse, filter, sort, and paginate annotation datasets
+- **SegmentViewer**: View video segments with frame-level annotation overlays
+- **FrameStripViewer**: Display keyframe strips with selection and comparison
+- **AnnotationEditor**: Edit annotations with change tracking and undo/redo
+- **AnnotationDiff**: Compare two annotations with visual diff highlighting
+- **TeacherOutputViewer**: View raw teacher model outputs and fallback chains
+- **QualityScoreViewer**: Display per-dimension quality score breakdowns
+- **ReviewerAssignment**: Assign reviews with workload balancing and skill matching
+- **ReviewQueue**: Priority-based queue with batch assignment
+- **DisagreementReview**: Handle teacher/student disagreements with resolution workflow
+- **ApprovalWorkflow**: Multi-stage approval with rejection tracking and export gate
+- **ReviewerMetrics**: Track reviewer performance with leaderboard
+
+### Usage
+
+```python
+from dvas.review import DatasetBrowser, ApprovalWorkflow, ReviewerAssignment
+
+# Browse annotations with filtering
+browser = DatasetBrowser(annotations)
+results = browser.browse(
+    dataset_filter=DatasetFilter(min_quality_score=0.7),
+    sort_field=SortField.QUALITY_SCORE,
+    page=1,
+    page_size=20,
+)
+
+# Manage approval workflow
+workflow = ApprovalWorkflow()
+workflow.register_annotation("ann1")
+workflow.transition("ann1", WorkflowStage.HUMAN_REVIEW, "system")
+workflow.approve("ann1", "reviewer1")
+```
 
 ## §6 — Testing
 
@@ -96,4 +135,4 @@ pytest tests/test_llm_judge.py -v --openai-key $OPENAI_API_KEY
 
 ---
 
-*Subsystem doc: 05-evaluation | Updated: 2026-06-19*
+*Subsystem doc: 05-evaluation | Updated: 2026-06-20*

@@ -35,6 +35,14 @@ from dvas.api.middleware import (
     api_error,
     api_response,
 )
+from dvas.api import (
+    batch_api,
+    dataset_api,
+    export_api,
+    model_api,
+    prompt_api,
+    review_api,
+)
 from dvas.config import settings
 from dvas.data.storage import AnnotationStore
 from dvas.export.adapters import export_annotations as export_annotations_to_file
@@ -162,6 +170,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register new API routers
+app.include_router(batch_api.router, prefix="/api/v1")
+app.include_router(dataset_api.router, prefix="/api/v1")
+app.include_router(export_api.router, prefix="/api/v1")
+app.include_router(model_api.router, prefix="/api/v1")
+app.include_router(prompt_api.router, prefix="/api/v1")
+app.include_router(review_api.router, prefix="/api/v1")
 
 
 # ---------------------------------------------------------------------------
