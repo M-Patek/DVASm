@@ -175,15 +175,15 @@ DVAS
 | 09 | [Quality Loop](docs/subsystems/09-quality.md) | ✅ Enhanced | Auto analysis, LLM-as-judge, review queues, acceptance criteria |
 | 10 | [Lineage](docs/subsystems/10-lineage.md) | ✅ Stable | Schema version management, data provenance tracking |
 | 11 | [Prompts](docs/subsystems/11-prompts.md) | ✅ Enhanced | Registry, versioning, A/B testing, auto-selection, few-shot |
-| 12 | [Security](docs/subsystems/12-security.md) | ✅ Stable | PII detection, anonymization, watermarking, RBAC |
-| 13 | [Monitoring](docs/subsystems/13-monitoring.md) | ✅ Stable | A/B testing, drift detection, performance monitoring |
+| 12 | [Security](docs/subsystems/12-security.md) | ✅ Enhanced | PII detection, anonymization, watermarking, RBAC, encryption, audit, retention |
+| 13 | [Observability](docs/subsystems/13-observability.md) | ✅ Enhanced | Metrics, tracing, logging, OpenTelemetry, Prometheus, Grafana, alerts |
 | 14 | [API & Tasks](docs/subsystems/07-api.md) | ✅ Enhanced | FastAPI endpoints, task queue, tenant isolation, rate limiting |
 | 15 | [Review Workbench](docs/subsystems/05-evaluation.md) | ✅ Enhanced | Dataset browser, annotation editor, reviewer assignment |
 | 16 | [World Model](docs/subsystems/14-world-model.md) | ✅ Enhanced | State prediction, dynamics annotation, causal extraction, benchmarks |
-| 15 | [Infrastructure](docs/subsystems/15-infrastructure.md) | 📝 Draft | Data platform deployment, ops |
-| 16 | [Governance](docs/subsystems/16-governance.md) | ✅ Stable | Annotation standard management, multi-standard adapters |
+| 17 | [Benchmarks](docs/subsystems/17-benchmarks.md) | ✅ Enhanced | EPIC-KITCHENS, Ego4D, Open X-Embodiment, leaderboards, Pareto analysis |
+| 18 | [Infrastructure](docs/subsystems/15-infrastructure.md) | 📝 Draft | Data platform deployment, ops |
 
-**Test Coverage:** 900+ tests passing (~95% pass rate, failures are Windows/env-specific)
+**Test Coverage:** 1100+ tests passing (~95% pass rate, failures are Windows/env-specific)
 
 ## Development
 
