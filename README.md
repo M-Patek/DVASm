@@ -2,7 +2,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-900%2B%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-2980%2B%20passing-brightgreen.svg)]()
 
 > AI-powered video annotation platform with teacher-student distillation for robotic manipulation and egocentric vision.
 
@@ -253,7 +253,7 @@ DVASm/
 │   │   ├── processed/         # Processed video/data intermediates
 │   │   └── raw/               # Raw uploaded videos and source data
 │   └── migrations/            # Database migration scripts (Alembic/SQL)
-├── tests/                 # Test suite (1100+ tests)
+├── tests/                 # Test suite (2980+ tests)
 ├── examples/              # Usage examples
 │   ├── annotate_epic.py
 │   ├── download_epic.py
