@@ -103,13 +103,13 @@ def run_dryrun_training(data_path: Path, output_dir: Path, epochs: int = 1):
     # Step 2: Mock model loading
     print("\n[2/6] Loading model (MOCK)...")
     model = create_mock_model()
-    processor = create_mock_processor()
+    _ = create_mock_processor()  # noqa: F841
     print("  Mock model loaded (8M params)")
     print("  Mock processor loaded")
 
     # Step 3: Setup LoRA
     print("\n[3/6] Setting up LoRA...")
-    from peft import LoraConfig, get_peft_model
+    from peft import LoraConfig
 
     lora_config = LoraConfig(
         r=64,
@@ -121,7 +121,7 @@ def run_dryrun_training(data_path: Path, output_dir: Path, epochs: int = 1):
     )
     # In real training: model = get_peft_model(model, lora_config)
     # For dryrun, we just verify the config is valid
-    print(f"  LoRA r=64, alpha=128")
+    print("  LoRA r=64, alpha=128")
     print(f"  Target modules: {lora_config.target_modules}")
     model.print_trainable_parameters()
 
@@ -129,7 +129,7 @@ def run_dryrun_training(data_path: Path, output_dir: Path, epochs: int = 1):
     print("\n[4/6] Configuring training...")
     from transformers import TrainingArguments
 
-    training_args = TrainingArguments(
+    _ = TrainingArguments(
         output_dir=str(output_dir),
         num_train_epochs=epochs,
         per_device_train_batch_size=1,
@@ -141,8 +141,8 @@ def run_dryrun_training(data_path: Path, output_dir: Path, epochs: int = 1):
     )
     print(f"  Output dir: {output_dir}")
     print(f"  Epochs: {epochs}")
-    print(f"  Batch size: 1")
-    print(f"  Learning rate: 2e-4")
+    print("  Batch size: 1")
+    print("  Learning rate: 2e-4")
 
     # Step 5: Initialize trainer (mocked)
     print("\n[5/6] Initializing trainer...")
@@ -163,7 +163,6 @@ def run_dryrun_training(data_path: Path, output_dir: Path, epochs: int = 1):
 
         for step in range(len(dataset)):
             # Simulate forward/backward pass
-            import random
             loss = 2.5 - 0.3 * (epoch * len(dataset) + step) / total_steps
             epoch_loss += loss
 
@@ -199,7 +198,7 @@ def run_dryrun_training(data_path: Path, output_dir: Path, epochs: int = 1):
         json.dump(adapter_config, f, indent=2)
 
     print(f"\nMock checkpoint saved to: {checkpoint_path}")
-    print(f"  - adapter_config.json")
+    print("  - adapter_config.json")
 
     return checkpoint_path
 
