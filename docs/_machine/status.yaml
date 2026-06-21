@@ -15,7 +15,7 @@ doc_refactor:
 
 # ── Global System Metrics ────────────────────────────────────────────────
 global:
-  test_suite_pass_rate: "1100+/1200+"
+  test_suite_pass_rate: "2980+/3000+"
   teacher_pipeline_runnable: true
   student_pipeline_runnable: true
   gold_annotations_count: 1
@@ -327,24 +327,24 @@ subsystems:
       evidence: "195 benchmark tests passing across 14 test modules"
 
   - id: 15-infrastructure
-    title: "Infrastructure - data platform deployment and ops"
-    status: draft
-    health: yellow
+    title: "Infrastructure - Docker, K8s, Terraform, CI/CD, monitoring stack"
+    status: stable
+    health: green
     code_root: "src/dvas/infrastructure/"
     doc: "docs/subsystems/15-infrastructure.md"
     notable_recent_changes:
-      - "2026-06-19: Replaced 14-Deployment with data platform focused infrastructure"
-    known_gaps:
-      - title: "Docker/K8s packaging"
-        opened: "2026-06-19"
-        severity: medium
-        next_review: "2026-07-19"
-        notes: "Needs Dockerfile, Helm chart, and CI/CD pipeline for data platform deployment."
+      - "2026-06-19: DockerManager with container lifecycle, image building, GPU support"
+      - "2026-06-19: KubernetesManager with deployment, service, HPA, ConfigMap/Secret management"
+      - "2026-06-19: TerraformManager with plan/apply/state for AWS/GCP/Azure"
+      - "2026-06-19: CICDManager with pipeline configuration"
+      - "2026-06-19: MonitoringStack with Prometheus/Grafana setup"
+      - "2026-06-20: Fixed Docker set_workdir, Terraform string parsing, K8s HPA tests"
+    known_gaps: []
     last_validated:
-      date: "2026-06-19"
-      by: "codex"
-      method: "code-review"
-      evidence: "Documentation only, no code yet"
+      date: "2026-06-20"
+      by: "claude"
+      method: "unit-tests"
+      evidence: "48 infrastructure tests passing (docker, kubernetes, terraform, cicd)"
 
   - id: 16-governance
     title: "Governance - annotation standard management"

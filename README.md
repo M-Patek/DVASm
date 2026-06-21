@@ -164,27 +164,26 @@ DVAS
 
 | ID | Subsystem | Status | Description |
 |----|-----------|--------|-------------|
-| 01 | [Data Layer](docs/subsystems/01-data.md) | ✅ Enhanced | Pluggable backends (LocalFS/SQLite/PostgreSQL/S3), index management |
-| 02 | [Teacher Models](docs/subsystems/02-teacher.md) | ✅ Enhanced | Registry, capabilities, pricing, quota, consensus, fallback chains |
-| 03 | [Student (VLA)](docs/subsystems/03-student.md) | ✅ Enhanced | LoRA registry, calibration, active learning, evaluation, benchmark |
-| 04 | [Pipeline](docs/subsystems/04-pipeline.md) | ✅ Stable | Annotation pipeline with Saga pattern & checkpointing |
-| 05 | [Evaluation](docs/subsystems/05-evaluation.md) | ✅ Stable | BLEU/CIDEr + LLM-as-Judge |
-| 06 | [Export](docs/subsystems/06-export.md) | ✅ Enhanced | Multi-format: LLaVA, OpenAI, Open X-Embodiment, RLDS, Ego4D |
-| 07 | [API](docs/subsystems/07-api.md) | ✅ Stable | FastAPI REST endpoints with auth |
-| 08 | [Routing](docs/subsystems/08-routing.md) | ✅ Stable | Smart router with complexity-based model selection |
-| 09 | [Quality Loop](docs/subsystems/09-quality.md) | ✅ Enhanced | Auto analysis, LLM-as-judge, review queues, acceptance criteria |
-| 10 | [Lineage](docs/subsystems/10-lineage.md) | ✅ Stable | Schema version management, data provenance tracking |
-| 11 | [Prompts](docs/subsystems/11-prompts.md) | ✅ Enhanced | Registry, versioning, A/B testing, auto-selection, few-shot |
-| 12 | [Security](docs/subsystems/12-security.md) | ✅ Enhanced | PII detection, anonymization, watermarking, RBAC, encryption, audit, retention |
-| 13 | [Observability](docs/subsystems/13-observability.md) | ✅ Enhanced | Metrics, tracing, logging, OpenTelemetry, Prometheus, Grafana, alerts |
-| 14 | [API & Tasks](docs/subsystems/07-api.md) | ✅ Enhanced | FastAPI endpoints, task queue, tenant isolation, rate limiting |
-| 15 | [Review Workbench](docs/subsystems/05-evaluation.md) | ✅ Enhanced | Dataset browser, annotation editor, reviewer assignment |
-| 16 | [World Model](docs/subsystems/14-world-model.md) | ✅ Enhanced | State prediction, dynamics annotation, causal extraction, benchmarks |
-| 17 | [Benchmarks](docs/subsystems/17-benchmarks.md) | ✅ Enhanced | EPIC-KITCHENS, Ego4D, Open X-Embodiment, leaderboards, Pareto analysis |
-| 18 | [Infrastructure](docs/subsystems/18-infrastructure.md) | ✅ Stable | Docker, K8s, Terraform, CI/CD, monitoring stack |
-| 19 | [Governance](docs/subsystems/19-governance.md) | ✅ Stable | Data governance, standards, policy engine, approval workflow, quality gates |
+| 01 | [Data Layer](docs/subsystems/01-data.md) | Enhanced | Pluggable backends (LocalFS/SQLite/PostgreSQL/S3), index management |
+| 02 | [Teacher Models](docs/subsystems/02-teacher.md) | Enhanced | Registry, capabilities, pricing, quota, consensus, fallback chains |
+| 03 | [Student (VLA)](docs/subsystems/03-student.md) | Enhanced | LoRA registry, calibration, active learning, evaluation, benchmark |
+| 04 | [Pipeline](docs/subsystems/04-pipeline.md) | Stable | Annotation pipeline with Saga pattern & checkpointing |
+| 05 | [Evaluation](docs/subsystems/05-evaluation.md) | Stable | BLEU/CIDEr + LLM-as-Judge |
+| 06 | [Export](docs/subsystems/06-export.md) | Enhanced | Multi-format: LLaVA, OpenAI, Open X-Embodiment, RLDS, Ego4D |
+| 07 | [API](docs/subsystems/07-api.md) | Stable | FastAPI REST endpoints with auth |
+| 08 | [Routing](docs/subsystems/08-routing.md) | Stable | Smart router with complexity-based model selection |
+| 09 | [Quality Loop](docs/subsystems/09-quality.md) | Enhanced | Auto analysis, LLM-as-judge, review queues, acceptance criteria |
+| 10 | [Explainability](docs/subsystems/10-explainability.md) | Stable | Visualization, attention heatmaps, keyframe extraction |
+| 11 | [Monitoring](docs/subsystems/11-monitoring.md) | Stable | A/B testing, drift detection, performance monitoring |
+| 12 | [Security](docs/subsystems/12-security.md) | Enhanced | PII detection, anonymization, watermarking, RBAC, encryption, audit, retention |
+| 13 | [Prompts](docs/subsystems/13-prompts.md) | Enhanced | Registry, versioning, A/B testing, auto-selection, few-shot |
+| 14 | [Deployment](docs/subsystems/14-deployment.md) | Draft | Edge optimization, ONNX/TensorRT export, model quantization |
+| 15 | [Infrastructure](docs/subsystems/15-infrastructure.md) | Stable | Docker, K8s, Terraform, CI/CD, monitoring stack |
+| 16 | [Governance](docs/subsystems/16-governance.md) | Stable | Data governance, standards, policy engine, approval workflow, quality gates |
 
-**Test Coverage:** 1100+ tests passing (~95% pass rate, failures are Windows/env-specific)
+**Additional Code Modules** (not separate subsystems): benchmarks, cli, config, core, lineage, models (parent), observability, persistence, review, testing, utils, world_model
+
+**Test Coverage:** 2980+ tests passing (~100% pass rate on Linux, Windows with --basetemp)
 
 ## Development
 

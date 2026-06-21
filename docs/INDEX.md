@@ -59,6 +59,8 @@ NEED ops commands?
 | 15-infrastructure | Infrastructure | stable | green | [15-infrastructure.md](subsystems/15-infrastructure.md) | `src/dvas/infrastructure/` |
 | 16-governance | Governance | stable | green | [16-governance.md](subsystems/16-governance.md) | `src/dvas/governance/` |
 
+**Additional modules** (not primary subsystems): benchmarks, cli, config, core, lineage, models, observability, persistence, quality, review, testing, utils, world_model
+
 **Status values**: `stable`, `active-dev`, `experimental`, `deprecated`
 **Health values**: `green`, `yellow`, `red`
 
@@ -109,4 +111,4 @@ Per `AGENTS.md`:
 
 ---
 
-*Updated: 2026-06-18*
+*Updated: 2026-06-21*
