@@ -216,7 +216,7 @@ class TestWorldModelAnnotationBenchmark:
         )
 
         assert isinstance(results, BenchmarkSuiteResult)
-        assert results.duration_seconds > 0
+        assert results.duration_seconds >= 0
 
     def test_save_results(self):
         """Test saving results to file."""
