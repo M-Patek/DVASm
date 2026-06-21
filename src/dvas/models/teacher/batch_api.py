@@ -447,7 +447,7 @@ class OpenAIBatchAPI:
 # -- Async helpers (imported at module level to avoid circular imports)
 
 
-async def _create_batch_request(
+async def create_batch_request(
     text: str,
     custom_id: Optional[str] = None,
     model: str = "gpt-4o",
