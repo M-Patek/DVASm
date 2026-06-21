@@ -11,7 +11,6 @@ Tests recovery behavior at each stage:
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -146,13 +145,6 @@ class FailureScenarioFactory:
 
         teacher.generate = conditional_generate
         return teacher
-
-
-@pytest.fixture
-def temp_storage_dir():
-    """Provide a temporary directory."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        yield Path(tmpdir)
 
 
 @pytest.fixture

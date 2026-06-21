@@ -11,7 +11,6 @@ Tests:
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -75,13 +74,6 @@ def create_mock_teacher():
 
     teacher.generate = MagicMock(side_effect=generate_impl)
     return teacher
-
-
-@pytest.fixture
-def temp_dir():
-    """Provide temporary directory."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        yield Path(tmpdir)
 
 
 class TestCheckpointResumeBasic:

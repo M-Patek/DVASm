@@ -7,7 +7,6 @@ All tests use mocked external dependencies (no real API calls, no real video fil
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 from typing import Any, Dict, List
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -137,13 +136,6 @@ class MockTeacherFactory:
         )
         teacher.generate = AsyncMock(return_value=result)
         return teacher
-
-
-@pytest.fixture
-def temp_storage_dir():
-    """Provide a temporary directory for storage."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        yield Path(tmpdir)
 
 
 @pytest.fixture
