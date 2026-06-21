@@ -11,10 +11,70 @@ from transformers import (
 )
 from trl import DPOTrainer
 
+from dvas.models.student.amp_utils import configure_amp_for_trainer, log_amp_status
 from dvas.models.student.config import DPOConfig
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def _init_wandb(config: DPOConfig) -> None:
+    """Initialize Weights & Biases logging if configured."""
+    if config.report_to != "wandb":
+        return
+
+    try:
+        import wandb
+
+        wandb.init(
+            project=config.wandb_project or "dvas",
+            entity=config.wandb_entity,
+            name=config.experiment_name,
+            config={
+                "model": {
+                    "name": config.model.model_name_or_path,
+                    "lora_r": config.model.lora_r,
+                    "lora_alpha": config.model.lora_alpha,
+                },
+                "data": {
+                    "train_data_path": str(config.data.train_data_path),
+                    "batch_size": config.data.batch_size,
+                },
+                "training": {
+                    "num_train_epochs": config.training.num_train_epochs,
+                    "learning_rate": config.training.learning_rate,
+                    "beta": config.training.beta,
+                },
+            },
+        )
+        logger.info("W&B initialized", project=config.wandb_project, name=config.experiment_name)
+    except ImportError:
+        logger.warning("wandb not installed, skipping experiment tracking")
+    except Exception as e:
+        logger.warning("W&B initialization failed", error=str(e))
+
+
+def _log_checkpoint_to_wandb(checkpoint_path: Path, config: DPOConfig) -> None:
+    """Log model checkpoint as W&B artifact."""
+    if config.report_to != "wandb":
+        return
+
+    try:
+        import wandb
+
+        if wandb.run is None:
+            return
+
+        artifact = wandb.Artifact(
+            name=f"{config.experiment_name}-checkpoint",
+            type="model",
+            description=f"DPO checkpoint for {config.experiment_name}",
+        )
+        artifact.add_dir(str(checkpoint_path))
+        wandb.log_artifact(artifact)
+        logger.info("Checkpoint logged to W&B", path=str(checkpoint_path))
+    except Exception as e:
+        logger.warning("Failed to log checkpoint to W&B", error=str(e))
 
 
 def load_model_for_dpo(config: DPOConfig, is_ref: bool = False):
@@ -94,6 +154,10 @@ def train_dpo(config: DPOConfig) -> Path:
     train_cfg = config.training
     output_dir = train_cfg.output_dir / config.experiment_name
 
+    # Configure AMP settings
+    log_amp_status(config)
+    amp_kwargs = configure_amp_for_trainer(config)
+
     training_args = TrainingArguments(
         output_dir=str(output_dir),
         num_train_epochs=train_cfg.num_train_epochs,
@@ -103,12 +167,12 @@ def train_dpo(config: DPOConfig) -> Path:
         warmup_ratio=train_cfg.warmup_ratio,
         logging_steps=train_cfg.logging_steps,
         save_steps=train_cfg.save_steps,
-        fp16=train_cfg.fp16,
-        bf16=train_cfg.bf16,
         report_to=train_cfg.report_to,
+        **amp_kwargs,
     )
 
     # Setup DPO trainer
+    logger.info("Setting up DPOTrainer")
     trainer = DPOTrainer(
         model=policy_model,
         ref_model=ref_model,
@@ -120,13 +184,39 @@ def train_dpo(config: DPOConfig) -> Path:
         max_prompt_length=config.data.max_seq_length // 2,
     )
 
+    # Initialize W&B before training
+    _init_wandb(config)
+
+    # Check for checkpoint to resume from
+    from dvas.models.student.checkpoint_resume import get_resume_kwargs
+
+    resume_kwargs = get_resume_kwargs(config, output_dir)
+    if resume_kwargs:
+        logger.info("Resuming from checkpoint", checkpoint=resume_kwargs.get("resume_from_checkpoint"))
+
     # Train
     logger.info("Starting DPO training")
-    trainer.train()
+    if resume_kwargs:
+        trainer.train(resume_from_checkpoint=resume_kwargs["resume_from_checkpoint"])
+    else:
+        trainer.train()
 
     # Save
     final_path = output_dir / "final"
     trainer.save_model(str(final_path))
+
+    # Log checkpoint to W&B
+    _log_checkpoint_to_wandb(final_path, config)
+
+    # Finish W&B run
+    if config.report_to == "wandb":
+        try:
+            import wandb
+
+            if wandb.run is not None:
+                wandb.finish()
+        except Exception:
+            pass
 
     logger.info("DPO training completed", model_path=str(final_path))
 

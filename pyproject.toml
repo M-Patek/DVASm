@@ -72,6 +72,12 @@ show_error_codes = true
 ignore_missing_imports = true
 
 [project.optional-dependencies]
+video = [
+    "decord>=0.6.0",
+]
+decord = [
+    "decord>=0.6.0",
+]
 dev = [
     "pytest>=8.2.0",
     "pytest-asyncio>=0.23.0",
@@ -96,6 +102,7 @@ train = [
     "torch>=2.3.0",
     "torchvision>=0.18.0",
     "bitsandbytes>=0.43.0",
+    "wandb>=0.17.0",
 ]
 redis = [
     "celery>=5.4.0",

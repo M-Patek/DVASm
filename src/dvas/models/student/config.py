@@ -82,6 +82,13 @@ class TrainingConfig:
     fp16: bool = False
     bf16: bool = True
 
+    # Gradient scaling for mixed precision stability
+    grad_scaler_enabled: bool = True
+    grad_scaler_init_scale: float = 2**16
+    grad_scaler_growth_factor: float = 2.0
+    grad_scaler_backoff_factor: float = 0.5
+    grad_scaler_growth_interval: int = 2000
+
     # Gradient checkpointing for memory efficiency
     gradient_checkpointing: bool = True
 
@@ -123,8 +130,9 @@ class SFTConfig:
 
     # Experiment tracking
     experiment_name: str = "dvas_student_sft"
-    wandb_project: Optional[str] = None
-    report_to: str = "none"  # none, wandb, tensorboard
+    wandb_project: Optional[str] = "dvas"
+    wandb_entity: Optional[str] = None
+    report_to: str = "wandb"  # none, wandb, tensorboard
 
 
 @dataclass
@@ -144,5 +152,6 @@ class DPOConfig:
     ref_model_path: Optional[Path] = None
 
     experiment_name: str = "dvas_student_dpo"
-    wandb_project: Optional[str] = None
-    report_to: str = "none"
+    wandb_project: Optional[str] = "dvas"
+    wandb_entity: Optional[str] = None
+    report_to: str = "wandb"

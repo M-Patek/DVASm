@@ -1,6 +1,7 @@
 """SFT (Supervised Fine-Tuning) training for Qwen2-VL."""
 
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 import torch
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
@@ -12,10 +13,76 @@ from transformers import (
 )
 from trl import SFTTrainer
 
+from dvas.models.student.amp_utils import configure_amp_for_trainer, log_amp_status
 from dvas.models.student.config import SFTConfig
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def _init_wandb(config: SFTConfig) -> None:
+    """Initialize Weights & Biases logging if configured."""
+    if config.report_to != "wandb":
+        return
+
+    try:
+        import wandb
+
+        wandb.init(
+            project=config.wandb_project or "dvas",
+            entity=config.wandb_entity,
+            name=config.experiment_name,
+            config={
+                "model": {
+                    "name": config.model.model_name_or_path,
+                    "lora_r": config.model.lora_r,
+                    "lora_alpha": config.model.lora_alpha,
+                    "torch_dtype": config.model.torch_dtype,
+                    "load_in_4bit": config.model.load_in_4bit,
+                },
+                "data": {
+                    "train_data_path": str(config.data.train_data_path),
+                    "batch_size": config.data.batch_size,
+                    "max_seq_length": config.data.max_seq_length,
+                    "num_frames": config.data.num_frames,
+                },
+                "training": {
+                    "num_train_epochs": config.training.num_train_epochs,
+                    "learning_rate": config.training.learning_rate,
+                    "warmup_ratio": config.training.warmup_ratio,
+                    "gradient_accumulation_steps": config.training.gradient_accumulation_steps,
+                    "weight_decay": config.training.weight_decay,
+                },
+            },
+        )
+        logger.info("W&B initialized", project=config.wandb_project, name=config.experiment_name)
+    except ImportError:
+        logger.warning("wandb not installed, skipping experiment tracking")
+    except Exception as e:
+        logger.warning("W&B initialization failed", error=str(e))
+
+
+def _log_checkpoint_to_wandb(checkpoint_path: Path, config: SFTConfig) -> None:
+    """Log model checkpoint as W&B artifact."""
+    if config.report_to != "wandb":
+        return
+
+    try:
+        import wandb
+
+        if wandb.run is None:
+            return
+
+        artifact = wandb.Artifact(
+            name=f"{config.experiment_name}-checkpoint",
+            type="model",
+            description=f"SFT checkpoint for {config.experiment_name}",
+        )
+        artifact.add_dir(str(checkpoint_path))
+        wandb.log_artifact(artifact)
+        logger.info("Checkpoint logged to W&B", path=str(checkpoint_path))
+    except Exception as e:
+        logger.warning("Failed to log checkpoint to W&B", error=str(e))
 
 
 def load_model_and_processor(config: SFTConfig):
@@ -106,6 +173,10 @@ def train_sft(config: SFTConfig) -> Path:
     train_cfg = config.training
     output_dir = train_cfg.output_dir / config.experiment_name
 
+    # Configure AMP settings
+    log_amp_status(config)
+    amp_kwargs = configure_amp_for_trainer(config)
+
     training_args = TrainingArguments(
         output_dir=str(output_dir),
         num_train_epochs=train_cfg.num_train_epochs,
@@ -121,11 +192,10 @@ def train_sft(config: SFTConfig) -> Path:
         save_steps=train_cfg.save_steps,
         eval_steps=train_cfg.eval_steps,
         save_total_limit=train_cfg.save_total_limit,
-        fp16=train_cfg.fp16,
-        bf16=train_cfg.bf16,
-        report_to=config.report_to,
         remove_unused_columns=False,
         dataloader_num_workers=config.data.num_workers,
+        report_to=config.report_to,
+        **amp_kwargs,
     )
 
     # Load dataset
@@ -144,6 +214,7 @@ def train_sft(config: SFTConfig) -> Path:
         raise FileNotFoundError(f"Dataset not found: {config.data.train_data_path}")
 
     # Setup trainer
+    logger.info("Setting up SFTTrainer")
     trainer = SFTTrainer(
         model=model,
         tokenizer=processor.tokenizer if hasattr(processor, "tokenizer") else processor,
@@ -153,14 +224,43 @@ def train_sft(config: SFTConfig) -> Path:
         max_seq_length=config.data.max_seq_length,
     )
 
+    # Initialize W&B before training
+    _init_wandb(config)
+
+    # Check for checkpoint to resume from
+    from dvas.models.student.checkpoint_resume import (
+        get_resume_kwargs,
+        resume_from_checkpoint,
+    )
+
+    resume_kwargs = get_resume_kwargs(config, output_dir)
+    if resume_kwargs:
+        logger.info("Resuming from checkpoint", checkpoint=resume_kwargs.get("resume_from_checkpoint"))
+
     # Train
     logger.info("Starting training")
-    trainer.train()
+    if resume_kwargs:
+        trainer.train(resume_from_checkpoint=resume_kwargs["resume_from_checkpoint"])
+    else:
+        trainer.train()
 
     # Save final model
     final_path = output_dir / "final"
     trainer.save_model(str(final_path))
     processor.save_pretrained(str(final_path))
+
+    # Log checkpoint to W&B
+    _log_checkpoint_to_wandb(final_path, config)
+
+    # Finish W&B run
+    if config.report_to == "wandb":
+        try:
+            import wandb
+
+            if wandb.run is not None:
+                wandb.finish()
+        except Exception:
+            pass
 
     logger.info("Training completed", model_path=str(final_path))
 
