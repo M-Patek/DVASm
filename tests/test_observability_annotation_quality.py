@@ -74,12 +74,12 @@ class TestAnnotationQualityMonitor:
     def test_detect_degradation(self, monitor):
         # Simulate baseline period
         monitor.record_score("vid_001", 0.9)
-        time.sleep(0.01)
+        time.sleep(0.02)
         # Simulate recent degradation
         monitor.record_score("vid_002", 0.5)
         degradation = monitor.detect_degradation(
-            recent_window=0.005,
-            baseline_window=0.1,
+            recent_window=0.015,  # Only vid_002 (10ms+ after vid_001)
+            baseline_window=0.1,  # Both scores
         )
         assert degradation is not None
         assert degradation["degraded"] is True
@@ -89,7 +89,7 @@ class TestAnnotationQualityMonitor:
         time.sleep(0.01)
         monitor.record_score("vid_002", 0.88)
         degradation = monitor.detect_degradation(
-            recent_window=0.005,
+            recent_window=0.05,  # Large enough to include both scores after 10ms sleep
             baseline_window=0.1,
         )
         assert degradation is None
