@@ -42,3 +42,5 @@ docs/_build/
 .tmp/
 tmp/
 .claude/worktrees/
+*.out
+unit_out*.txt
