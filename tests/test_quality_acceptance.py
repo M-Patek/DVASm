@@ -1,7 +1,6 @@
 """Tests for acceptance criteria."""
 
 import pytest
-from datetime import datetime
 
 from dvas.data.schemas import Annotation, VideoMetadata
 from dvas.quality.acceptance import (
@@ -13,9 +12,7 @@ from dvas.quality.acceptance import (
 from dvas.quality.schema import (
     DimensionScore,
     QualityDimension,
-    QualityProfile,
     QualityScores,
-    QualityThresholds,
 )
 
 
@@ -42,9 +39,7 @@ def high_quality_scores():
     return QualityScores(
         annotation_id="ann_001",
         video_id="vid_001",
-        factuality_score=DimensionScore(
-            dimension=QualityDimension.FACTUALITY, score=0.9
-        ),
+        factuality_score=DimensionScore(dimension=QualityDimension.FACTUALITY, score=0.9),
         temporal_consistency_score=DimensionScore(
             dimension=QualityDimension.TEMPORAL_CONSISTENCY, score=0.9
         ),
@@ -54,9 +49,7 @@ def high_quality_scores():
         action_grounding_score=DimensionScore(
             dimension=QualityDimension.ACTION_GROUNDING, score=0.9
         ),
-        affordance_score=DimensionScore(
-            dimension=QualityDimension.AFFORDANCE, score=0.9
-        ),
+        affordance_score=DimensionScore(dimension=QualityDimension.AFFORDANCE, score=0.9),
         robotic_usefulness_score=DimensionScore(
             dimension=QualityDimension.ROBOTIC_USEFULNESS, score=0.9
         ),
@@ -78,9 +71,7 @@ def low_quality_scores():
     return QualityScores(
         annotation_id="ann_001",
         video_id="vid_001",
-        factuality_score=DimensionScore(
-            dimension=QualityDimension.FACTUALITY, score=0.3
-        ),
+        factuality_score=DimensionScore(dimension=QualityDimension.FACTUALITY, score=0.3),
         temporal_consistency_score=DimensionScore(
             dimension=QualityDimension.TEMPORAL_CONSISTENCY, score=0.3
         ),
@@ -90,9 +81,7 @@ def low_quality_scores():
         action_grounding_score=DimensionScore(
             dimension=QualityDimension.ACTION_GROUNDING, score=0.3
         ),
-        affordance_score=DimensionScore(
-            dimension=QualityDimension.AFFORDANCE, score=0.3
-        ),
+        affordance_score=DimensionScore(dimension=QualityDimension.AFFORDANCE, score=0.3),
         robotic_usefulness_score=DimensionScore(
             dimension=QualityDimension.ROBOTIC_USEFULNESS, score=0.3
         ),
@@ -192,10 +181,16 @@ class TestAcceptanceCriteria:
             dimension=QualityDimension.FACTUALITY, score=0.3
         )
         # Lower most dimensions to get overall below threshold
-        for dim in [QualityDimension.TEMPORAL_CONSISTENCY, QualityDimension.OBJECT_GROUNDING,
-                    QualityDimension.ACTION_GROUNDING, QualityDimension.AFFORDANCE,
-                    QualityDimension.ROBOTIC_USEFULNESS, QualityDimension.LANGUAGE_CLARITY,
-                    QualityDimension.PARSE_CONFIDENCE, QualityDimension.REVIEWER_CONFIDENCE]:
+        for dim in [
+            QualityDimension.TEMPORAL_CONSISTENCY,
+            QualityDimension.OBJECT_GROUNDING,
+            QualityDimension.ACTION_GROUNDING,
+            QualityDimension.AFFORDANCE,
+            QualityDimension.ROBOTIC_USEFULNESS,
+            QualityDimension.LANGUAGE_CLARITY,
+            QualityDimension.PARSE_CONFIDENCE,
+            QualityDimension.REVIEWER_CONFIDENCE,
+        ]:
             score = DimensionScore(dimension=dim, score=0.3)
             if dim == QualityDimension.TEMPORAL_CONSISTENCY:
                 high_quality_scores.temporal_consistency_score = score

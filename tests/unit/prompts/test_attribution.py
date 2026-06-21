@@ -1,8 +1,5 @@
 """Tests for prompt quality attribution tracking."""
 
-import pytest
-from datetime import datetime, timezone
-
 from dvas.data.schemas import (
     Annotation,
     VideoMetadata,
@@ -12,7 +9,7 @@ from dvas.prompts.attribution import (
     PromptAttributionTracker,
     PromptPerformanceSummary,
 )
-from dvas.quality.schema import QualityDimension, QualityScores
+from dvas.quality.schema import QualityScores
 
 
 class TestPromptAttributionRecord:
@@ -176,7 +173,9 @@ class TestPromptAttributionTracker:
         for i in range(5):
             ann = self._create_annotation(f"ann_{i}")
             tracker.record_attribution(
-                ann, "prompt_1", "1.0.0",
+                ann,
+                "prompt_1",
+                "1.0.0",
                 quality_scores=QualityScores(
                     annotation_id=f"ann_{i}",
                     video_id="vid_1",
@@ -207,7 +206,9 @@ class TestPromptAttributionTracker:
         for i in range(3):
             ann = self._create_annotation(f"ann_{i}")
             tracker.record_attribution(
-                ann, "prompt_1", "1.0.0",
+                ann,
+                "prompt_1",
+                "1.0.0",
                 quality_scores=QualityScores(
                     annotation_id=f"ann_{i}",
                     video_id="vid_1",
@@ -226,7 +227,9 @@ class TestPromptAttributionTracker:
         for i in range(3):
             ann = self._create_annotation(f"ann_a_{i}")
             tracker.record_attribution(
-                ann, "prompt_A", "1.0.0",
+                ann,
+                "prompt_A",
+                "1.0.0",
                 quality_scores=QualityScores(
                     annotation_id=f"ann_a_{i}",
                     video_id="vid_1",
@@ -239,7 +242,9 @@ class TestPromptAttributionTracker:
         for i in range(3):
             ann = self._create_annotation(f"ann_b_{i}")
             tracker.record_attribution(
-                ann, "prompt_B", "1.0.0",
+                ann,
+                "prompt_B",
+                "1.0.0",
                 quality_scores=QualityScores(
                     annotation_id=f"ann_b_{i}",
                     video_id="vid_1",

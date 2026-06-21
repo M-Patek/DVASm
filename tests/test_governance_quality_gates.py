@@ -4,8 +4,6 @@ Tests for QualityGate, QualityGateRunner, QualityGateResult,
 QualityThreshold, GateStatus, and QualityDimension.
 """
 
-import time
-
 import pytest
 
 from dvas.governance.quality_gates import (
@@ -163,10 +161,13 @@ class TestQualityGate:
                 QualityThreshold(QualityDimension.ACCURACY, min_value=0.9),
             ],
         )
-        result = gate.run("item_001", {
-            QualityDimension.COMPLETENESS: 0.85,
-            QualityDimension.ACCURACY: 0.92,
-        })
+        result = gate.run(
+            "item_001",
+            {
+                QualityDimension.COMPLETENESS: 0.85,
+                QualityDimension.ACCURACY: 0.92,
+            },
+        )
         assert result.status == GateStatus.PASS
 
     def test_run_multiple_one_fails(self):
@@ -178,10 +179,13 @@ class TestQualityGate:
                 QualityThreshold(QualityDimension.ACCURACY, min_value=0.9),
             ],
         )
-        result = gate.run("item_001", {
-            QualityDimension.COMPLETENESS: 0.85,
-            QualityDimension.ACCURACY: 0.5,
-        })
+        result = gate.run(
+            "item_001",
+            {
+                QualityDimension.COMPLETENESS: 0.85,
+                QualityDimension.ACCURACY: 0.5,
+            },
+        )
         assert result.status == GateStatus.FAIL
 
     def test_run_missing_dimension(self):
@@ -205,10 +209,13 @@ class TestQualityGate:
                 QualityThreshold(QualityDimension.ACCURACY, min_value=0.0, weight=1.0),
             ],
         )
-        result = gate.run("item_001", {
-            QualityDimension.COMPLETENESS: 1.0,
-            QualityDimension.ACCURACY: 0.0,
-        })
+        result = gate.run(
+            "item_001",
+            {
+                QualityDimension.COMPLETENESS: 1.0,
+                QualityDimension.ACCURACY: 0.0,
+            },
+        )
         # Score = (1.0*2.0 + 0.0*1.0) / 3.0 = 0.667
         assert result.score == pytest.approx(0.667, rel=0.01)
 
@@ -314,22 +321,29 @@ class TestQualityGateRunner:
     def test_run_all(self):
         """Test running all gates."""
         runner = QualityGateRunner()
-        runner.register_gate(QualityGate(
-            gate_id="gate1",
-            thresholds=[
-                QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.8),
-            ],
-        ))
-        runner.register_gate(QualityGate(
-            gate_id="gate2",
-            thresholds=[
-                QualityThreshold(QualityDimension.ACCURACY, min_value=0.9),
-            ],
-        ))
-        results = runner.run_all("item_001", {
-            QualityDimension.COMPLETENESS: 0.85,
-            QualityDimension.ACCURACY: 0.92,
-        })
+        runner.register_gate(
+            QualityGate(
+                gate_id="gate1",
+                thresholds=[
+                    QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.8),
+                ],
+            )
+        )
+        runner.register_gate(
+            QualityGate(
+                gate_id="gate2",
+                thresholds=[
+                    QualityThreshold(QualityDimension.ACCURACY, min_value=0.9),
+                ],
+            )
+        )
+        results = runner.run_all(
+            "item_001",
+            {
+                QualityDimension.COMPLETENESS: 0.85,
+                QualityDimension.ACCURACY: 0.92,
+            },
+        )
         assert len(results) == 2
         assert results["gate1"].status == GateStatus.PASS
         assert results["gate2"].status == GateStatus.PASS
@@ -337,12 +351,14 @@ class TestQualityGateRunner:
     def test_get_history(self):
         """Test getting history."""
         runner = QualityGateRunner()
-        runner.register_gate(QualityGate(
-            gate_id="quality",
-            thresholds=[
-                QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.8),
-            ],
-        ))
+        runner.register_gate(
+            QualityGate(
+                gate_id="quality",
+                thresholds=[
+                    QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.8),
+                ],
+            )
+        )
         runner.run("quality", "item_001", {QualityDimension.COMPLETENESS: 0.9})
         history = runner.get_history("quality")
         assert len(history) == 1
@@ -350,12 +366,14 @@ class TestQualityGateRunner:
     def test_get_history_filtered(self):
         """Test getting filtered history."""
         runner = QualityGateRunner()
-        runner.register_gate(QualityGate(
-            gate_id="gate1",
-            thresholds=[
-                QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.8),
-            ],
-        ))
+        runner.register_gate(
+            QualityGate(
+                gate_id="gate1",
+                thresholds=[
+                    QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.8),
+                ],
+            )
+        )
         runner.run("gate1", "item_001", {QualityDimension.COMPLETENESS: 0.9})
         history = runner.get_history("nonexistent")
         assert len(history) == 0
@@ -363,12 +381,14 @@ class TestQualityGateRunner:
     def test_get_trend(self):
         """Test getting trend."""
         runner = QualityGateRunner()
-        runner.register_gate(QualityGate(
-            gate_id="quality",
-            thresholds=[
-                QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.0),
-            ],
-        ))
+        runner.register_gate(
+            QualityGate(
+                gate_id="quality",
+                thresholds=[
+                    QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.0),
+                ],
+            )
+        )
         runner.run("quality", "item_001", {QualityDimension.COMPLETENESS: 0.9})
         runner.run("quality", "item_002", {QualityDimension.COMPLETENESS: 0.8})
         trend = runner.get_trend("quality", window=10)
@@ -387,12 +407,14 @@ class TestQualityGateRunner:
     def test_clear_history(self):
         """Test clearing history."""
         runner = QualityGateRunner()
-        runner.register_gate(QualityGate(
-            gate_id="quality",
-            thresholds=[
-                QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.8),
-            ],
-        ))
+        runner.register_gate(
+            QualityGate(
+                gate_id="quality",
+                thresholds=[
+                    QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.8),
+                ],
+            )
+        )
         runner.run("quality", "item_001", {QualityDimension.COMPLETENESS: 0.9})
         runner.clear_history()
         history = runner.get_history("quality")
@@ -401,14 +423,18 @@ class TestQualityGateRunner:
     def test_list_gates(self):
         """Test listing gates."""
         runner = QualityGateRunner()
-        runner.register_gate(QualityGate(
-            gate_id="gate_b",
-            thresholds=[],
-        ))
-        runner.register_gate(QualityGate(
-            gate_id="gate_a",
-            thresholds=[],
-        ))
+        runner.register_gate(
+            QualityGate(
+                gate_id="gate_b",
+                thresholds=[],
+            )
+        )
+        runner.register_gate(
+            QualityGate(
+                gate_id="gate_a",
+                thresholds=[],
+            )
+        )
         gates = runner.list_gates()
         assert gates == ["gate_a", "gate_b"]
 
@@ -439,12 +465,14 @@ class TestQualityGateRunner:
         """Test history size limit."""
         runner = QualityGateRunner()
         runner._history_limit = 5
-        runner.register_gate(QualityGate(
-            gate_id="quality",
-            thresholds=[
-                QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.0),
-            ],
-        ))
+        runner.register_gate(
+            QualityGate(
+                gate_id="quality",
+                thresholds=[
+                    QualityThreshold(QualityDimension.COMPLETENESS, min_value=0.0),
+                ],
+            )
+        )
         for i in range(10):
             runner.run("quality", f"item_{i}", {QualityDimension.COMPLETENESS: 0.9})
 

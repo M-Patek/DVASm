@@ -14,13 +14,13 @@ def extract_code_anchors(md_path: Path) -> list[str]:
     content = md_path.read_text(encoding="utf-8")
 
     # Find YAML frontmatter
-    match = re.match(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
+    match = re.match(r"^---\s*\n(.*?)\n---", content, re.DOTALL)
     if not match:
         return []
 
     try:
         frontmatter = yaml.safe_load(match.group(1))
-        return frontmatter.get('code_anchors', [])
+        return frontmatter.get("code_anchors", [])
     except yaml.YAMLError:
         return []
 
@@ -28,12 +28,12 @@ def extract_code_anchors(md_path: Path) -> list[str]:
 def check_anchor(project_root: Path, anchor: str) -> tuple[bool, str]:
     """Check if a code anchor is valid."""
     # Format: "path/to/file.py:ClassName" or "path/to/file.py:function_name"
-    if ':' not in anchor:
+    if ":" not in anchor:
         return False, f"Invalid format: {anchor}"
 
-    file_path, symbol = anchor.split(':', 1)
+    file_path, symbol = anchor.split(":", 1)
     # Normalize path separators for cross-platform compatibility
-    file_path = file_path.replace('\\', '/')
+    file_path = file_path.replace("\\", "/")
     full_path = project_root / file_path
 
     if not full_path.exists():
@@ -41,26 +41,29 @@ def check_anchor(project_root: Path, anchor: str) -> tuple[bool, str]:
         parent = full_path.parent
         if parent.exists():
             files = list(parent.iterdir())
-            return False, f"File not found: {file_path} (parent contains: {[f.name for f in files]})"
+            return (
+                False,
+                f"File not found: {file_path} (parent contains: {[f.name for f in files]})",
+            )
         else:
             return False, f"File not found: {file_path} (parent missing: {parent})"
 
-    content = full_path.read_text(encoding='utf-8')
+    content = full_path.read_text(encoding="utf-8")
 
     # Check for class definition
     if symbol[0].isupper():
-        pattern = rf'^class\s+{re.escape(symbol)}\b'
+        pattern = rf"^class\s+{re.escape(symbol)}\b"
     else:
         # Function or method (including async)
-        pattern = rf'^(?:async\s+)?def\s+{re.escape(symbol)}\b'
+        pattern = rf"^(?:async\s+)?def\s+{re.escape(symbol)}\b"
 
     if re.search(pattern, content, re.MULTILINE):
         return True, "OK"
 
     # Also check for method in class (ClassName.method_name)
-    if '.' in symbol:
-        cls, method = symbol.split('.', 1)
-        pattern = rf'^\s+def\s+{re.escape(method)}\b'
+    if "." in symbol:
+        cls, method = symbol.split(".", 1)
+        pattern = rf"^\s+def\s+{re.escape(method)}\b"
         if re.search(pattern, content, re.MULTILINE):
             return True, "OK"
 
@@ -69,8 +72,8 @@ def check_anchor(project_root: Path, anchor: str) -> tuple[bool, str]:
 
 def main():
     # Use GitHub Actions workspace if available, otherwise use script location
-    if 'GITHUB_WORKSPACE' in os.environ:
-        project_root = Path(os.environ['GITHUB_WORKSPACE'])
+    if "GITHUB_WORKSPACE" in os.environ:
+        project_root = Path(os.environ["GITHUB_WORKSPACE"])
     else:
         project_root = Path(__file__).parent.parent
 
@@ -78,7 +81,7 @@ def main():
     print(f"Project root: {project_root}", file=sys.stderr)
     print(f"Project root exists: {project_root.exists()}", file=sys.stderr)
 
-    subsystems_dir = project_root / 'docs' / 'subsystems'
+    subsystems_dir = project_root / "docs" / "subsystems"
 
     if not subsystems_dir.exists():
         print("No subsystems directory found")
@@ -86,7 +89,7 @@ def main():
 
     all_ok = True
 
-    for md_file in subsystems_dir.glob('*.md'):
+    for md_file in subsystems_dir.glob("*.md"):
         anchors = extract_code_anchors(md_file)
         if not anchors:
             continue
@@ -102,5 +105,5 @@ def main():
     sys.exit(0 if all_ok else 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

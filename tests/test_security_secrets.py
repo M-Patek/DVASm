@@ -4,7 +4,6 @@ Tests for SecretManager, Secret, EnvironmentSecretProvider, and CompositeSecretP
 """
 
 import os
-from pathlib import Path
 
 import pytest
 

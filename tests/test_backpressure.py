@@ -32,9 +32,7 @@ class TestTokenBucket:
 
     @pytest.mark.asyncio
     async def test_drop_strategy(self):
-        bucket = TokenBucket(
-            rate=1.0, capacity=1.0, strategy=BackpressureStrategy.DROP
-        )
+        bucket = TokenBucket(rate=1.0, capacity=1.0, strategy=BackpressureStrategy.DROP)
         # Exhaust tokens
         await bucket.acquire(tokens=1.0)
 
@@ -44,9 +42,7 @@ class TestTokenBucket:
 
     @pytest.mark.asyncio
     async def test_block_strategy_timeout(self):
-        bucket = TokenBucket(
-            rate=0.1, capacity=1.0, strategy=BackpressureStrategy.BLOCK
-        )
+        bucket = TokenBucket(rate=0.1, capacity=1.0, strategy=BackpressureStrategy.BLOCK)
         # Exhaust tokens
         await bucket.acquire(tokens=1.0)
 
@@ -113,9 +109,7 @@ class TestLeakyBucket:
 class TestAdaptiveRateLimiter:
     @pytest.mark.asyncio
     async def test_acquire(self):
-        limiter = AdaptiveRateLimiter(
-            initial_rate=10.0, min_rate=1.0, max_rate=100.0
-        )
+        limiter = AdaptiveRateLimiter(initial_rate=10.0, min_rate=1.0, max_rate=100.0)
         result = await limiter.acquire(timeout=1.0)
         assert result is True
 
@@ -151,9 +145,7 @@ class TestAdaptiveRateLimiter:
         assert limiter.rate > 10.0
 
     def test_rate_bounds(self):
-        limiter = AdaptiveRateLimiter(
-            initial_rate=50.0, min_rate=10.0, max_rate=100.0
-        )
+        limiter = AdaptiveRateLimiter(initial_rate=50.0, min_rate=10.0, max_rate=100.0)
         # Report very high latency to try to decrease below min
         for _ in range(10):
             limiter.report_latency(1000.0)
@@ -196,9 +188,7 @@ class TestBackpressureController:
 
     @pytest.mark.asyncio
     async def test_drop_strategy(self):
-        controller = BackpressureController(
-            max_inflight=1, strategy=BackpressureStrategy.DROP
-        )
+        controller = BackpressureController(max_inflight=1, strategy=BackpressureStrategy.DROP)
 
         assert await controller.acquire() is True
         # With DROP strategy, should immediately fail
@@ -224,9 +214,7 @@ class TestBackpressureController:
 
     @pytest.mark.asyncio
     async def test_with_rate_limiter(self):
-        controller = BackpressureController(
-            max_inflight=10, rate_limit=100.0
-        )
+        controller = BackpressureController(max_inflight=10, rate_limit=100.0)
         result = await controller.acquire(timeout=1.0)
         assert result is True
         controller.release()
@@ -246,9 +234,7 @@ class TestControlledFlow:
 
     @pytest.mark.asyncio
     async def test_context_manager_when_not_allowed(self):
-        controller = BackpressureController(
-            max_inflight=1, strategy=BackpressureStrategy.DROP
-        )
+        controller = BackpressureController(max_inflight=1, strategy=BackpressureStrategy.DROP)
 
         # Fill the semaphore
         await controller.acquire()

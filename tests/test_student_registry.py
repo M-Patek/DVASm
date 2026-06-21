@@ -1,6 +1,5 @@
 """Tests for student model registry."""
 
-import json
 import tempfile
 from pathlib import Path
 
@@ -174,11 +173,13 @@ class TestLoRAAdapterRegistry:
         """Test listing with filters."""
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create multiple adapters
-            for i, (atype, model) in enumerate([
-                ("lora", "Qwen/Qwen2-VL-7B"),
-                ("lora", "Qwen/Qwen2-VL-7B"),
-                ("full", "Qwen/Qwen2-VL-2B"),
-            ]):
+            for i, (atype, model) in enumerate(
+                [
+                    ("lora", "Qwen/Qwen2-VL-7B"),
+                    ("lora", "Qwen/Qwen2-VL-7B"),
+                    ("full", "Qwen/Qwen2-VL-2B"),
+                ]
+            ):
                 path = Path(tmpdir) / f"adapter_{i}"
                 path.mkdir()
                 (path / "config.json").write_text("{}")
@@ -196,9 +197,7 @@ class TestLoRAAdapterRegistry:
             assert len(lora_adapters) == 2
 
             # Filter by base model
-            qwen_adapters = temp_registry.list_adapters(
-                base_model="Qwen/Qwen2-VL-7B"
-            )
+            qwen_adapters = temp_registry.list_adapters(base_model="Qwen/Qwen2-VL-7B")
             assert len(qwen_adapters) == 2
 
             # Filter by tags

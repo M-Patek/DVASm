@@ -5,7 +5,6 @@ Tests for AnnotationAnonymizer, AnonymizationConfig, and utility functions.
 
 from unittest.mock import MagicMock
 
-import pytest
 
 from dvas.security.annotation_anonymizer import (
     AnonymizationConfig,

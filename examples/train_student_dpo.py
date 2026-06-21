@@ -35,10 +35,10 @@ def create_synthetic_dpo_pairs(output_path: Path, num_pairs: int = 20) -> Path:
         # Create a pair with chosen (better) and rejected (worse) responses
         pair = {
             "prompt": f"Describe the video segment {i}.",
-            "chosen": f"The person is carefully washing their hands with soap and water, "
-                      f"ensuring thorough cleaning before handling food. This demonstrates "
-                      f"proper hygiene practices in the kitchen environment.",
-            "rejected": f"Someone washing hands.",
+            "chosen": "The person is carefully washing their hands with soap and water, "
+            "ensuring thorough cleaning before handling food. This demonstrates "
+            "proper hygiene practices in the kitchen environment.",
+            "rejected": "Someone washing hands.",
             "video_id": f"video_{i:04d}",
             "metadata": {
                 "chosen_score": 4.5,
@@ -91,7 +91,7 @@ def create_dpo_pairs_from_annotations(
 
         # Generate pairs
         for i, winner in enumerate(ranked):
-            for loser in ranked[i + 1:]:
+            for loser in ranked[i + 1 :]:
                 pair = {
                     "prompt": "Describe the video in detail.",
                     "chosen": winner.caption or "",
@@ -287,6 +287,7 @@ def main():
     except Exception as e:
         print(f"\nError during training: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

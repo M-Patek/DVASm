@@ -40,9 +40,7 @@ def sample_quality_scores():
     return QualityScores(
         annotation_id="ann_001",
         video_id="vid_001",
-        factuality_score=DimensionScore(
-            dimension=QualityDimension.FACTUALITY, score=0.4
-        ),
+        factuality_score=DimensionScore(dimension=QualityDimension.FACTUALITY, score=0.4),
         language_clarity_score=DimensionScore(
             dimension=QualityDimension.LANGUAGE_CLARITY, score=0.8
         ),
@@ -190,6 +188,7 @@ class TestHumanReviewQueue:
 
         # Create a second annotation with different ID
         from copy import deepcopy
+
         ann2 = deepcopy(sample_annotation)
         ann2.id = "ann_002"
         await queue.add(ann2, priority=ReviewPriority.LOW)

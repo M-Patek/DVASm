@@ -6,7 +6,6 @@ RetentionAction, and DataType.
 
 import time
 
-import pytest
 
 from dvas.security.retention import (
     DataRetentionPolicy,

@@ -91,7 +91,7 @@ def run_benchmark(num_frames=100):
 
             # Benchmark old approach
             old_result = benchmark_old_approach(loader, num_frames)
-            print(f"\nOld approach (sync list):")
+            print("\nOld approach (sync list):")
             print(f"  Frames: {old_result['frames']}")
             print(f"  Time: {old_result['elapsed_ms']:.2f} ms")
             print(f"  Peak memory: {old_result['peak_memory_mb']:.2f} MB")
@@ -101,7 +101,7 @@ def run_benchmark(num_frames=100):
 
             # Benchmark new approach
             new_result = asyncio.run(benchmark_new_approach(loader, num_frames))
-            print(f"\nNew approach (async streaming):")
+            print("\nNew approach (async streaming):")
             print(f"  Frames: {new_result['frames']}")
             print(f"  Time: {new_result['elapsed_ms']:.2f} ms")
             print(f"  Peak memory: {new_result['peak_memory_mb']:.2f} MB")

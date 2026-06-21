@@ -72,7 +72,7 @@ class SyntheticVideoHelper:
             frame = MagicMock()
             # Create a simple gradient image (deterministic)
             frame.data = np.zeros((480, 640, 3), dtype=np.uint8)
-            frame.data[:, :, 0] = (i * 255 // num_frames)  # Red channel gradient
+            frame.data[:, :, 0] = i * 255 // num_frames  # Red channel gradient
             frame.timestamp = i / fps
             frame.idx = i
             frames.append(frame)
@@ -341,9 +341,7 @@ class TestGoldenPathBatchProcessing:
             return mock_video_loader_factory(Path(video_path), video_id)
 
         with patch("dvas.pipeline.core.VideoLoader", side_effect=create_loader_for_video):
-            successful, failed = await pipeline.process_batch(
-                video_items, max_concurrent=2
-            )
+            successful, failed = await pipeline.process_batch(video_items, max_concurrent=2)
 
         # All should succeed
         assert len(successful) == 3
@@ -382,17 +380,22 @@ class TestGoldenPathBatchProcessing:
         ]
 
         # First run
-        with patch("dvas.pipeline.core.VideoLoader", return_value=mock_video_loader_factory(Path("/fake/vid.mp4"))):
+        with patch(
+            "dvas.pipeline.core.VideoLoader",
+            return_value=mock_video_loader_factory(Path("/fake/vid.mp4")),
+        ):
             successful1, failed1 = await pipeline.process_batch(video_items)
 
         assert len(successful1) == 2
-        teacher_calls_after_first = mock_teacher.generate.call_count
 
         # Reset call count for accurate measurement
         mock_teacher.generate.reset_mock()
 
         # Second run - should skip processed videos
-        with patch("dvas.pipeline.core.VideoLoader", return_value=mock_video_loader_factory(Path("/fake/vid.mp4"))):
+        with patch(
+            "dvas.pipeline.core.VideoLoader",
+            return_value=mock_video_loader_factory(Path("/fake/vid.mp4")),
+        ):
             successful2, failed2 = await pipeline.process_batch(video_items)
 
         assert len(successful2) == 2  # Still returns all annotations
@@ -503,7 +506,9 @@ class TestGoldenPathCostTracking:
         video_id = "latency_test_video"
 
         mock_loader = mock_video_loader_factory(
-            video_path, video_id, scenes=[(0, 3)]  # Single scene
+            video_path,
+            video_id,
+            scenes=[(0, 3)],  # Single scene
         )
         mock_teacher = mock_teacher_factory.create_structured_teacher(latency_ms=750.0)
 
@@ -517,7 +522,7 @@ class TestGoldenPathCostTracking:
         )
 
         with patch("dvas.pipeline.core.VideoLoader", return_value=mock_loader):
-            annotation = await pipeline.annotate_video(video_path, video_id)
+            await pipeline.annotate_video(video_path, video_id)
 
         # Verify teacher was called and latency was in result
         mock_teacher.generate.assert_called_once()
@@ -551,7 +556,7 @@ class TestGoldenPathCostTracking:
         )
 
         with patch("dvas.pipeline.core.VideoLoader", return_value=mock_loader):
-            annotation = await pipeline.annotate_video(video_path, video_id)
+            await pipeline.annotate_video(video_path, video_id)
 
         # 3 scenes = 3 API calls
         assert mock_teacher.generate.call_count == 3

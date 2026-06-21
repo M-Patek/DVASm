@@ -1,7 +1,6 @@
 """Tests for smart router."""
 
 
-
 class TestVideoComplexityAnalyzer:
     """Test complexity analyzer."""
 

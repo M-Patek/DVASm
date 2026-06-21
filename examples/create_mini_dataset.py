@@ -19,7 +19,6 @@ The mini dataset will be created at: data/mini_epic/
 from __future__ import annotations
 
 import argparse
-import csv
 import hashlib
 import json
 import random
@@ -28,13 +27,11 @@ from datetime import datetime
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
 
 from dvas.data.schemas import (
     Action,
     Annotation,
     Object,
-    QAPair,
     Segment,
     VideoMetadata,
 )
@@ -67,14 +64,22 @@ def create_synthetic_video(output_path: Path, duration_sec: int = 10, fps: int =
     cmd = [
         "ffmpeg",
         "-y",  # Overwrite output
-        "-f", "lavfi",
-        "-i", f"testsrc=duration={duration_sec}:size=640x480:rate={fps}",
-        "-f", "lavfi",
-        "-i", f"noise=alls=20:allf=t+u",  # Add some noise"-filter_complex", "[0:v][1:v]blend=all_mode='addition':all_opacity=0.1[out]",
-        "-map", "[out]",
-        "-pix_fmt", "yuv420p",
-        "-c:v", "libx264",
-        "-preset", "fast",
+        "-f",
+        "lavfi",
+        "-i",
+        f"testsrc=duration={duration_sec}:size=640x480:rate={fps}",
+        "-f",
+        "lavfi",
+        "-i",
+        "noise=alls=20:allf=t+u",  # Add some noise"-filter_complex", "[0:v][1:v]blend=all_mode='addition':all_opacity=0.1[out]",
+        "-map",
+        "[out]",
+        "-pix_fmt",
+        "yuv420p",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "fast",
         str(output_path),
     ]
 
@@ -97,7 +102,7 @@ def create_synthetic_video_opencv(output_path: Path, duration_sec: int, fps: int
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         out = cv2.VideoWriter(str(output_path), fourcc, fps, (640, 480))
 
         total_frames = duration_sec * fps
@@ -132,10 +137,18 @@ def create_sample_annotation(video_id: str, video_path: Path) -> Annotation:
     random.seed(hash_val)
 
     actions_pool = [
-        ("pick", "knife"), ("cut", "vegetable"), ("wash", "plate"),
-        ("open", "fridge"), ("take", "bottle"), ("pour", "water"),
-        ("stir", "soup"), ("taste", "food"), ("put", "lid"),
-        ("close", "drawer"), ("hold", "cup"), ("move", "pan"),
+        ("pick", "knife"),
+        ("cut", "vegetable"),
+        ("wash", "plate"),
+        ("open", "fridge"),
+        ("take", "bottle"),
+        ("pour", "water"),
+        ("stir", "soup"),
+        ("taste", "food"),
+        ("put", "lid"),
+        ("close", "drawer"),
+        ("hold", "cup"),
+        ("move", "pan"),
     ]
 
     # Create 3-5 segments
@@ -175,7 +188,9 @@ def create_sample_annotation(video_id: str, video_path: Path) -> Annotation:
     )
 
 
-def download_sample_video(video_id: str, participant: str, url: str, output_dir: Path) -> Path | None:
+def download_sample_video(
+    video_id: str, participant: str, url: str, output_dir: Path
+) -> Path | None:
     """Download a single sample video."""
     import urllib.request
 
@@ -191,10 +206,10 @@ def download_sample_video(video_id: str, participant: str, url: str, output_dir:
     try:
         logger.info(f"Downloading {video_id}...")
         # 设置超时和User-Agent
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
 
         with urllib.request.urlopen(req, timeout=120) as response:
-            with open(output_path, 'wb') as f:
+            with open(output_path, "wb") as f:
                 f.write(response.read())
 
         logger.info(f"Downloaded: {output_path}")
@@ -232,7 +247,7 @@ def create_mini_dataset(
         logger.info(f"Creating {num_videos} synthetic videos...")
 
         for i in range(num_videos):
-            video_id = f"test_{i+1:03d}"
+            video_id = f"test_{i + 1:03d}"
             video_dir = output_dir / "videos" / "test"
             video_dir.mkdir(parents=True, exist_ok=True)
 
@@ -269,7 +284,7 @@ def create_mini_dataset(
     logger.info("Mini dataset creation complete!")
     logger.info(f"  Location: {output_dir}")
     logger.info(f"  Videos: {output_dir / 'videos'}")
-    logger.info(f"  Annotations: [AnnotationStore default location]")
+    logger.info("  Annotations: [AnnotationStore default location]")
 
 
 def export_to_llava(
@@ -277,7 +292,7 @@ def export_to_llava(
     num_samples: int = 10,
 ) -> None:
     """Export existing annotations to LLaVA format for training."""
-    from dvas.export.adapters import LLaVAAdapter, export_annotations
+    from dvas.export.adapters import LLaVAAdapter
 
     store = AnnotationStore()
     annotations = list(store.load_all(source="gold"))
@@ -298,9 +313,7 @@ def export_to_llava(
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Create mini test dataset for DVAS"
-    )
+    parser = argparse.ArgumentParser(description="Create mini test dataset for DVAS")
     parser.add_argument(
         "--output-dir",
         type=Path,

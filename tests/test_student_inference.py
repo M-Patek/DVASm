@@ -4,8 +4,8 @@ import sys
 from unittest.mock import MagicMock, patch, AsyncMock
 
 # Patch the dpo_trainer module to avoid datasets dependency
-sys.modules['dvas.models.student.dpo_trainer'] = MagicMock()
-sys.modules['dvas.models.student.sft_trainer'] = MagicMock()
+sys.modules["dvas.models.student.dpo_trainer"] = MagicMock()
+sys.modules["dvas.models.student.sft_trainer"] = MagicMock()
 
 import numpy as np  # noqa: E402
 import pytest  # noqa: E402
@@ -23,26 +23,26 @@ class TestStudentInferenceEngine:
 
     def test_model_type(self):
         """Test model_type property."""
-        with patch.object(StudentInferenceEngine, '_load_model'):
+        with patch.object(StudentInferenceEngine, "_load_model"):
             engine = StudentInferenceEngine("/fake/path")
             assert engine.model_type == ModelType.STUDENT_LOCAL
 
     def test_model_version(self):
         """Test model_version property."""
-        with patch.object(StudentInferenceEngine, '_load_model'):
+        with patch.object(StudentInferenceEngine, "_load_model"):
             engine = StudentInferenceEngine("/fake/path/to/model")
             assert engine.model_version == "model"
 
     def test_estimate_cost(self):
         """Test cost estimation (should be 0 for local inference)."""
-        with patch.object(StudentInferenceEngine, '_load_model'):
+        with patch.object(StudentInferenceEngine, "_load_model"):
             engine = StudentInferenceEngine("/fake/path")
             assert engine.estimate_cost() == 0.0
             assert engine.estimate_cost(num_frames=32, prompt_length=1000) == 0.0
 
     def test_capabilities(self):
         """Test supported capabilities."""
-        with patch.object(StudentInferenceEngine, '_load_model'):
+        with patch.object(StudentInferenceEngine, "_load_model"):
             engine = StudentInferenceEngine("/fake/path")
             assert engine.supports("video") is True
             assert engine.supports("frames") is True
@@ -57,7 +57,7 @@ class TestStudentTeacherBridge:
     @pytest.mark.asyncio
     async def test_bridge_returns_generation_result(self):
         """Test bridge returns GenerationResult."""
-        with patch.object(StudentInferenceEngine, '_load_model'):
+        with patch.object(StudentInferenceEngine, "_load_model"):
             engine = StudentInferenceEngine("/fake/path")
             bridge = StudentTeacherBridge(engine, fallback_to_teacher=False)
 
@@ -69,6 +69,7 @@ class TestStudentTeacherBridge:
                     status=GenerationStatus.SUCCESS,
                     confidence=0.8,
                 )
+
             engine.generate = mock_generate
 
             frames = [np.zeros((224, 224, 3), dtype=np.uint8) for _ in range(4)]
@@ -81,7 +82,7 @@ class TestStudentTeacherBridge:
     @pytest.mark.asyncio
     async def test_bridge_low_confidence_fallback(self):
         """Test bridge falls back to teacher on low confidence."""
-        with patch.object(StudentInferenceEngine, '_load_model'):
+        with patch.object(StudentInferenceEngine, "_load_model"):
             engine = StudentInferenceEngine("/fake/path")
             bridge = StudentTeacherBridge(
                 engine,
@@ -97,17 +98,20 @@ class TestStudentTeacherBridge:
                     status=GenerationStatus.SUCCESS,
                     confidence=0.5,
                 )
+
             engine.generate = mock_generate
 
             # Set up mock teacher directly on the bridge
             mock_teacher = MagicMock()
             mock_teacher.model_type = ModelType.TEACHER_GPT55
             mock_teacher.model_version = "gpt-5.5"
-            mock_teacher.annotate = AsyncMock(return_value=GenerationResult(
-                text="teacher result",
-                model_type=ModelType.TEACHER_GPT55,
-                status=GenerationStatus.SUCCESS,
-            ))
+            mock_teacher.annotate = AsyncMock(
+                return_value=GenerationResult(
+                    text="teacher result",
+                    model_type=ModelType.TEACHER_GPT55,
+                    status=GenerationStatus.SUCCESS,
+                )
+            )
             bridge._teacher_fallback = mock_teacher
 
             frames = [np.zeros((224, 224, 3), dtype=np.uint8) for _ in range(4)]
@@ -120,7 +124,7 @@ class TestStudentTeacherBridge:
     @pytest.mark.asyncio
     async def test_bridge_no_fallback_on_failure(self):
         """Test bridge returns failure when fallback disabled."""
-        with patch.object(StudentInferenceEngine, '_load_model'):
+        with patch.object(StudentInferenceEngine, "_load_model"):
             engine = StudentInferenceEngine("/fake/path")
             bridge = StudentTeacherBridge(
                 engine,
@@ -136,6 +140,7 @@ class TestStudentTeacherBridge:
                     status=GenerationStatus.SUCCESS,
                     confidence=0.5,
                 )
+
             engine.generate = mock_generate
 
             frames = [np.zeros((224, 224, 3), dtype=np.uint8) for _ in range(4)]
@@ -147,7 +152,7 @@ class TestStudentTeacherBridge:
 
     def test_bridge_model_type(self):
         """Test bridge model_type."""
-        with patch.object(StudentInferenceEngine, '_load_model'):
+        with patch.object(StudentInferenceEngine, "_load_model"):
             engine = StudentInferenceEngine("/fake/path")
             bridge = StudentTeacherBridge(engine)
             assert bridge.model_type == ModelType.STUDENT_EDGE
@@ -159,6 +164,7 @@ class TestBatchInference:
     def test_batch_inference_signature(self):
         """Test batch_inference function exists and has correct signature."""
         import inspect
+
         sig = inspect.signature(batch_inference)
         params = list(sig.parameters.keys())
         assert "model_path" in params

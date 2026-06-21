@@ -134,9 +134,7 @@ class TestAnnotationPipeline:
             )
 
             with patch("dvas.pipeline.core.VideoLoader", MockVideoLoader):
-                _annotation = await pipeline.annotate_video(
-                    Path("/fake/video.mp4"), "vid_1"
-                )
+                _annotation = await pipeline.annotate_video(Path("/fake/video.mp4"), "vid_1")
 
             # Checkpoint file should exist
             assert checkpoint_path.exists()
@@ -200,9 +198,7 @@ class TestAnnotationPipeline:
         mock_teacher.generate = AsyncMock(return_value=failed_result)
 
         with patch("dvas.pipeline.core.VideoLoader", MockVideoLoader):
-            annotation = await pipeline.annotate_video(
-                Path("/fake/video.mp4"), "vid_fail"
-            )
+            annotation = await pipeline.annotate_video(Path("/fake/video.mp4"), "vid_fail")
 
         # Should still create annotation with empty segments
         assert isinstance(annotation, Annotation)
@@ -225,9 +221,7 @@ class TestAnnotationPipeline:
         mock_teacher.generate = AsyncMock(return_value=timeout_result)
 
         with patch("dvas.pipeline.core.VideoLoader", MockVideoLoader):
-            annotation = await pipeline.annotate_video(
-                Path("/fake/video.mp4"), "vid_timeout"
-            )
+            annotation = await pipeline.annotate_video(Path("/fake/video.mp4"), "vid_timeout")
 
         assert isinstance(annotation, Annotation)
         # Should create annotation even with timeout
@@ -299,9 +293,7 @@ class TestBatchProcessing:
         ]
 
         with patch("dvas.pipeline.core.VideoLoader", MockVideoLoader):
-            successful, failed = await pipeline.process_batch(
-                video_items, max_concurrent=2
-            )
+            successful, failed = await pipeline.process_batch(video_items, max_concurrent=2)
 
         # With mocked store, all should succeed (or fail gracefully due to other reasons)
         assert len(successful) + len(failed) == 3
@@ -336,7 +328,9 @@ class TestBatchProcessing:
                     total_frames=300,
                 ),
             )
-            mock_store.load = MagicMock(side_effect=lambda vid, **kwargs: existing_ann if "cp_vid_2" in vid else None)
+            mock_store.load = MagicMock(
+                side_effect=lambda vid, **kwargs: existing_ann if "cp_vid_2" in vid else None
+            )
 
             pipeline = AnnotationPipeline(
                 teacher_model=mock_teacher,
@@ -496,9 +490,9 @@ class TestStructuredParser:
         from dvas.pipeline.parser import StructuredParser
 
         parser = StructuredParser()
-        text = '''```json
+        text = """```json
         {"scene_description": "Cooking scene", "actions": [{"verb": "cut", "noun": "carrot"}]}
-        ```'''
+        ```"""
 
         parsed = parser.parse(text)
 

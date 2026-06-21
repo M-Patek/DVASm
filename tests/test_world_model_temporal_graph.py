@@ -170,18 +170,22 @@ class TestTemporalEventGraph:
     def test_get_events_at_time(self):
         """Test getting events at specific time."""
         graph = TemporalEventGraph()
-        graph.add_event(TemporalEvent(
-            event_id="event_1",
-            event_type=EventType.ACTION_START,
-            timestamp=0.0,
-            duration=3.0,
-        ))
-        graph.add_event(TemporalEvent(
-            event_id="event_2",
-            event_type=EventType.CONTACT_START,
-            timestamp=2.0,
-            duration=1.0,
-        ))
+        graph.add_event(
+            TemporalEvent(
+                event_id="event_1",
+                event_type=EventType.ACTION_START,
+                timestamp=0.0,
+                duration=3.0,
+            )
+        )
+        graph.add_event(
+            TemporalEvent(
+                event_id="event_2",
+                event_type=EventType.CONTACT_START,
+                timestamp=2.0,
+                duration=1.0,
+            )
+        )
 
         events = graph.get_events_at_time(1.5)
         assert len(events) == 1
@@ -192,9 +196,15 @@ class TestTemporalEventGraph:
     def test_get_events_in_range(self):
         """Test getting events in time range."""
         graph = TemporalEventGraph()
-        graph.add_event(TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0))
-        graph.add_event(TemporalEvent(event_id="e2", event_type=EventType.ACTION_START, timestamp=5.0))
-        graph.add_event(TemporalEvent(event_id="e3", event_type=EventType.ACTION_START, timestamp=10.0))
+        graph.add_event(
+            TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0)
+        )
+        graph.add_event(
+            TemporalEvent(event_id="e2", event_type=EventType.ACTION_START, timestamp=5.0)
+        )
+        graph.add_event(
+            TemporalEvent(event_id="e3", event_type=EventType.ACTION_START, timestamp=10.0)
+        )
 
         events = graph.get_events_in_range(2.0, 8.0)
         assert len(events) == 1
@@ -203,9 +213,15 @@ class TestTemporalEventGraph:
     def test_get_event_order(self):
         """Test getting events in chronological order."""
         graph = TemporalEventGraph()
-        graph.add_event(TemporalEvent(event_id="e2", event_type=EventType.ACTION_START, timestamp=2.0))
-        graph.add_event(TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=1.0))
-        graph.add_event(TemporalEvent(event_id="e3", event_type=EventType.ACTION_START, timestamp=3.0))
+        graph.add_event(
+            TemporalEvent(event_id="e2", event_type=EventType.ACTION_START, timestamp=2.0)
+        )
+        graph.add_event(
+            TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=1.0)
+        )
+        graph.add_event(
+            TemporalEvent(event_id="e3", event_type=EventType.ACTION_START, timestamp=3.0)
+        )
 
         order = graph.get_event_order()
         assert order == ["e1", "e2", "e3"]
@@ -214,11 +230,27 @@ class TestTemporalEventGraph:
         """Test grouping parallel events."""
         graph = TemporalEventGraph()
         # Sequential events
-        graph.add_event(TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0, duration=1.0))
-        graph.add_event(TemporalEvent(event_id="e2", event_type=EventType.ACTION_START, timestamp=2.0, duration=1.0))
+        graph.add_event(
+            TemporalEvent(
+                event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0, duration=1.0
+            )
+        )
+        graph.add_event(
+            TemporalEvent(
+                event_id="e2", event_type=EventType.ACTION_START, timestamp=2.0, duration=1.0
+            )
+        )
         # Parallel events
-        graph.add_event(TemporalEvent(event_id="e3", event_type=EventType.ACTION_START, timestamp=3.0, duration=2.0))
-        graph.add_event(TemporalEvent(event_id="e4", event_type=EventType.ACTION_START, timestamp=3.5, duration=1.0))
+        graph.add_event(
+            TemporalEvent(
+                event_id="e3", event_type=EventType.ACTION_START, timestamp=3.0, duration=2.0
+            )
+        )
+        graph.add_event(
+            TemporalEvent(
+                event_id="e4", event_type=EventType.ACTION_START, timestamp=3.5, duration=1.0
+            )
+        )
 
         groups = graph.get_parallel_events()
         assert len(groups) == 3  # [e1], [e2], [e3, e4]
@@ -227,9 +259,21 @@ class TestTemporalEventGraph:
     def test_infer_relations(self):
         """Test relation inference."""
         graph = TemporalEventGraph()
-        graph.add_event(TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0, duration=1.0))
-        graph.add_event(TemporalEvent(event_id="e2", event_type=EventType.ACTION_START, timestamp=2.0, duration=1.0))
-        graph.add_event(TemporalEvent(event_id="e3", event_type=EventType.ACTION_START, timestamp=0.5, duration=2.0))
+        graph.add_event(
+            TemporalEvent(
+                event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0, duration=1.0
+            )
+        )
+        graph.add_event(
+            TemporalEvent(
+                event_id="e2", event_type=EventType.ACTION_START, timestamp=2.0, duration=1.0
+            )
+        )
+        graph.add_event(
+            TemporalEvent(
+                event_id="e3", event_type=EventType.ACTION_START, timestamp=0.5, duration=2.0
+            )
+        )
 
         inferred = graph.infer_relations()
         assert len(inferred) > 0
@@ -242,9 +286,15 @@ class TestTemporalEventGraph:
     def test_get_causal_chain(self):
         """Test causal chain extraction."""
         graph = TemporalEventGraph()
-        graph.add_event(TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0))
-        graph.add_event(TemporalEvent(event_id="e2", event_type=EventType.STATE_CHANGE, timestamp=1.0))
-        graph.add_event(TemporalEvent(event_id="e3", event_type=EventType.GOAL_REACHED, timestamp=2.0))
+        graph.add_event(
+            TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0)
+        )
+        graph.add_event(
+            TemporalEvent(event_id="e2", event_type=EventType.STATE_CHANGE, timestamp=1.0)
+        )
+        graph.add_event(
+            TemporalEvent(event_id="e3", event_type=EventType.GOAL_REACHED, timestamp=2.0)
+        )
 
         graph.add_relation(TemporalRelation("e1", "e2", TemporalRelationType.CAUSES))
         graph.add_relation(TemporalRelation("e2", "e3", TemporalRelationType.CAUSES))
@@ -255,9 +305,15 @@ class TestTemporalEventGraph:
     def test_traverse(self):
         """Test graph traversal."""
         graph = TemporalEventGraph()
-        graph.add_event(TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0))
-        graph.add_event(TemporalEvent(event_id="e2", event_type=EventType.ACTION_START, timestamp=1.0))
-        graph.add_event(TemporalEvent(event_id="e3", event_type=EventType.ACTION_START, timestamp=2.0))
+        graph.add_event(
+            TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0)
+        )
+        graph.add_event(
+            TemporalEvent(event_id="e2", event_type=EventType.ACTION_START, timestamp=1.0)
+        )
+        graph.add_event(
+            TemporalEvent(event_id="e3", event_type=EventType.ACTION_START, timestamp=2.0)
+        )
 
         graph.add_relation(TemporalRelation("e1", "e2", TemporalRelationType.BEFORE))
         graph.add_relation(TemporalRelation("e2", "e3", TemporalRelationType.BEFORE))
@@ -268,7 +324,9 @@ class TestTemporalEventGraph:
     def test_to_dict(self):
         """Test serialization."""
         graph = TemporalEventGraph()
-        graph.add_event(TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0))
+        graph.add_event(
+            TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0)
+        )
         graph.add_relation(TemporalRelation("e1", "e2", TemporalRelationType.BEFORE))
 
         data = graph.to_dict()
@@ -296,10 +354,14 @@ class TestTemporalEventGraph:
     def test_merge(self):
         """Test graph merging."""
         graph1 = TemporalEventGraph()
-        graph1.add_event(TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0))
+        graph1.add_event(
+            TemporalEvent(event_id="e1", event_type=EventType.ACTION_START, timestamp=0.0)
+        )
 
         graph2 = TemporalEventGraph()
-        graph2.add_event(TemporalEvent(event_id="e2", event_type=EventType.ACTION_START, timestamp=1.0))
+        graph2.add_event(
+            TemporalEvent(event_id="e2", event_type=EventType.ACTION_START, timestamp=1.0)
+        )
 
         merged = graph1.merge(graph2)
         assert "e1" in merged.events

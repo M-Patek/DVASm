@@ -5,11 +5,9 @@ from datetime import datetime, timezone
 import pytest
 
 from dvas.data.schemas import Action, Annotation, Hand, Object, Segment, VideoMetadata
-from dvas.quality.schema import DimensionScore, QualityDimension, QualityScores
 from dvas.review.dataset_browser import (
     DatasetBrowser,
     DatasetFilter,
-    DatasetStatistics,
     SortField,
     SortOrder,
 )
@@ -93,9 +91,15 @@ class TestDatasetBrowser:
     def test_filter_by_date_range(self):
         """Test filtering by date range."""
         browser = DatasetBrowser()
-        browser.add_annotation(self._make_annotation("a1", created_at=datetime(2024, 1, 15, tzinfo=timezone.utc)))
-        browser.add_annotation(self._make_annotation("a2", created_at=datetime(2024, 2, 15, tzinfo=timezone.utc)))
-        browser.add_annotation(self._make_annotation("a3", created_at=datetime(2024, 3, 15, tzinfo=timezone.utc)))
+        browser.add_annotation(
+            self._make_annotation("a1", created_at=datetime(2024, 1, 15, tzinfo=timezone.utc))
+        )
+        browser.add_annotation(
+            self._make_annotation("a2", created_at=datetime(2024, 2, 15, tzinfo=timezone.utc))
+        )
+        browser.add_annotation(
+            self._make_annotation("a3", created_at=datetime(2024, 3, 15, tzinfo=timezone.utc))
+        )
 
         filter_criteria = DatasetFilter(
             date_from=datetime(2024, 1, 20, tzinfo=timezone.utc),
@@ -166,9 +170,15 @@ class TestDatasetBrowser:
     def test_sort_by_created_at(self):
         """Test sorting by created_at."""
         browser = DatasetBrowser()
-        browser.add_annotation(self._make_annotation("a1", created_at=datetime(2024, 1, 1, tzinfo=timezone.utc)))
-        browser.add_annotation(self._make_annotation("a2", created_at=datetime(2024, 3, 1, tzinfo=timezone.utc)))
-        browser.add_annotation(self._make_annotation("a3", created_at=datetime(2024, 2, 1, tzinfo=timezone.utc)))
+        browser.add_annotation(
+            self._make_annotation("a1", created_at=datetime(2024, 1, 1, tzinfo=timezone.utc))
+        )
+        browser.add_annotation(
+            self._make_annotation("a2", created_at=datetime(2024, 3, 1, tzinfo=timezone.utc))
+        )
+        browser.add_annotation(
+            self._make_annotation("a3", created_at=datetime(2024, 2, 1, tzinfo=timezone.utc))
+        )
 
         sorted_anns = browser.sort_annotations(
             browser.filter_annotations(),

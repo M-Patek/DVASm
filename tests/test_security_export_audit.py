@@ -120,7 +120,9 @@ class TestExportApprovalAudit:
             resource_ids=["ann_001"],
             purpose="Test",
         )
-        approved = audit.approve_export(export.export_id, "admin_001", notes="Approved for compliance")
+        approved = audit.approve_export(
+            export.export_id, "admin_001", notes="Approved for compliance"
+        )
         assert approved.approver_notes == "Approved for compliance"
 
     def test_approve_non_pending_export(self):
@@ -275,7 +277,7 @@ class TestExportApprovalAudit:
     def test_get_exports_by_status(self):
         """Test getting exports by status."""
         audit = ExportApprovalAudit()
-        export1 = audit.request_export(
+        audit.request_export(
             requester_id="user_001",
             resource_type="annotations",
             resource_ids=["ann_001"],

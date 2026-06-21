@@ -10,8 +10,6 @@ from dvas.api.tenant import (
     TenantMiddleware,
     TenantScopedAccess,
     TenantStore,
-    get_tenant_id,
-    require_tenant,
     tenant_scope,
 )
 from dvas.api.rate_limit import TenantRateLimitConfig, TenantRateLimiter
@@ -277,7 +275,7 @@ class TestTenantScopedAccess:
     async def test_tenant_scoped_create(self):
         """Test tenant-scoped create."""
         store = TenantStore()
-        scoped = TenantScopedAccess(store, tenant_id="tenant_1")
+        TenantScopedAccess(store, tenant_id="tenant_1")
         # Note: This tests the interface, actual store operations
         # would need a proper TaskStore implementation
 

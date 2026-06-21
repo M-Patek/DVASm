@@ -233,7 +233,11 @@ class TestDeletionRequestFlow:
         flow.approve_request(request.request_id, "admin_001")
         processed = flow.process_request(request.request_id)
         # Should not crash, but may fail
-        assert processed.status in [DeletionStatus.COMPLETED, DeletionStatus.FAILED, DeletionStatus.PARTIAL]
+        assert processed.status in [
+            DeletionStatus.COMPLETED,
+            DeletionStatus.FAILED,
+            DeletionStatus.PARTIAL,
+        ]
 
     def test_process_request_not_approved(self):
         """Test processing non-approved request."""
@@ -410,7 +414,11 @@ class TestDeletionRequestFlow:
 
         # Process (no handlers, so all will fail)
         processed = flow.process_request(request.request_id)
-        assert processed.status in [DeletionStatus.COMPLETED, DeletionStatus.PARTIAL, DeletionStatus.FAILED]
+        assert processed.status in [
+            DeletionStatus.COMPLETED,
+            DeletionStatus.PARTIAL,
+            DeletionStatus.FAILED,
+        ]
 
         # Verify audit trail
         trail = flow.get_audit_trail(request.request_id)

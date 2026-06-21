@@ -24,6 +24,7 @@ class TestActorMessage:
 
     def test_default_timestamp(self):
         import time
+
         before = time.time()
         msg = ActorMessage(sender="x", payload=1)
         after = time.time()

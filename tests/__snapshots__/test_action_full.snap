@@ -1,8 +1,13 @@
 {
   "confidence": 0.95,
+  "embodiment": null,
   "end_time": 3.0,
   "hand": "right",
+  "instrument": null,
   "noun": "vegetables",
+  "physical": null,
+  "source_state": null,
   "start_time": 1.0,
+  "target_state": null,
   "verb": "cut"
 }

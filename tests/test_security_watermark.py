@@ -3,8 +3,6 @@
 Tests for Watermarker, BatchWatermarker, WatermarkConfig, and WatermarkInfo.
 """
 
-import pytest
-
 from dvas.security.watermark import (
     BatchWatermarker,
     WatermarkConfig,

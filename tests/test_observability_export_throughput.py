@@ -1,7 +1,5 @@
 """Tests for export throughput monitoring."""
 
-import time
-
 import pytest
 
 from dvas.observability.export_throughput import ExportThroughputMonitor
@@ -26,7 +24,9 @@ class TestExportThroughputMonitor:
         assert stats["total_bytes"] == 3072
 
     def test_export_failed(self, monitor):
-        monitor.record_export("llava", bytes_written=0, duration_ms=100, success=False, error="disk_full")
+        monitor.record_export(
+            "llava", bytes_written=0, duration_ms=100, success=False, error="disk_full"
+        )
         stats = monitor.get_export_stats("llava")
         assert stats["success_count"] == 0
         assert stats["failure_count"] == 1
@@ -75,7 +75,9 @@ class TestExportThroughputMonitor:
             alerts.append((alert_type, details))
 
         monitor.add_alert_handler(handler)
-        monitor.record_export("llava", bytes_written=0, duration_ms=100, success=False, error="disk_full")
+        monitor.record_export(
+            "llava", bytes_written=0, duration_ms=100, success=False, error="disk_full"
+        )
         assert len(alerts) > 0
         assert alerts[0][0] == "export_failed"
 

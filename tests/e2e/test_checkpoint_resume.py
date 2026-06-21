@@ -13,7 +13,6 @@ from __future__ import annotations
 import json
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -60,14 +59,14 @@ def create_mock_teacher():
     teacher.model_name = "mock-teacher"
     teacher.model_type = ModelType.TEACHER_GPT55
 
-    import asyncio
-
     async def generate_impl(*args, **kwargs):
         return GenerationResult(
-            text=json.dumps({
-                "scene_description": f"Scene at {kwargs.get('task', 'unknown')}",
-                "actions": [{"verb": "test", "noun": "action"}],
-            }),
+            text=json.dumps(
+                {
+                    "scene_description": f"Scene at {kwargs.get('task', 'unknown')}",
+                    "actions": [{"verb": "test", "noun": "action"}],
+                }
+            ),
             model_type=ModelType.TEACHER_GPT55,
             model_version="gpt-5.5",
             status=GenerationStatus.SUCCESS,
@@ -121,9 +120,7 @@ class TestCheckpointResumeBasic:
         ]
 
         with patch("dvas.pipeline.core.VideoLoader") as mock_loader_class:
-            mock_loader_class.side_effect = lambda p: create_mock_video_loader(
-                Path(p).stem
-            )
+            mock_loader_class.side_effect = lambda p: create_mock_video_loader(Path(p).stem)
             successful, failed = await pipeline.process_batch(video_items)
 
         # vid_1 is skipped by checkpoint filter, vid_2 and vid_3 are processed
@@ -149,7 +146,9 @@ class TestCheckpointResumeBasic:
         )
 
         # Process first video
-        with patch("dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("vid_1")):
+        with patch(
+            "dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("vid_1")
+        ):
             await pipeline.annotate_video(Path("/fake/vid1.mp4"), "vid_1")
 
         # Verify checkpoint
@@ -158,7 +157,9 @@ class TestCheckpointResumeBasic:
         assert checkpoint.is_processed("vid_1")
 
         # Process second video
-        with patch("dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("vid_2")):
+        with patch(
+            "dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("vid_2")
+        ):
             await pipeline.annotate_video(Path("/fake/vid2.mp4"), "vid_2")
 
         # Verify checkpoint updated
@@ -238,8 +239,7 @@ class TestBatchCheckpointResume:
 
         # Process 5 videos with checkpoint_every=2
         video_items = [
-            {"video_path": f"/fake/vid{i}.mp4", "video_id": f"periodic_vid_{i}"}
-            for i in range(5)
+            {"video_path": f"/fake/vid{i}.mp4", "video_id": f"periodic_vid_{i}"} for i in range(5)
         ]
 
         with patch("dvas.pipeline.core.VideoLoader") as mock_loader_class:
@@ -351,10 +351,10 @@ class TestCrossSessionResume:
             checkpoint_path=checkpoint_path,
         )
 
-        with patch("dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("session_1_vid")):
-            await pipeline1.annotate_video(
-                Path("/fake/session1.mp4"), "session_1_vid"
-            )
+        with patch(
+            "dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("session_1_vid")
+        ):
+            await pipeline1.annotate_video(Path("/fake/session1.mp4"), "session_1_vid")
 
         # Second session: new pipeline instance, same checkpoint
         store2 = AnnotationStore(root_path=store_dir)
@@ -366,10 +366,10 @@ class TestCrossSessionResume:
         )
 
         # Process same video again (should be skipped)
-        with patch("dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("session_1_vid")):
-            annotation = await pipeline2.annotate_video(
-                Path("/fake/session1.mp4"), "session_1_vid"
-            )
+        with patch(
+            "dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("session_1_vid")
+        ):
+            await pipeline2.annotate_video(Path("/fake/session1.mp4"), "session_1_vid")
 
         # Teacher 2 should not be called for already processed video
         # (it returns from store or checkpoint skip)
@@ -418,10 +418,11 @@ class TestCrossSessionResume:
             checkpoint_path=checkpoint_path,
         )
 
-        with patch("dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("teacher_test_vid")):
-            result = await pipeline.annotate_video(
-                Path("/fake/test.mp4"), "teacher_test_vid"
-            )
+        with patch(
+            "dvas.pipeline.core.VideoLoader",
+            return_value=create_mock_video_loader("teacher_test_vid"),
+        ):
+            await pipeline.annotate_video(Path("/fake/test.mp4"), "teacher_test_vid")
 
         # Should return cached annotation, not call new teacher
         teacher_b.generate.assert_not_called()
@@ -449,10 +450,11 @@ class TestCheckpointWithStorageSync:
         )
 
         # Process video
-        with patch("dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("consistent_vid")):
-            annotation = await pipeline.annotate_video(
-                Path("/fake/consistent.mp4"), "consistent_vid"
-            )
+        with patch(
+            "dvas.pipeline.core.VideoLoader",
+            return_value=create_mock_video_loader("consistent_vid"),
+        ):
+            await pipeline.annotate_video(Path("/fake/consistent.mp4"), "consistent_vid")
 
         # Verify both checkpoint and storage have the video
         checkpoint = CheckpointManager(checkpoint_path)
@@ -487,10 +489,10 @@ class TestCheckpointWithStorageSync:
         )
 
         # Process orphan video
-        with patch("dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("orphan_vid")):
-            annotation = await pipeline.annotate_video(
-                Path("/fake/orphan.mp4"), "orphan_vid"
-            )
+        with patch(
+            "dvas.pipeline.core.VideoLoader", return_value=create_mock_video_loader("orphan_vid")
+        ):
+            await pipeline.annotate_video(Path("/fake/orphan.mp4"), "orphan_vid")
 
         # Should detect inconsistency and reprocess
         assert mock_teacher.generate.call_count > 0
@@ -534,7 +536,7 @@ class TestCheckpointEdgeCases:
             "vid/with/slashes",
             "vid:with:colons",
             "vid with spaces",
-            "vid\"with\"quotes",
+            'vid"with"quotes',
         ]
 
         for vid in special_ids:

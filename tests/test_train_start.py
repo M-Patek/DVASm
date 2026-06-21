@@ -36,6 +36,7 @@ def test_data_loading():
         return True
     except Exception as e:
         import traceback
+
         logger.error(f"Failed to load dataset: {e}")
         logger.error(traceback.format_exc())
         return False
@@ -58,6 +59,7 @@ def test_model_init_minimal():
 
         # Check if we can at least initialize the model config
         from transformers import AutoConfig
+
         config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
         logger.info(f"Model config loaded: {config.model_type}")
 

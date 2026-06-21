@@ -2,7 +2,6 @@
 
 import json
 
-import pytest
 
 from dvas.observability.grafana import (
     DashboardPanel,
@@ -119,6 +118,7 @@ class TestExportDashboardToFile:
     def test_export(self):
         import tempfile
         import os
+
         dashboard = GrafanaDashboard(title="Export Test")
         fd, path = tempfile.mkstemp(suffix=".json")
         try:

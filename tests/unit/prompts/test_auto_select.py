@@ -1,7 +1,5 @@
 """Tests for auto-selection logic."""
 
-import pytest
-
 from dvas.prompts.auto_select import (
     AutoSelector,
     DomainDetector,
@@ -17,6 +15,7 @@ class TestDomainDetector:
         """Test detecting kitchen domain from filename."""
         detector = DomainDetector()
         from pathlib import Path
+
         domain = detector.detect_from_filename(Path("cooking_video.mp4"))
         assert domain == PromptDomain.KITCHEN
 
@@ -24,6 +23,7 @@ class TestDomainDetector:
         """Test detecting robot domain from filename."""
         detector = DomainDetector()
         from pathlib import Path
+
         domain = detector.detect_from_filename(Path("robot_grasping.mp4"))
         assert domain == PromptDomain.ROBOT
 
@@ -31,6 +31,7 @@ class TestDomainDetector:
         """Test fallback to general domain."""
         detector = DomainDetector()
         from pathlib import Path
+
         domain = detector.detect_from_filename(Path("random_video.mp4"))
         assert domain == PromptDomain.GENERAL
 
@@ -99,6 +100,7 @@ class TestAutoSelector:
 
         selector = AutoSelector(registry=registry)
         from pathlib import Path
+
         result = selector.select(
             video_path=Path("cooking.mp4"),
             task_type="caption",
@@ -121,6 +123,7 @@ class TestAutoSelector:
 
         selector = AutoSelector(registry=registry)
         from pathlib import Path
+
         result = selector.select(
             video_path=Path("cooking.mp4"),
             preferred_domain=PromptDomain.KITCHEN,
@@ -151,6 +154,7 @@ class TestAutoSelector:
 
         selector = AutoSelector(registry=registry)
         from pathlib import Path
+
         ranked = selector.rank_prompts(Path("cooking.mp4"), domain=PromptDomain.KITCHEN)
         assert len(ranked) > 0
         assert ranked[0][0].metadata.name == "high_quality"

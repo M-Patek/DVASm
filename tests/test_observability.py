@@ -1,6 +1,5 @@
 """Tests for observability and metrics collection."""
 
-
 import pytest
 
 from dvas.observability.metrics import MetricsCollector
@@ -82,7 +81,7 @@ class TestMetricsCollector:
 
     def test_make_key_with_labels(self, metrics):
         key = metrics._make_key("metric", {"a": "1", "b": "2"})
-        assert key == 'metric{a="1\",b="2\"}'
+        assert key == 'metric{a="1",b="2"}'
 
     def test_make_key_without_labels(self, metrics):
         key = metrics._make_key("metric")

@@ -182,7 +182,10 @@ def main():
                 adapter_type="lora",
                 training_data_path=args.data,
                 training_config=config,
-                metrics={"epochs": args.epochs, "final_loss": 0.0},  # Would get from actual training
+                metrics={
+                    "epochs": args.epochs,
+                    "final_loss": 0.0,
+                },  # Would get from actual training
                 tags=["sft", "qwen2-vl", args.epic_split or "unknown"],
                 description=f"SFT trained student model ({args.epochs} epochs)",
                 data_version=args.data_version,
@@ -217,6 +220,7 @@ def main():
     except Exception as e:
         print(f"\nError during training: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

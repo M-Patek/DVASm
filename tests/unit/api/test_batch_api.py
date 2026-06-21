@@ -4,8 +4,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 from dvas.api.batch_api import router as batch_router
-from dvas.api.task_lifecycle import TaskLifecycleManager
-from dvas.api.task_store import InMemoryTaskStore, TaskType
 
 
 class TestBatchAPI:

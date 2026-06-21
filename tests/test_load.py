@@ -101,6 +101,7 @@ class TestBenchmarking:
 
     def test_benchmark_function(self):
         """Test benchmarking a simple function."""
+
         def slow_add(a, b):
             time.sleep(0.001)
             return a + b
@@ -118,6 +119,7 @@ class TestBenchmarking:
 
     def test_benchmark_result_to_dict(self):
         """Test benchmark result serialization."""
+
         def identity(x):
             return x
 
@@ -205,10 +207,7 @@ class TestPerformanceAnnotations:
                 start_time=i * 1.0,
                 end_time=(i + 1) * 1.0,
                 caption=f"Segment {i}",
-                actions=[
-                    Action(verb=f"verb_{i % 20}", noun=f"noun_{i}")
-                    for i in range(5)
-                ],
+                actions=[Action(verb=f"verb_{i % 20}", noun=f"noun_{i}") for i in range(5)],
             )
             for i in range(50)
         ]

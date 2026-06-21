@@ -1,6 +1,5 @@
 """Tests for task queue implementations."""
 
-import asyncio
 import pytest
 import pytest_asyncio
 
@@ -9,10 +8,9 @@ from dvas.api.task_queue import (
     InMemoryTaskQueue,
     QueueBackend,
     QueueConfig,
-    TaskQueue,
     create_task_queue,
 )
-from dvas.api.task_store import Task, TaskStatus, TaskType
+from dvas.api.task_store import TaskStatus, TaskType
 
 
 class TestInMemoryTaskQueue:
@@ -89,7 +87,7 @@ class TestInMemoryTaskQueue:
     @pytest.mark.asyncio
     async def test_ack_success(self, queue):
         """Test acknowledging successful task."""
-        result = await queue.enqueue(
+        await queue.enqueue(
             task_type=TaskType.ANNOTATION,
             payload={"video_id": "vid_123"},
         )
@@ -103,7 +101,7 @@ class TestInMemoryTaskQueue:
     @pytest.mark.asyncio
     async def test_ack_failure(self, queue):
         """Test acknowledging failed task."""
-        result = await queue.enqueue(
+        await queue.enqueue(
             task_type=TaskType.ANNOTATION,
             payload={"video_id": "vid_123"},
         )
@@ -137,7 +135,7 @@ class TestInMemoryTaskQueue:
     @pytest.mark.asyncio
     async def test_cancel_processing_task(self, queue):
         """Test cancelling a processing task."""
-        result = await queue.enqueue(
+        await queue.enqueue(
             task_type=TaskType.ANNOTATION,
             payload={"video_id": "vid_123"},
         )
@@ -153,7 +151,7 @@ class TestInMemoryTaskQueue:
     @pytest.mark.asyncio
     async def test_retry_task(self, queue):
         """Test retrying a failed task."""
-        result = await queue.enqueue(
+        await queue.enqueue(
             task_type=TaskType.ANNOTATION,
             payload={"video_id": "vid_123"},
         )
@@ -253,7 +251,7 @@ class TestInMemoryTaskQueue:
     async def test_shutdown(self, queue):
         """Test graceful shutdown."""
         await queue.enqueue(TaskType.ANNOTATION, payload={"video_id": "vid_1"})
-        task = await queue.dequeue()
+        await queue.dequeue()
 
         await queue.shutdown()
         assert queue._shutdown is True

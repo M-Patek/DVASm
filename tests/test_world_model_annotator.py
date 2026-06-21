@@ -2,13 +2,11 @@
 
 import pytest
 
-from dvas.data.schemas import Action, Annotation, Segment, VideoMetadata
+from dvas.data.schemas import Action, Annotation, Segment
 from dvas.world_model.annotator import WorldModelAnnotator
 from dvas.world_model.state_repr import (
     AffordanceState,
-    ObjectRole,
     ObjectState,
-    SceneGraph,
     WorldState,
 )
 from dvas.world_model.temporal_graph import TemporalEventGraph
@@ -149,7 +147,6 @@ class TestWorldModelAnnotator:
     @pytest.mark.asyncio
     async def test_annotate_full(self, annotator, sample_segment):
         """Test generating complete annotation."""
-        from dvas.data.schemas import Annotation
 
         annotation = await annotator.annotate_full(sample_segment)
 
@@ -273,12 +270,8 @@ class TestWorldModelAnnotatorHeuristics:
     def test_extract_preconditions(self, annotator):
         """Test precondition extraction."""
         state = WorldState()
-        state.scene_graph.add_object(
-            ObjectState(object_id="cup_1", name="cup", state="on_table")
-        )
-        state.scene_graph.add_object(
-            ObjectState(object_id="lid_1", name="lid", state="closed")
-        )
+        state.scene_graph.add_object(ObjectState(object_id="cup_1", name="cup", state="on_table"))
+        state.scene_graph.add_object(ObjectState(object_id="lid_1", name="lid", state="closed"))
 
         preconditions = annotator._extract_preconditions(state)
 
@@ -288,14 +281,10 @@ class TestWorldModelAnnotatorHeuristics:
     def test_extract_effects(self, annotator):
         """Test effect extraction."""
         before = WorldState()
-        before.scene_graph.add_object(
-            ObjectState(object_id="cup_1", name="cup", state="empty")
-        )
+        before.scene_graph.add_object(ObjectState(object_id="cup_1", name="cup", state="empty"))
 
         after = WorldState()
-        after.scene_graph.add_object(
-            ObjectState(object_id="cup_1", name="cup", state="full")
-        )
+        after.scene_graph.add_object(ObjectState(object_id="cup_1", name="cup", state="full"))
 
         effects = annotator._extract_effects(before, after)
 

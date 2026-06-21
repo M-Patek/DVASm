@@ -106,7 +106,11 @@ class TestPromptRegressionTest:
 
         results = test.run_test(prompt, test_set="default")
         assert len(results) > 0
-        assert results[0].status in [RegressionStatus.PASS, RegressionStatus.WARNING, RegressionStatus.FAIL]
+        assert results[0].status in [
+            RegressionStatus.PASS,
+            RegressionStatus.WARNING,
+            RegressionStatus.FAIL,
+        ]
 
     def test_check_regression_pass(self):
         """Test regression check with passing score."""

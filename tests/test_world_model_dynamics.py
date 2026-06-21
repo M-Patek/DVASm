@@ -1,7 +1,6 @@
 """Tests for world_model dynamics module."""
 
 import numpy as np
-import pytest
 
 from dvas.world_model.dynamics import (
     ContactDynamics,
@@ -352,18 +351,22 @@ class TestContactDynamics:
     def test_total_contact_duration(self):
         """Test total contact duration."""
         contact = ContactDynamics(subject_id="hand_1", object_id="cup_1")
-        contact.add_event(ContactEvent(
-            subject_id="hand_1",
-            object_id="cup_1",
-            start_time=0.0,
-            end_time=1.0,
-        ))
-        contact.add_event(ContactEvent(
-            subject_id="hand_1",
-            object_id="cup_1",
-            start_time=2.0,
-            end_time=3.5,
-        ))
+        contact.add_event(
+            ContactEvent(
+                subject_id="hand_1",
+                object_id="cup_1",
+                start_time=0.0,
+                end_time=1.0,
+            )
+        )
+        contact.add_event(
+            ContactEvent(
+                subject_id="hand_1",
+                object_id="cup_1",
+                start_time=2.0,
+                end_time=3.5,
+            )
+        )
         assert contact.total_contact_duration == 2.5
 
     def test_to_dict(self):

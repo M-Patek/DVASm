@@ -141,7 +141,7 @@ class TestTraceSpan:
             assert span in get_tracer().get_active_spans()
 
     def test_trace_span_exception(self):
-        tracer = Tracer()
+        Tracer()
         try:
             with trace_span("failing_op"):
                 raise ValueError("test error")

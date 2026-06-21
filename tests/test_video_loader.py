@@ -46,9 +46,9 @@ class TestVideoReader:
 
             def mock_get(prop):
                 props = {
-                    5: 30.0,   # CAP_PROP_FPS
-                    3: 1920.0, # CAP_PROP_FRAME_WIDTH
-                    4: 1080.0, # CAP_PROP_FRAME_HEIGHT
+                    5: 30.0,  # CAP_PROP_FPS
+                    3: 1920.0,  # CAP_PROP_FRAME_WIDTH
+                    4: 1080.0,  # CAP_PROP_FRAME_HEIGHT
                     7: 300.0,  # CAP_PROP_FRAME_COUNT
                     6: 1684566380,  # CAP_PROP_FOURCC
                 }
@@ -86,6 +86,7 @@ class TestVideoReader:
             mock_instance.get.side_effect = mock_get
 
             frames_read = [0]
+
             def mock_read():
                 if frames_read[0] < 5:
                     frames_read[0] += 1
@@ -126,6 +127,7 @@ class TestFrameSampler:
             mock_instance.get.side_effect = mock_get
 
             frames_read = [0]
+
             def mock_read():
                 if frames_read[0] < 10:
                     frames_read[0] += 1
@@ -169,6 +171,7 @@ class TestSceneDetector:
 
             # Generate frames with varying colors to trigger scene changes
             frame_idx = [0]
+
             def mock_read():
                 if frame_idx[0] < 10:
                     idx = frame_idx[0]
@@ -214,6 +217,7 @@ class TestMotionEstimator:
             mock_instance.get.side_effect = mock_get
 
             frames_read = [0]
+
             def mock_read():
                 if frames_read[0] < 5:
                     frames_read[0] += 1
@@ -302,6 +306,7 @@ class TestVideoLoader:
             mock_instance.get.side_effect = mock_get
 
             frames_read = [0]
+
             def mock_read():
                 if frames_read[0] < 5:
                     frames_read[0] += 1
@@ -338,6 +343,7 @@ class TestVideoLoader:
             mock_instance.get.side_effect = mock_get
 
             frames_read = [0]
+
             def mock_read():
                 if frames_read[0] < 10:
                     frames_read[0] += 1
@@ -374,6 +380,7 @@ class TestVideoLoader:
             mock_instance.get.side_effect = mock_get
 
             frames_read = [0]
+
             def mock_read():
                 if frames_read[0] < 3:
                     frames_read[0] += 1

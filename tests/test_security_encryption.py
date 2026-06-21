@@ -4,7 +4,6 @@ Tests for EncryptionAtRest, FieldEncryption, KeyManager, and EncryptionConfig.
 """
 
 import pytest
-from pathlib import Path
 
 from dvas.security.encryption import (
     EncryptionAtRest,
@@ -259,7 +258,7 @@ class TestKeyManager:
     def test_generate_key_with_version(self):
         """Test generating key with version."""
         manager = KeyManager()
-        key = manager.generate_key(version="v2")
+        manager.generate_key(version="v2")
         assert manager.get_current_version() == "v2"
 
     def test_get_key(self):

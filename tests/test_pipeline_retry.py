@@ -230,6 +230,7 @@ class TestBatchPartialFailure:
         teacher.model_name = "gpt-5.5"
 
         from dvas.pipeline.core import AnnotationPipeline
+
         pipeline = AnnotationPipeline(
             teacher_model=teacher,
             checkpoint_path=tmp_path / "cp.json",
@@ -238,10 +239,7 @@ class TestBatchPartialFailure:
 
         # Patch annotate_video to control per-item outcomes
         with patch.object(AnnotationPipeline, "annotate_video", new=fake_annotate_video):
-            items = [
-                {"video_id": vid, "video_path": f"/fake/{vid}.mp4"}
-                for vid in outcomes
-            ]
+            items = [{"video_id": vid, "video_path": f"/fake/{vid}.mp4"} for vid in outcomes]
             successful, failed = await pipeline.process_batch(items, max_concurrent=2)
 
         # 3 successes, 2 failures
@@ -344,7 +342,7 @@ class TestCheckpointResume:
         assert returned_ids == {"vid_a", "vid_b", "vid_c"}
         # Only vid_c was newly annotated in run 2 (vid_a/vid_b were skipped
         # via checkpoint + hydrated from store)
-        annotated_in_run_2 = annotated_ids[len(items1):]
+        annotated_in_run_2 = annotated_ids[len(items1) :]
         assert annotated_in_run_2 == ["vid_c"], (
             f"Expected only vid_c to be annotated in run 2, got {annotated_in_run_2}"
         )

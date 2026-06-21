@@ -1,9 +1,5 @@
 """Tests for teacher vs student evaluation."""
 
-import tempfile
-from pathlib import Path
-
-import numpy as np
 import pytest
 
 from dvas.models.base import GenerationResult, GenerationStatus, ModelType
@@ -19,8 +15,7 @@ from dvas.models.student.evaluation import (
 
 # Skip tests requiring ROUGE if not available
 rouge_required = pytest.mark.skipif(
-    not _ROUGE_AVAILABLE,
-    reason="ROUGE not available (install rouge-score)"
+    not _ROUGE_AVAILABLE, reason="ROUGE not available (install rouge-score)"
 )
 
 
@@ -92,19 +87,31 @@ class TestComparisonReport:
     def test_to_dict(self):
         """Test conversion to dictionary."""
         quality = QualityComparisonResult(
-            metric_name="BLEU", teacher_score=0.8, student_score=0.75,
-            relative_improvement=-0.0625, absolute_gap=-0.05,
+            metric_name="BLEU",
+            teacher_score=0.8,
+            student_score=0.75,
+            relative_improvement=-0.0625,
+            absolute_gap=-0.05,
         )
         cost = CostComparisonResult(
-            teacher_cost_per_sample=0.05, student_cost_per_sample=0.001,
-            cost_savings_per_sample=0.049, cost_savings_percent=98.0,
-            estimated_savings_1k_samples=49.0, estimated_savings_10k_samples=490.0,
+            teacher_cost_per_sample=0.05,
+            student_cost_per_sample=0.001,
+            cost_savings_per_sample=0.049,
+            cost_savings_percent=98.0,
+            estimated_savings_1k_samples=49.0,
+            estimated_savings_10k_samples=490.0,
         )
         latency = LatencyComparisonResult(
-            teacher_latency_ms=5000, student_latency_ms=500,
-            teacher_p50_ms=4500, teacher_p95_ms=8000, teacher_p99_ms=10000,
-            student_p50_ms=450, student_p95_ms=800, student_p99_ms=1000,
-            speedup_ratio=10.0, throughput_improvement=10.0,
+            teacher_latency_ms=5000,
+            student_latency_ms=500,
+            teacher_p50_ms=4500,
+            teacher_p95_ms=8000,
+            teacher_p99_ms=10000,
+            student_p50_ms=450,
+            student_p95_ms=800,
+            student_p99_ms=1000,
+            speedup_ratio=10.0,
+            throughput_improvement=10.0,
         )
 
         report = ComparisonReport(

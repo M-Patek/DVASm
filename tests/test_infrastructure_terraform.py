@@ -6,7 +6,6 @@ TerraformModule, TerraformState, and TerraformWorkspace.
 
 from __future__ import annotations
 
-import json
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -312,7 +311,7 @@ class TestTerraformManager:
     def test_fmt_check(self, mock_run: MagicMock, manager: TerraformManager):
         """Test terraform fmt check."""
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        result = manager.fmt(check=True)
+        manager.fmt(check=True)
         args = mock_run.call_args[0][0]
         assert "-check" in args
 

@@ -4,6 +4,7 @@
   "caption_dense": null,
   "end_time": 5.0,
   "key_frames": [],
+  "lighting": null,
   "objects": [],
   "qa_pairs": [
     {
@@ -19,5 +20,7 @@
       "question_type": "other"
     }
   ],
-  "start_time": 0.0
+  "scene_type": null,
+  "start_time": 0.0,
+  "temporal_relations": []
 }

@@ -9,10 +9,8 @@ from dvas.observability.alerts import (
     AlertManager,
     AlertRule,
     AlertSeverity,
-    AlertStatus,
     CallbackNotificationChannel,
     LogNotificationChannel,
-    NotificationChannel,
 )
 
 
@@ -196,43 +194,51 @@ class TestAlertManager:
         assert manager.remove_rule("nonexistent") is False
 
     def test_list_rules(self, manager):
-        manager.add_rule(AlertRule(
-            name="r1",
-            description="test",
-            metric="m1",
-            operator=">",
-            threshold=10.0,
-        ))
-        manager.add_rule(AlertRule(
-            name="r2",
-            description="test",
-            metric="m2",
-            operator="<",
-            threshold=5.0,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="r1",
+                description="test",
+                metric="m1",
+                operator=">",
+                threshold=10.0,
+            )
+        )
+        manager.add_rule(
+            AlertRule(
+                name="r2",
+                description="test",
+                metric="m2",
+                operator="<",
+                threshold=5.0,
+            )
+        )
         rules = manager.list_rules()
         assert len(rules) == 2
 
     def test_evaluate_triggered(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+            )
+        )
         alerts = manager.evaluate("cpu", 90.0)
         assert len(alerts) == 1
         assert alerts[0].rule_name == "test"
 
     def test_evaluate_not_triggered(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+            )
+        )
         alerts = manager.evaluate("cpu", 50.0)
         assert len(alerts) == 0
 
@@ -250,25 +256,29 @@ class TestAlertManager:
         assert len(alerts) == 0
 
     def test_evaluate_wrong_metric(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+            )
+        )
         alerts = manager.evaluate("memory", 90.0)
         assert len(alerts) == 0
 
     def test_rate_limiting(self, manager):
         manager.rate_limit_seconds = 1.0
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+            )
+        )
         alerts1 = manager.evaluate("cpu", 90.0)
         assert len(alerts1) == 1
         # Second evaluation should be rate limited
@@ -276,14 +286,16 @@ class TestAlertManager:
         assert len(alerts2) == 0
 
     def test_duration_requirement(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-            duration_seconds=1.0,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+                duration_seconds=1.0,
+            )
+        )
         # First trigger should not fire due to duration requirement
         alerts = manager.evaluate("cpu", 90.0)
         assert len(alerts) == 0
@@ -300,63 +312,73 @@ class TestAlertManager:
         assert manager.remove_channel("nonexistent") is False
 
     def test_acknowledge(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+            )
+        )
         manager.evaluate("cpu", 90.0)
         assert manager.acknowledge("test") is True
         assert manager.acknowledge("nonexistent") is False
 
     def test_resolve(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+            )
+        )
         manager.evaluate("cpu", 90.0)
         assert manager.resolve("test") is True
         active = manager.get_active_alerts()
         assert len(active) == 0
 
     def test_get_active_alerts(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+            )
+        )
         manager.evaluate("cpu", 90.0)
         active = manager.get_active_alerts()
         assert len(active) == 1
 
     def test_get_alert_history(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-            severity=AlertSeverity.WARNING,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+                severity=AlertSeverity.WARNING,
+            )
+        )
         manager.evaluate("cpu", 90.0)
         history = manager.get_alert_history(severity=AlertSeverity.WARNING)
         assert len(history) == 1
 
     def test_stats(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+            )
+        )
         manager.evaluate("cpu", 90.0)
         stats = manager.get_stats()
         assert stats["total_rules"] == 1
@@ -372,37 +394,43 @@ class TestAlertManager:
         assert "storage_critical" in rule_names
 
     def test_label_matching(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-            labels={"host": "server1"},
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+                labels={"host": "server1"},
+            )
+        )
         alerts = manager.evaluate("cpu", 90.0, labels={"host": "server1"})
         assert len(alerts) == 1
 
     def test_label_mismatch(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-            labels={"host": "server1"},
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+                labels={"host": "server1"},
+            )
+        )
         alerts = manager.evaluate("cpu", 90.0, labels={"host": "server2"})
         assert len(alerts) == 0
 
     def test_reset(self, manager):
-        manager.add_rule(AlertRule(
-            name="test",
-            description="test",
-            metric="cpu",
-            operator=">",
-            threshold=80.0,
-        ))
+        manager.add_rule(
+            AlertRule(
+                name="test",
+                description="test",
+                metric="cpu",
+                operator=">",
+                threshold=80.0,
+            )
+        )
         manager.evaluate("cpu", 90.0)
         manager.reset()
         assert len(manager.get_active_alerts()) == 0

@@ -186,7 +186,7 @@ class TestOpenXEmbodimentFormatter:
         """Test exporting to JSONL format."""
         formatter = OpenXFormatter()
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.jsonl', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
             temp_path = Path(f.name)
 
         try:
@@ -194,7 +194,7 @@ class TestOpenXEmbodimentFormatter:
             assert count == 3
 
             # Verify file contents
-            with open(temp_path, 'r', encoding='utf-8') as f:
+            with open(temp_path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
                 assert len(lines) == 3
 
@@ -210,7 +210,7 @@ class TestOpenXEmbodimentFormatter:
         """Test exporting to JSON format."""
         formatter = OpenXFormatter()
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             temp_path = Path(f.name)
 
         try:
@@ -218,7 +218,7 @@ class TestOpenXEmbodimentFormatter:
             assert count == 3
 
             # Verify file contents
-            with open(temp_path, 'r', encoding='utf-8') as f:
+            with open(temp_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 assert "episodes" in data
                 assert len(data["episodes"]) == 3
@@ -251,8 +251,12 @@ class TestOpenXEmbodimentFormatter:
 
         step = result["steps"][0]
         required_fields = [
-            "observation", "action", "language_instruction",
-            "timestamp", "discount", "reward"
+            "observation",
+            "action",
+            "language_instruction",
+            "timestamp",
+            "discount",
+            "reward",
         ]
         for field in required_fields:
             assert field in step, f"Missing field: {field}"
@@ -266,7 +270,9 @@ class TestOpenXEmbodimentFormatter:
         result_delta = formatter_delta.format_annotation(sample_annotation)
 
         # Check action space is reflected in output
-        assert result_abs["steps"][0]["action"][0]["embodiment_action"]["action_space"] == "absolute"
+        assert (
+            result_abs["steps"][0]["action"][0]["embodiment_action"]["action_space"] == "absolute"
+        )
         assert result_delta["steps"][0]["action"][0]["embodiment_action"]["action_space"] == "delta"
 
     def test_empty_actions_handling(self):

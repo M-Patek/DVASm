@@ -10,11 +10,9 @@ Tests recovery behavior at each stage:
 
 from __future__ import annotations
 
-import asyncio
 import json
 import tempfile
 from pathlib import Path
-from typing import Any, Dict
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import numpy as np
@@ -24,7 +22,7 @@ from dvas.data.schemas import Annotation, VideoMetadata
 from dvas.exceptions import PipelineError, RetryExhaustedError
 from dvas.models.base import GenerationResult, GenerationStatus, ModelType
 from dvas.pipeline.core import AnnotationPipeline
-from dvas.pipeline.checkpoint import CheckpointManager, CheckpointError
+from dvas.pipeline.checkpoint import CheckpointManager
 
 
 class FailureScenarioFactory:
@@ -33,6 +31,7 @@ class FailureScenarioFactory:
     @staticmethod
     def create_video_load_failure(error_type: str = "file_not_found"):
         """Create a VideoLoader that fails to load."""
+
         def failing_loader(*args, **kwargs):
             if error_type == "file_not_found":
                 raise FileNotFoundError(f"Video not found: {args[0] if args else 'unknown'}")
@@ -41,6 +40,7 @@ class FailureScenarioFactory:
             elif error_type == "codec_error":
                 raise RuntimeError("Unsupported video codec")
             return MagicMock()
+
         return failing_loader
 
     @staticmethod
@@ -66,30 +66,34 @@ class FailureScenarioFactory:
     @staticmethod
     def create_teacher_timeout() -> MagicMock:
         """Create a teacher that times out."""
-        return FailureScenarioFactory.create_teacher_with_sequence([
-            GenerationResult(
-                text="",
-                model_type=ModelType.TEACHER_GPT55,
-                model_version="gpt-5.5",
-                status=GenerationStatus.TIMEOUT,
-                error_message="Request timeout after 30s",
-                latency_ms=30000.0,
-            )
-        ])
+        return FailureScenarioFactory.create_teacher_with_sequence(
+            [
+                GenerationResult(
+                    text="",
+                    model_type=ModelType.TEACHER_GPT55,
+                    model_version="gpt-5.5",
+                    status=GenerationStatus.TIMEOUT,
+                    error_message="Request timeout after 30s",
+                    latency_ms=30000.0,
+                )
+            ]
+        )
 
     @staticmethod
     def create_teacher_rate_limited() -> MagicMock:
         """Create a teacher that hits rate limit."""
-        return FailureScenarioFactory.create_teacher_with_sequence([
-            GenerationResult(
-                text="",
-                model_type=ModelType.TEACHER_GPT55,
-                model_version="gpt-5.5",
-                status=GenerationStatus.RATE_LIMITED,
-                error_message="Rate limit exceeded",
-                latency_ms=100.0,
-            )
-        ])
+        return FailureScenarioFactory.create_teacher_with_sequence(
+            [
+                GenerationResult(
+                    text="",
+                    model_type=ModelType.TEACHER_GPT55,
+                    model_version="gpt-5.5",
+                    status=GenerationStatus.RATE_LIMITED,
+                    error_message="Rate limit exceeded",
+                    latency_ms=100.0,
+                )
+            ]
+        )
 
     @staticmethod
     def create_teacher_connection_error() -> MagicMock:
@@ -128,10 +132,12 @@ class FailureScenarioFactory:
                 )
 
             return GenerationResult(
-                text=json.dumps({
-                    "scene_description": f"Scene {idx}",
-                    "actions": [{"verb": "test", "noun": "object"}],
-                }),
+                text=json.dumps(
+                    {
+                        "scene_description": f"Scene {idx}",
+                        "actions": [{"verb": "test", "noun": "object"}],
+                    }
+                ),
                 model_type=ModelType.TEACHER_GPT55,
                 model_version="gpt-5.5",
                 status=GenerationStatus.SUCCESS,
@@ -222,9 +228,7 @@ class TestTeacherFailureRecovery:
         )
 
         with patch("dvas.pipeline.core.VideoLoader", return_value=mock_video_loader):
-            annotation = await pipeline.annotate_video(
-                Path("/fake/video.mp4"), "timeout_test"
-            )
+            annotation = await pipeline.annotate_video(Path("/fake/video.mp4"), "timeout_test")
 
         # Should still create annotation with empty segments
         assert isinstance(annotation, Annotation)
@@ -246,9 +250,7 @@ class TestTeacherFailureRecovery:
         )
 
         with patch("dvas.pipeline.core.VideoLoader", return_value=mock_video_loader):
-            annotation = await pipeline.annotate_video(
-                Path("/fake/video.mp4"), "rate_limit_test"
-            )
+            annotation = await pipeline.annotate_video(Path("/fake/video.mp4"), "rate_limit_test")
 
         assert isinstance(annotation, Annotation)
         assert len(annotation.segments) == 2
@@ -268,9 +270,7 @@ class TestTeacherFailureRecovery:
         # ConnectionError should trigger retry (up to 3 attempts per segment)
         with patch("dvas.pipeline.core.VideoLoader", return_value=mock_video_loader):
             # After retries exhaust, should create empty segment
-            annotation = await pipeline.annotate_video(
-                Path("/fake/video.mp4"), "connection_test"
-            )
+            await pipeline.annotate_video(Path("/fake/video.mp4"), "connection_test")
 
         # Teacher should have been called multiple times (retries)
         assert mock_teacher.generate.call_count >= 2
@@ -289,9 +289,7 @@ class TestTeacherFailureRecovery:
         )
 
         with patch("dvas.pipeline.core.VideoLoader", return_value=mock_video_loader):
-            annotation = await pipeline.annotate_video(
-                Path("/fake/video.mp4"), "partial_test"
-            )
+            annotation = await pipeline.annotate_video(Path("/fake/video.mp4"), "partial_test")
 
         # Should have 2 segments
         assert len(annotation.segments) == 2
@@ -354,12 +352,14 @@ class TestStorageFailureRecovery:
 
         mock_teacher = MagicMock()
         mock_teacher.model_name = "mock-teacher"
-        mock_teacher.generate = AsyncMock(return_value=GenerationResult(
-            text=json.dumps({"scene_description": "Test", "actions": []}),
-            model_type=ModelType.TEACHER_GPT55,
-            status=GenerationStatus.SUCCESS,
-            latency_ms=100.0,
-        ))
+        mock_teacher.generate = AsyncMock(
+            return_value=GenerationResult(
+                text=json.dumps({"scene_description": "Test", "actions": []}),
+                model_type=ModelType.TEACHER_GPT55,
+                status=GenerationStatus.SUCCESS,
+                latency_ms=100.0,
+            )
+        )
 
         pipeline = AnnotationPipeline(
             teacher_model=mock_teacher,
@@ -385,12 +385,14 @@ class TestStorageFailureRecovery:
 
         mock_teacher = MagicMock()
         mock_teacher.model_name = "mock-teacher"
-        mock_teacher.generate = AsyncMock(return_value=GenerationResult(
-            text=json.dumps({"scene_description": "Test", "actions": []}),
-            model_type=ModelType.TEACHER_GPT55,
-            status=GenerationStatus.SUCCESS,
-            latency_ms=100.0,
-        ))
+        mock_teacher.generate = AsyncMock(
+            return_value=GenerationResult(
+                text=json.dumps({"scene_description": "Test", "actions": []}),
+                model_type=ModelType.TEACHER_GPT55,
+                status=GenerationStatus.SUCCESS,
+                latency_ms=100.0,
+            )
+        )
 
         pipeline = AnnotationPipeline(
             teacher_model=mock_teacher,
@@ -464,12 +466,14 @@ class TestCheckpointFailureRecovery:
         # Create teacher
         mock_teacher = MagicMock()
         mock_teacher.model_name = "mock-resume"
-        mock_teacher.generate = AsyncMock(return_value=GenerationResult(
-            text=json.dumps({"scene_description": "Test", "actions": []}),
-            model_type=ModelType.TEACHER_GPT55,
-            status=GenerationStatus.SUCCESS,
-            latency_ms=100.0,
-        ))
+        mock_teacher.generate = AsyncMock(
+            return_value=GenerationResult(
+                text=json.dumps({"scene_description": "Test", "actions": []}),
+                model_type=ModelType.TEACHER_GPT55,
+                status=GenerationStatus.SUCCESS,
+                latency_ms=100.0,
+            )
+        )
 
         pipeline = AnnotationPipeline(
             teacher_model=mock_teacher,
@@ -480,9 +484,7 @@ class TestCheckpointFailureRecovery:
         # Try to process the already-done video (should skip)
         with patch("dvas.pipeline.core.VideoLoader", return_value=mock_video_loader):
             # This should be skipped due to checkpoint
-            annotation = await pipeline.annotate_video(
-                Path("/fake/already_done.mp4"), "already_done"
-            )
+            await pipeline.annotate_video(Path("/fake/already_done.mp4"), "already_done")
 
         # Teacher should not be called for already processed video
         # (because it loads from store or skips)
@@ -503,12 +505,14 @@ class TestCheckpointFailureRecovery:
 
         mock_teacher = MagicMock()
         mock_teacher.model_name = "mock-inconsistent"
-        mock_teacher.generate = AsyncMock(return_value=GenerationResult(
-            text=json.dumps({"scene_description": "Test", "actions": []}),
-            model_type=ModelType.TEACHER_GPT55,
-            status=GenerationStatus.SUCCESS,
-            latency_ms=100.0,
-        ))
+        mock_teacher.generate = AsyncMock(
+            return_value=GenerationResult(
+                text=json.dumps({"scene_description": "Test", "actions": []}),
+                model_type=ModelType.TEACHER_GPT55,
+                status=GenerationStatus.SUCCESS,
+                latency_ms=100.0,
+            )
+        )
 
         pipeline = AnnotationPipeline(
             teacher_model=mock_teacher,
@@ -518,9 +522,7 @@ class TestCheckpointFailureRecovery:
 
         with patch("dvas.pipeline.core.VideoLoader", return_value=mock_video_loader):
             # Should detect inconsistency and reprocess
-            annotation = await pipeline.annotate_video(
-                Path("/fake/inconsistent.mp4"), "inconsistent_vid"
-            )
+            await pipeline.annotate_video(Path("/fake/inconsistent.mp4"), "inconsistent_vid")
 
         # Should have reprocessed (teacher was called)
         assert mock_teacher.generate.call_count > 0
@@ -536,12 +538,14 @@ class TestParserFailureRecovery:
 
         mock_teacher = MagicMock()
         mock_teacher.model_name = "mock-malformed"
-        mock_teacher.generate = AsyncMock(return_value=GenerationResult(
-            text="This is not JSON at all, just plain text description",
-            model_type=ModelType.TEACHER_GPT55,
-            status=GenerationStatus.SUCCESS,
-            latency_ms=100.0,
-        ))
+        mock_teacher.generate = AsyncMock(
+            return_value=GenerationResult(
+                text="This is not JSON at all, just plain text description",
+                model_type=ModelType.TEACHER_GPT55,
+                status=GenerationStatus.SUCCESS,
+                latency_ms=100.0,
+            )
+        )
 
         store = AnnotationStore(root_path=temp_storage_dir)
         pipeline = AnnotationPipeline(
@@ -571,12 +575,14 @@ class TestParserFailureRecovery:
 
         mock_teacher = MagicMock()
         mock_teacher.model_name = "mock-partial"
-        mock_teacher.generate = AsyncMock(return_value=GenerationResult(
-            text=partial_json,
-            model_type=ModelType.TEACHER_GPT55,
-            status=GenerationStatus.SUCCESS,
-            latency_ms=100.0,
-        ))
+        mock_teacher.generate = AsyncMock(
+            return_value=GenerationResult(
+                text=partial_json,
+                model_type=ModelType.TEACHER_GPT55,
+                status=GenerationStatus.SUCCESS,
+                latency_ms=100.0,
+            )
+        )
 
         store = AnnotationStore(root_path=temp_storage_dir)
         pipeline = AnnotationPipeline(
@@ -585,9 +591,7 @@ class TestParserFailureRecovery:
         )
 
         with patch("dvas.pipeline.core.VideoLoader", return_value=mock_video_loader):
-            annotation = await pipeline.annotate_video(
-                Path("/fake/partial.mp4"), "partial_test"
-            )
+            annotation = await pipeline.annotate_video(Path("/fake/partial.mp4"), "partial_test")
 
         # Should still work (with fallback)
         assert isinstance(annotation, Annotation)
@@ -619,9 +623,7 @@ class TestRetryMechanism:
 
         with patch("dvas.pipeline.core.VideoLoader", return_value=mock_video_loader):
             # Should handle gracefully after retries
-            annotation = await pipeline.annotate_video(
-                Path("/fake/retry.mp4"), "retry_test"
-            )
+            await pipeline.annotate_video(Path("/fake/retry.mp4"), "retry_test")
 
         # Should have retried multiple times
         # Each segment gets 3 retries, 2 segments = up to 6 calls

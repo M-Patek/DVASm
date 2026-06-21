@@ -3,8 +3,6 @@
 Tests for PIIDetector, PIIFinding, and PIIType classes.
 """
 
-import pytest
-
 from dvas.security.pii import PIIDetector, PIIFinding, PIIType
 
 
@@ -207,7 +205,6 @@ class TestPIIDetector:
 
     def test_custom_patterns(self):
         """Test custom regex patterns."""
-        import re
         custom = {
             PIIType.USERNAME: [r"\buser_[a-z0-9]+\b"],
         }

@@ -1,7 +1,6 @@
 """Tests for world_model state representation module."""
 
 import numpy as np
-import pytest
 
 from dvas.world_model.state_repr import (
     AffordanceState,
@@ -371,16 +370,20 @@ class TestWorldState:
     def test_get_target_objects(self):
         """Test getting target objects."""
         state = WorldState()
-        state.scene_graph.add_object(ObjectState(
-            object_id="cup_1",
-            name="cup",
-            role=ObjectRole.TARGET,
-        ))
-        state.scene_graph.add_object(ObjectState(
-            object_id="table_1",
-            name="table",
-            role=ObjectRole.CONTEXT,
-        ))
+        state.scene_graph.add_object(
+            ObjectState(
+                object_id="cup_1",
+                name="cup",
+                role=ObjectRole.TARGET,
+            )
+        )
+        state.scene_graph.add_object(
+            ObjectState(
+                object_id="table_1",
+                name="table",
+                role=ObjectRole.CONTEXT,
+            )
+        )
 
         targets = state.get_target_objects()
         assert len(targets) == 1
@@ -389,12 +392,14 @@ class TestWorldState:
     def test_describe(self):
         """Test scene description generation."""
         state = WorldState()
-        state.scene_graph.add_object(ObjectState(
-            object_id="cup_1",
-            name="cup",
-            state="empty",
-            role=ObjectRole.TARGET,
-        ))
+        state.scene_graph.add_object(
+            ObjectState(
+                object_id="cup_1",
+                name="cup",
+                state="empty",
+                role=ObjectRole.TARGET,
+            )
+        )
 
         desc = state.describe()
         assert "cup" in desc

@@ -41,6 +41,7 @@ class TestOutboxStore:
         yield store
         # Cleanup: close any open connections
         import gc
+
         gc.collect()
 
     @pytest.mark.asyncio
@@ -165,6 +166,7 @@ class TestOutboxPublisher:
         store = OutboxStore(db_path=temp_db)
         yield store
         import gc
+
         gc.collect()
 
     @pytest.mark.asyncio

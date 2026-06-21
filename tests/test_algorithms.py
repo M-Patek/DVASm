@@ -27,6 +27,7 @@ from dvas.data.video_reader import Frame
 # Data Structure Tests
 # ---------------------------------------------------------------------------
 
+
 class TestMinMaxHeap:
     """Test MinMaxHeap data structure."""
 
@@ -142,6 +143,7 @@ class TestSlidingWindowBuffer:
 # ---------------------------------------------------------------------------
 # Importance Metric Tests
 # ---------------------------------------------------------------------------
+
 
 class TestMotionImportance:
     """Test MotionImportance metric."""
@@ -275,6 +277,7 @@ class TestCompositeImportance:
 # KeyframeExtractor Tests
 # ---------------------------------------------------------------------------
 
+
 class TestKeyframeExtractor:
     """Test KeyframeExtractor."""
 
@@ -342,6 +345,7 @@ class TestKeyframeExtractor:
 # VideoSummarizer Tests
 # ---------------------------------------------------------------------------
 
+
 class TestVideoSummarizer:
     """Test VideoSummarizer."""
 
@@ -377,6 +381,7 @@ class TestVideoSummarizer:
 # SemanticSegmenter Tests
 # ---------------------------------------------------------------------------
 
+
 class TestSemanticSegmenter:
     """Test SemanticSegmenter."""
 
@@ -400,10 +405,7 @@ class TestSemanticSegmenter:
     def test_find_boundaries(self) -> None:
         """Test boundary detection."""
         segmenter = SemanticSegmenter(num_segments=3)
-        features = [
-            (i, {"color": 0.1, "texture": 0.1, "motion": 0.1})
-            for i in range(10)
-        ]
+        features = [(i, {"color": 0.1, "texture": 0.1, "motion": 0.1}) for i in range(10)]
         # Add a peak
         features[5] = (5, {"color": 1.0, "texture": 1.0, "motion": 1.0})
 
@@ -428,6 +430,7 @@ class TestSemanticSegmenter:
 # ---------------------------------------------------------------------------
 # AdaptiveSampler Tests
 # ---------------------------------------------------------------------------
+
 
 class TestAdaptiveSampler:
     """Test AdaptiveSampler."""
@@ -462,6 +465,7 @@ class TestAdaptiveSampler:
 # ---------------------------------------------------------------------------
 # ScoredFrame Tests
 # ---------------------------------------------------------------------------
+
 
 class TestScoredFrame:
     """Test ScoredFrame dataclass."""

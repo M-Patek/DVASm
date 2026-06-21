@@ -5,7 +5,6 @@ import pytest
 from dvas.prompts.versioning import (
     PromptVersion,
     PromptVersionManager,
-    VersionDiff,
     VersionError,
     compute_diff,
     is_compatible,

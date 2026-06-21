@@ -4,8 +4,6 @@ Tests the counterfactual.py module including what-if scenarios,
 alternative actions, and counterfactual outcomes.
 """
 
-import pytest
-
 from dvas.data.robot_schemas.counterfactual import (
     AlternativeAction,
     CounterfactualAnnotation,
@@ -442,18 +440,22 @@ class TestCounterfactualAnnotation:
             video_id="video_005",
         )
 
-        ann.add_counterfactual(SingleCounterfactual(
-            counterfactual_id="cf1",
-            cf_type=CounterfactualType.ALTERNATIVE_ACTION,
-            description="Valid",
-            validity=ScenarioValidity.VALID,
-        ))
-        ann.add_counterfactual(SingleCounterfactual(
-            counterfactual_id="cf2",
-            cf_type=CounterfactualType.ALTERNATIVE_ACTION,
-            description="Invalid",
-            validity=ScenarioValidity.INVALID,
-        ))
+        ann.add_counterfactual(
+            SingleCounterfactual(
+                counterfactual_id="cf1",
+                cf_type=CounterfactualType.ALTERNATIVE_ACTION,
+                description="Valid",
+                validity=ScenarioValidity.VALID,
+            )
+        )
+        ann.add_counterfactual(
+            SingleCounterfactual(
+                counterfactual_id="cf2",
+                cf_type=CounterfactualType.ALTERNATIVE_ACTION,
+                description="Invalid",
+                validity=ScenarioValidity.INVALID,
+            )
+        )
 
         valid = ann.get_valid_counterfactuals()
         assert len(valid) == 1
@@ -466,16 +468,20 @@ class TestCounterfactualAnnotation:
             video_id="video_006",
         )
 
-        ann.add_counterfactual(SingleCounterfactual(
-            counterfactual_id="cf_alt",
-            cf_type=CounterfactualType.ALTERNATIVE_ACTION,
-            description="Alt action",
-        ))
-        ann.add_counterfactual(SingleCounterfactual(
-            counterfactual_id="cf_obj",
-            cf_type=CounterfactualType.DIFFERENT_OBJECT,
-            description="Diff object",
-        ))
+        ann.add_counterfactual(
+            SingleCounterfactual(
+                counterfactual_id="cf_alt",
+                cf_type=CounterfactualType.ALTERNATIVE_ACTION,
+                description="Alt action",
+            )
+        )
+        ann.add_counterfactual(
+            SingleCounterfactual(
+                counterfactual_id="cf_obj",
+                cf_type=CounterfactualType.DIFFERENT_OBJECT,
+                description="Diff object",
+            )
+        )
 
         alts = ann.get_counterfactuals_by_type(CounterfactualType.ALTERNATIVE_ACTION)
         assert len(alts) == 1
@@ -488,18 +494,22 @@ class TestCounterfactualAnnotation:
             video_id="video_007",
         )
 
-        ann.add_counterfactual(SingleCounterfactual(
-            counterfactual_id="cf_for_a1",
-            cf_type=CounterfactualType.ALTERNATIVE_ACTION,
-            description="For action 1",
-            original_action_id="action_001",
-        ))
-        ann.add_counterfactual(SingleCounterfactual(
-            counterfactual_id="cf_for_a2",
-            cf_type=CounterfactualType.ALTERNATIVE_ACTION,
-            description="For action 2",
-            original_action_id="action_002",
-        ))
+        ann.add_counterfactual(
+            SingleCounterfactual(
+                counterfactual_id="cf_for_a1",
+                cf_type=CounterfactualType.ALTERNATIVE_ACTION,
+                description="For action 1",
+                original_action_id="action_001",
+            )
+        )
+        ann.add_counterfactual(
+            SingleCounterfactual(
+                counterfactual_id="cf_for_a2",
+                cf_type=CounterfactualType.ALTERNATIVE_ACTION,
+                description="For action 2",
+                original_action_id="action_002",
+            )
+        )
 
         cfs = ann.get_counterfactuals_for_action("action_001")
         assert len(cfs) == 1
@@ -538,24 +548,30 @@ class TestCounterfactualAnnotation:
             video_id="video_009",
         )
 
-        ann.add_counterfactual(SingleCounterfactual(
-            counterfactual_id="cf1",
-            cf_type=CounterfactualType.ALTERNATIVE_ACTION,
-            description="Alt 1",
-            validity=ScenarioValidity.VALID,
-        ))
-        ann.add_counterfactual(SingleCounterfactual(
-            counterfactual_id="cf2",
-            cf_type=CounterfactualType.ALTERNATIVE_ACTION,
-            description="Alt 2",
-            validity=ScenarioValidity.VALID,
-        ))
-        ann.add_counterfactual(SingleCounterfactual(
-            counterfactual_id="cf3",
-            cf_type=CounterfactualType.DIFFERENT_OBJECT,
-            description="Diff obj",
-            validity=ScenarioValidity.VALID,
-        ))
+        ann.add_counterfactual(
+            SingleCounterfactual(
+                counterfactual_id="cf1",
+                cf_type=CounterfactualType.ALTERNATIVE_ACTION,
+                description="Alt 1",
+                validity=ScenarioValidity.VALID,
+            )
+        )
+        ann.add_counterfactual(
+            SingleCounterfactual(
+                counterfactual_id="cf2",
+                cf_type=CounterfactualType.ALTERNATIVE_ACTION,
+                description="Alt 2",
+                validity=ScenarioValidity.VALID,
+            )
+        )
+        ann.add_counterfactual(
+            SingleCounterfactual(
+                counterfactual_id="cf3",
+                cf_type=CounterfactualType.DIFFERENT_OBJECT,
+                description="Diff obj",
+                validity=ScenarioValidity.VALID,
+            )
+        )
 
         summary = ann.generate_summary()
         assert summary["total_counterfactuals"] == 3

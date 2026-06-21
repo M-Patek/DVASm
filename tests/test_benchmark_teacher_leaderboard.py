@@ -58,9 +58,7 @@ class TestTeacherLeaderboard:
             mock_model = MagicMock()
             mock_model.name = "gpt-4"
             mock_model.quality_score = 90.0
-            mock_registry.return_value = MagicMock(
-                list_models=MagicMock(return_value=[mock_model])
-            )
+            mock_registry.return_value = MagicMock(list_models=MagicMock(return_value=[mock_model]))
             scores = temp_leaderboard.compute_quality_scores(["gpt-4"])
             assert "gpt-4" in scores or len(scores) == 0
 

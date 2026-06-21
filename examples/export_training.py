@@ -94,7 +94,9 @@ def export_training_data(
 
     # Validate format
     if format_name not in FORMAT_ADAPTERS:
-        raise ValueError(f"Unknown format: {format_name}. Choose from: {list(FORMAT_ADAPTERS.keys())}")
+        raise ValueError(
+            f"Unknown format: {format_name}. Choose from: {list(FORMAT_ADAPTERS.keys())}"
+        )
 
     # Load annotations
     logger.info(f"Loading annotations from source: {source}")
@@ -158,9 +160,7 @@ def export_training_data(
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Export gold annotations as training data"
-    )
+    parser = argparse.ArgumentParser(description="Export gold annotations as training data")
     parser.add_argument(
         "--output",
         type=Path,

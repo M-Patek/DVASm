@@ -55,6 +55,7 @@ class TestSimpleEmbedding:
         assert len(embedding) == 64
         # Should be normalized
         import math
+
         norm = math.sqrt(sum(x * x for x in embedding))
         assert norm == pytest.approx(1.0, abs=0.01)
 
@@ -134,8 +135,12 @@ class TestSemanticExampleIndex:
     def test_get_by_domain(self):
         """Test getting all examples for a domain."""
         index = SemanticExampleIndex()
-        ex1 = Example(id="k1", input_text="Kitchen", output_text="Cooking", domain=PromptDomain.KITCHEN)
-        ex2 = Example(id="r1", input_text="Robot", output_text="Grasping", domain=PromptDomain.ROBOT)
+        ex1 = Example(
+            id="k1", input_text="Kitchen", output_text="Cooking", domain=PromptDomain.KITCHEN
+        )
+        ex2 = Example(
+            id="r1", input_text="Robot", output_text="Grasping", domain=PromptDomain.ROBOT
+        )
         index.add_examples([ex1, ex2])
 
         kitchen_examples = index.get_by_domain(PromptDomain.KITCHEN)
@@ -179,18 +184,22 @@ class TestExamplePack:
     def test_get_examples_with_query(self):
         """Test getting examples with query filtering."""
         pack = ExamplePack("test", PromptDomain.KITCHEN)
-        pack.add(Example(
-            id="e1",
-            input_text="Chopping vegetables",
-            output_text="A person chops vegetables.",
-            tags=["chopping"],
-        ))
-        pack.add(Example(
-            id="e2",
-            input_text="Stirring soup",
-            output_text="A person stirs soup.",
-            tags=["stirring"],
-        ))
+        pack.add(
+            Example(
+                id="e1",
+                input_text="Chopping vegetables",
+                output_text="A person chops vegetables.",
+                tags=["chopping"],
+            )
+        )
+        pack.add(
+            Example(
+                id="e2",
+                input_text="Stirring soup",
+                output_text="A person stirs soup.",
+                tags=["stirring"],
+            )
+        )
 
         results = pack.get_examples(query="chopping", top_k=2)
         assert len(results) > 0

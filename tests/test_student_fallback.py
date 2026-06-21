@@ -79,12 +79,14 @@ class TestLowConfidenceFallback:
         )
 
         # Mock successful student prediction
-        mock_student.generate = AsyncMock(return_value=GenerationResult(
-            text="student prediction",
-            model_type=ModelType.STUDENT_LOCAL,
-            status=GenerationStatus.SUCCESS,
-            confidence=0.9,
-        ))
+        mock_student.generate = AsyncMock(
+            return_value=GenerationResult(
+                text="student prediction",
+                model_type=ModelType.STUDENT_LOCAL,
+                status=GenerationStatus.SUCCESS,
+                confidence=0.9,
+            )
+        )
 
         result = await fallback.generate(video_path=Path("test.mp4"))
 
@@ -104,20 +106,24 @@ class TestLowConfidenceFallback:
         )
 
         # Mock low confidence student prediction
-        mock_student.generate = AsyncMock(return_value=GenerationResult(
-            text="uncertain prediction",
-            model_type=ModelType.STUDENT_LOCAL,
-            status=GenerationStatus.SUCCESS,
-            confidence=0.5,  # Below threshold
-        ))
+        mock_student.generate = AsyncMock(
+            return_value=GenerationResult(
+                text="uncertain prediction",
+                model_type=ModelType.STUDENT_LOCAL,
+                status=GenerationStatus.SUCCESS,
+                confidence=0.5,  # Below threshold
+            )
+        )
 
         # Mock successful teacher prediction
-        mock_teacher.annotate = AsyncMock(return_value=GenerationResult(
-            text="teacher prediction",
-            model_type=ModelType.TEACHER_CLAUDE,
-            status=GenerationStatus.SUCCESS,
-            confidence=0.95,
-        ))
+        mock_teacher.annotate = AsyncMock(
+            return_value=GenerationResult(
+                text="teacher prediction",
+                model_type=ModelType.TEACHER_CLAUDE,
+                status=GenerationStatus.SUCCESS,
+                confidence=0.95,
+            )
+        )
 
         result = await fallback.generate(video_path=Path("test.mp4"))
 
@@ -139,11 +145,13 @@ class TestLowConfidenceFallback:
         mock_student.generate = AsyncMock(side_effect=Exception("CUDA out of memory"))
 
         # Mock successful teacher
-        mock_teacher.annotate = AsyncMock(return_value=GenerationResult(
-            text="teacher prediction",
-            model_type=ModelType.TEACHER_CLAUDE,
-            status=GenerationStatus.SUCCESS,
-        ))
+        mock_teacher.annotate = AsyncMock(
+            return_value=GenerationResult(
+                text="teacher prediction",
+                model_type=ModelType.TEACHER_CLAUDE,
+                status=GenerationStatus.SUCCESS,
+            )
+        )
 
         result = await fallback.generate(video_path=Path("test.mp4"))
 
@@ -160,12 +168,14 @@ class TestLowConfidenceFallback:
         )
 
         # Mock low confidence prediction
-        mock_student.generate = AsyncMock(return_value=GenerationResult(
-            text="uncertain",
-            model_type=ModelType.STUDENT_LOCAL,
-            status=GenerationStatus.SUCCESS,
-            confidence=0.5,
-        ))
+        mock_student.generate = AsyncMock(
+            return_value=GenerationResult(
+                text="uncertain",
+                model_type=ModelType.STUDENT_LOCAL,
+                status=GenerationStatus.SUCCESS,
+                confidence=0.5,
+            )
+        )
 
         result = await fallback.generate(video_path=Path("test.mp4"))
 
@@ -178,12 +188,14 @@ class TestLowConfidenceFallback:
         from dvas.models.student.calibration import ConfidenceCalibrator
 
         calibrator = MagicMock(spec=ConfidenceCalibrator)
-        calibrator.calibrate = MagicMock(return_value=GenerationResult(
-            text="test",
-            model_type=ModelType.STUDENT_LOCAL,
-            status=GenerationStatus.SUCCESS,
-            confidence=0.6,  # Calibrated lower
-        ))
+        calibrator.calibrate = MagicMock(
+            return_value=GenerationResult(
+                text="test",
+                model_type=ModelType.STUDENT_LOCAL,
+                status=GenerationStatus.SUCCESS,
+                confidence=0.6,  # Calibrated lower
+            )
+        )
 
         fallback = LowConfidenceFallback(
             student_engine=mock_student,
@@ -193,12 +205,14 @@ class TestLowConfidenceFallback:
         )
 
         # Mock high raw confidence, but calibration reduces it
-        mock_student.generate = AsyncMock(return_value=GenerationResult(
-            text="test",
-            model_type=ModelType.STUDENT_LOCAL,
-            status=GenerationStatus.SUCCESS,
-            confidence=0.9,  # Raw confidence
-        ))
+        mock_student.generate = AsyncMock(
+            return_value=GenerationResult(
+                text="test",
+                model_type=ModelType.STUDENT_LOCAL,
+                status=GenerationStatus.SUCCESS,
+                confidence=0.9,  # Raw confidence
+            )
+        )
 
         # Calibrated confidence (0.6) < threshold (0.7) should fallback
         # But we'll mock calibrator to return success
@@ -209,7 +223,7 @@ class TestLowConfidenceFallback:
             confidence=0.8,  # Above threshold after calibration
         )
 
-        result = await fallback.generate(video_path=Path("test.mp4"))
+        await fallback.generate(video_path=Path("test.mp4"))
 
         calibrator.calibrate.assert_called_once()
 
@@ -252,12 +266,14 @@ class TestAdaptiveFallback:
     def mock_student(self):
         """Create mock student."""
         student = MagicMock()
-        student.generate = AsyncMock(return_value=GenerationResult(
-            text="student",
-            model_type=ModelType.STUDENT_LOCAL,
-            status=GenerationStatus.SUCCESS,
-            confidence=0.75,
-        ))
+        student.generate = AsyncMock(
+            return_value=GenerationResult(
+                text="student",
+                model_type=ModelType.STUDENT_LOCAL,
+                status=GenerationStatus.SUCCESS,
+                confidence=0.75,
+            )
+        )
         return student
 
     @pytest.mark.asyncio

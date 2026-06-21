@@ -4,7 +4,6 @@ import tempfile
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 from dvas.models.base import GenerationResult, GenerationStatus, ModelType
 from dvas.models.student.calibration import (
@@ -173,14 +172,10 @@ class TestConfidenceCalibrator:
         assert calibrator._compute_correctness("hello world", "hello world", 0.7) == 1
 
         # Similar (overlap)
-        assert calibrator._compute_correctness(
-            "hello world", "hello universe", 0.7
-        ) == 0
+        assert calibrator._compute_correctness("hello world", "hello universe", 0.7) == 0
 
         # High threshold
-        assert calibrator._compute_correctness(
-            "hello world", "hello world test", 0.9
-        ) == 0
+        assert calibrator._compute_correctness("hello world", "hello world test", 0.9) == 0
 
     def test_compute_metrics(self):
         """Test metric computation."""

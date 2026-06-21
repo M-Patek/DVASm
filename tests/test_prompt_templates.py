@@ -7,7 +7,6 @@ introduced to resolve TD-002 (hardcoded prompts).
 from __future__ import annotations
 
 
-
 class TestPromptManager:
     """Test PromptManager task registry and rendering."""
 

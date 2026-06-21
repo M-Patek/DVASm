@@ -18,103 +18,118 @@ class TestAPIContracts:
         store = ContractStore()
 
         # Define API contracts
-        store.add(Contract(
-            name="upload_video",
-            request_method="POST",
-            request_path="/api/v1/videos/upload",
-            expected_status=200,
-            expected_body_schema={
-                "type": "object",
-                "required": ["video_id", "filename", "status", "message"],
-                "properties": {
-                    "video_id": {"type": "string"},
-                    "filename": {"type": "string"},
-                    "status": {"type": "string", "enum": ["success"]},
-                    "message": {"type": "string"},
+        store.add(
+            Contract(
+                name="upload_video",
+                request_method="POST",
+                request_path="/api/v1/videos/upload",
+                expected_status=200,
+                expected_body_schema={
+                    "type": "object",
+                    "required": ["video_id", "filename", "status", "message"],
+                    "properties": {
+                        "video_id": {"type": "string"},
+                        "filename": {"type": "string"},
+                        "status": {"type": "string", "enum": ["success"]},
+                        "message": {"type": "string"},
+                    },
                 },
-            },
-        ))
+            )
+        )
 
-        store.add(Contract(
-            name="create_annotation_task",
-            request_method="POST",
-            request_path="/api/v1/annotations/tasks",
-            expected_status=200,
-            expected_body_schema={
-                "type": "object",
-                "required": ["task_id", "video_id", "status", "message"],
-                "properties": {
-                    "task_id": {"type": "string"},
-                    "video_id": {"type": "string"},
-                    "status": {"type": "string"},
-                    "message": {"type": "string"},
+        store.add(
+            Contract(
+                name="create_annotation_task",
+                request_method="POST",
+                request_path="/api/v1/annotations/tasks",
+                expected_status=200,
+                expected_body_schema={
+                    "type": "object",
+                    "required": ["task_id", "video_id", "status", "message"],
+                    "properties": {
+                        "task_id": {"type": "string"},
+                        "video_id": {"type": "string"},
+                        "status": {"type": "string"},
+                        "message": {"type": "string"},
+                    },
                 },
-            },
-        ))
+            )
+        )
 
-        store.add(Contract(
-            name="get_task_status",
-            request_method="GET",
-            request_path="/api/v1/annotations/tasks/{task_id}",
-            expected_status=200,
-            expected_body_schema={
-                "type": "object",
-                "required": ["task_id", "video_id", "status"],
-                "properties": {
-                    "task_id": {"type": "string"},
-                    "video_id": {"type": "string"},
-                    "status": {"type": "string", "enum": ["pending", "processing", "completed", "failed"]},
-                    "annotation": {"type": "object"},
-                    "error": {"type": ["string", "null"]},
+        store.add(
+            Contract(
+                name="get_task_status",
+                request_method="GET",
+                request_path="/api/v1/annotations/tasks/{task_id}",
+                expected_status=200,
+                expected_body_schema={
+                    "type": "object",
+                    "required": ["task_id", "video_id", "status"],
+                    "properties": {
+                        "task_id": {"type": "string"},
+                        "video_id": {"type": "string"},
+                        "status": {
+                            "type": "string",
+                            "enum": ["pending", "processing", "completed", "failed"],
+                        },
+                        "annotation": {"type": "object"},
+                        "error": {"type": ["string", "null"]},
+                    },
                 },
-            },
-        ))
+            )
+        )
 
-        store.add(Contract(
-            name="get_annotation",
-            request_method="GET",
-            request_path="/api/v1/annotations/{video_id}",
-            expected_status=200,
-            expected_body_schema={
-                "type": "object",
-                "required": ["status", "data"],
-                "properties": {
-                    "status": {"type": "string", "enum": ["success"]},
-                    "message": {"type": "string"},
-                    "data": {"type": "object"},
+        store.add(
+            Contract(
+                name="get_annotation",
+                request_method="GET",
+                request_path="/api/v1/annotations/{video_id}",
+                expected_status=200,
+                expected_body_schema={
+                    "type": "object",
+                    "required": ["status", "data"],
+                    "properties": {
+                        "status": {"type": "string", "enum": ["success"]},
+                        "message": {"type": "string"},
+                        "data": {"type": "object"},
+                    },
                 },
-            },
-        ))
+            )
+        )
 
-        store.add(Contract(
-            name="health_check",
-            request_method="GET",
-            request_path="/health",
-            expected_status=200,
-            expected_body_schema={
-                "type": "object",
-                "required": ["status"],
-                "properties": {
-                    "status": {"type": "string", "enum": ["healthy"]},
+        store.add(
+            Contract(
+                name="health_check",
+                request_method="GET",
+                request_path="/health",
+                expected_status=200,
+                expected_body_schema={
+                    "type": "object",
+                    "required": ["status"],
+                    "properties": {
+                        "status": {"type": "string", "enum": ["healthy"]},
+                    },
                 },
-            },
-        ))
+            )
+        )
 
-        store.add(Contract(
-            name="get_statistics",
-            request_method="GET",
-            request_path="/api/v1/stats",
-            expected_status=200,
-            expected_body_schema={
-                "type": "object",
-                "required": ["status", "data"],
-                "properties": {
-                    "status": {"type": "string"},
-                    "message": {"type": "string"},
-                    "data": {"type": "object"},
+        store.add(
+            Contract(
+                name="get_statistics",
+                request_method="GET",
+                request_path="/api/v1/stats",
+                expected_status=200,
+                expected_body_schema={
+                    "type": "object",
+                    "required": ["status", "data"],
+                    "properties": {
+                        "status": {"type": "string"},
+                        "message": {"type": "string"},
+                        "data": {"type": "object"},
+                    },
                 },
-            },
-        ))
+            )
+        )
 
         return store
 

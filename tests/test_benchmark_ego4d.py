@@ -1,8 +1,6 @@
 """Tests for Ego4D benchmark."""
 
-import json
 import tempfile
-from pathlib import Path
 
 import pytest
 
@@ -133,7 +131,7 @@ class TestEgo4DBenchmark:
         ground_truth = ["open", "pour", "cut"]
 
         result = temp_benchmark.evaluate_action_anticipation(predictions, ground_truth)
-        assert result["top1_accuracy"] == pytest.approx(2/3, abs=0.01)
+        assert result["top1_accuracy"] == pytest.approx(2 / 3, abs=0.01)
 
     def test_evaluate_action_anticipation_empty(self, temp_benchmark):
         """Test action anticipation with empty inputs."""

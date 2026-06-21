@@ -1,6 +1,5 @@
 """Tests for trend dashboard."""
 
-import pytest
 from datetime import datetime, timedelta
 
 from dvas.quality.schema import DimensionScore, QualityDimension, QualityScores
@@ -173,9 +172,7 @@ class TestQualityTrendDashboard:
         scores = QualityScores(
             annotation_id="ann_001",
             video_id="vid_001",
-            factuality_score=DimensionScore(
-                dimension=QualityDimension.FACTUALITY, score=0.8
-            ),
+            factuality_score=DimensionScore(dimension=QualityDimension.FACTUALITY, score=0.8),
         )
         dashboard.add_scores(scores)
 
@@ -208,9 +205,7 @@ class TestQualityTrendDashboard:
             QualityScores(
                 annotation_id=f"ann_{i:03d}",
                 video_id=f"vid_{i:03d}",
-                factuality_score=DimensionScore(
-                    dimension=QualityDimension.FACTUALITY, score=0.75
-                ),
+                factuality_score=DimensionScore(dimension=QualityDimension.FACTUALITY, score=0.75),
             )
             for i in range(10)
         ]
@@ -227,9 +222,7 @@ class TestQualityTrendDashboard:
             QualityScores(
                 annotation_id=f"ann_{i:03d}",
                 video_id=f"vid_{i:03d}",
-                factuality_score=DimensionScore(
-                    dimension=QualityDimension.FACTUALITY, score=0.8
-                ),
+                factuality_score=DimensionScore(dimension=QualityDimension.FACTUALITY, score=0.8),
             )
             for i in range(100)
         ]
@@ -249,9 +242,7 @@ class TestQualityTrendDashboard:
             QualityScores(
                 annotation_id=f"ann_{i:03d}",
                 video_id=f"vid_{i:03d}",
-                factuality_score=DimensionScore(
-                    dimension=QualityDimension.FACTUALITY, score=0.85
-                ),
+                factuality_score=DimensionScore(dimension=QualityDimension.FACTUALITY, score=0.85),
             )
             for i in range(50)
         ]

@@ -27,9 +27,7 @@ class TestApprovalWorkflow:
         workflow = ApprovalWorkflow()
         workflow.register_annotation("ann1")
 
-        result = workflow.transition(
-            "ann1", WorkflowStage.AUTOMATED_REVIEW, "system"
-        )
+        result = workflow.transition("ann1", WorkflowStage.AUTOMATED_REVIEW, "system")
         assert result is not None
         assert result.current_stage == WorkflowStage.AUTOMATED_REVIEW
         assert len(result.transitions) == 1
@@ -40,9 +38,7 @@ class TestApprovalWorkflow:
     def test_transition_nonexistent(self):
         """Test transition for non-existent annotation."""
         workflow = ApprovalWorkflow()
-        result = workflow.transition(
-            "nonexistent", WorkflowStage.AUTOMATED_REVIEW, "system"
-        )
+        result = workflow.transition("nonexistent", WorkflowStage.AUTOMATED_REVIEW, "system")
         assert result is None
 
     def test_approve(self):

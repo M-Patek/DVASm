@@ -3,8 +3,6 @@
 Tests for SecurityRegressionTestSuite, SecurityRegressionRunner, and SecurityTestResult.
 """
 
-import pytest
-
 from dvas.security.regression import (
     SecurityRegressionRunner,
     SecurityRegressionTestSuite,

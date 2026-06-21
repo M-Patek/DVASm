@@ -63,6 +63,7 @@ import importlib  # noqa: E402
 _dvas_sft = sys.modules.get("dvas.models.student.sft_trainer")
 _dvas_student_pkg = sys.modules.get("dvas.models.student")
 
+
 def _looks_like_real_sft_module(mod):
     """True iff the loaded module is the real sft_trainer.py, not a MagicMock stub."""
     return mod is not None and hasattr(mod, "train_sft")
@@ -252,14 +253,19 @@ class TestSFTDryRun:
         # Build minimal fixture
         train_data = tmp_path / "train.jsonl"
         with open(train_data, "w", encoding="utf-8") as f:
-            f.write(json.dumps({
-                "id": "v1",
-                "video": "/fake/v1.mp4",
-                "conversations": [
-                    {"from": "human", "value": "<video>\ndescribe"},
-                    {"from": "gpt", "value": "ok"},
-                ],
-            }) + "\n")
+            f.write(
+                json.dumps(
+                    {
+                        "id": "v1",
+                        "video": "/fake/v1.mp4",
+                        "conversations": [
+                            {"from": "human", "value": "<video>\ndescribe"},
+                            {"from": "gpt", "value": "ok"},
+                        ],
+                    }
+                )
+                + "\n"
+            )
 
         output_dir = tmp_path / "outputs"
 
@@ -295,14 +301,15 @@ class TestSFTDryRun:
 
         # `load_dataset` is imported inside train_sft (line 132 of sft_trainer.py),
         # so we patch the `datasets` module attribute instead of the local one.
-        with patch("dvas.models.student.sft_trainer.load_model_and_processor",
-                   return_value=(mock_model, mock_processor)), \
-             patch("dvas.models.student.sft_trainer.setup_lora",
-                   return_value=mock_lora_model), \
-             patch("dvas.models.student.sft_trainer.SFTTrainer",
-                   return_value=mock_trainer), \
-             patch("datasets.load_dataset", return_value=mock_dataset):
-
+        with (
+            patch(
+                "dvas.models.student.sft_trainer.load_model_and_processor",
+                return_value=(mock_model, mock_processor),
+            ),
+            patch("dvas.models.student.sft_trainer.setup_lora", return_value=mock_lora_model),
+            patch("dvas.models.student.sft_trainer.SFTTrainer", return_value=mock_trainer),
+            patch("datasets.load_dataset", return_value=mock_dataset),
+        ):
             final_path = train_sft(config)
 
         # Trainer was constructed and .train() was called
@@ -329,8 +336,10 @@ class TestSFTDryRun:
         config.training.output_dir = tmp_path / "out"
         config.report_to = "none"
 
-        with patch("dvas.models.student.sft_trainer.load_model_and_processor",
-                   return_value=(MagicMock(), MagicMock())):
+        with patch(
+            "dvas.models.student.sft_trainer.load_model_and_processor",
+            return_value=(MagicMock(), MagicMock()),
+        ):
             with pytest.raises(FileNotFoundError) as exc_info:
                 train_sft(config)
             assert "nonexistent.jsonl" in str(exc_info.value)

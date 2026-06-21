@@ -28,14 +28,17 @@ def test_training_code_structure():
     mock_processor = MagicMock()
     mock_processor.tokenizer = MagicMock()
 
-    with patch.dict('sys.modules', {
-        'torch': mock_torch,
-        'transformers': MagicMock(),
-        'peft': MagicMock(),
-        'trl': MagicMock(),
-        'datasets': MagicMock(),
-        'bitsandbytes': MagicMock(),
-    }):
+    with patch.dict(
+        "sys.modules",
+        {
+            "torch": mock_torch,
+            "transformers": MagicMock(),
+            "peft": MagicMock(),
+            "trl": MagicMock(),
+            "datasets": MagicMock(),
+            "bitsandbytes": MagicMock(),
+        },
+    ):
         # Test 1: Config creation
         logger.info("[1/3] Testing config creation...")
         config = SFTConfig()
@@ -52,6 +55,7 @@ def test_training_code_structure():
                 load_model_and_processor,
                 train_sft,
             )
+
             logger.info("  ✓ Training module imports successfully")
         except ImportError as e:
             logger.error(f"  ✗ Import failed: {e}")
@@ -64,13 +68,13 @@ def test_training_code_structure():
         # Check train_sft signature
         sig = inspect.signature(train_sft)
         params = list(sig.parameters.keys())
-        assert 'config' in params, "train_sft must accept 'config' parameter"
+        assert "config" in params, "train_sft must accept 'config' parameter"
         logger.info("  ✓ train_sft signature correct")
 
         # Check load_model_and_processor signature
         sig = inspect.signature(load_model_and_processor)
         params = list(sig.parameters.keys())
-        assert 'config' in params, "load_model_and_processor must accept 'config' parameter"
+        assert "config" in params, "load_model_and_processor must accept 'config' parameter"
         logger.info("  ✓ load_model_and_processor signature correct")
 
     logger.info("\n" + "=" * 50)
@@ -96,10 +100,11 @@ def test_data_pipeline():
     # Check data format
     try:
         import json
-        with open(train_path, 'r', encoding='utf-8') as f:
+
+        with open(train_path, "r", encoding="utf-8") as f:
             first_line = json.loads(f.readline())
 
-        required_keys = ['id', 'video', 'conversations']
+        required_keys = ["id", "video", "conversations"]
         for key in required_keys:
             if key not in first_line:
                 logger.error(f"  ✗ Missing key: {key}")
@@ -107,7 +112,7 @@ def test_data_pipeline():
         logger.info(f"  ✓ Data format correct (keys: {list(first_line.keys())})")
 
         # Count lines
-        with open(train_path, 'r', encoding='utf-8') as f:
+        with open(train_path, "r", encoding="utf-8") as f:
             count = sum(1 for _ in f)
         logger.info(f"  ✓ Training samples: {count}")
 

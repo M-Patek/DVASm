@@ -1,8 +1,6 @@
 """Tests for Open X-Embodiment benchmark."""
 
-import json
 import tempfile
-from pathlib import Path
 
 import pytest
 

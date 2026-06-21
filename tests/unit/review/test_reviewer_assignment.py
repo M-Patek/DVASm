@@ -3,7 +3,6 @@
 import pytest
 
 from dvas.review.reviewer_assignment import (
-    Assignment,
     Reviewer,
     ReviewerAssignment,
 )

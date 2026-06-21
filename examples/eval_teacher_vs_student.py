@@ -31,7 +31,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -78,9 +78,7 @@ def predictions_to_results(predictions: List[dict]) -> List:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Evaluate teacher vs student models"
-    )
+    parser = argparse.ArgumentParser(description="Evaluate teacher vs student models")
 
     # Input options
     input_group = parser.add_mutually_exclusive_group(required=True)
@@ -241,7 +239,6 @@ def run_live_evaluation(
     """Run live evaluation with both models."""
     import asyncio
 
-    from dvas.models.base import GenerationResult, GenerationStatus, ModelType
     from dvas.models.student.inference import StudentInferenceEngine
     from dvas.models.teacher import TeacherModel
 
@@ -338,6 +335,7 @@ def run_llm_judge_evaluation(
         student_scores.append(score)
 
     import numpy as np
+
     print("\n  LLM Judge Results:")
     print(f"    Teacher average score: {np.mean(teacher_scores):.3f}")
     print(f"    Student average score: {np.mean(student_scores):.3f}")

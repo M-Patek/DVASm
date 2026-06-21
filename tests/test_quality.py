@@ -1,7 +1,6 @@
 """Tests for quality analyzer."""
 
 
-
 class TestAnomalyDetector:
     """Test anomaly detection."""
 

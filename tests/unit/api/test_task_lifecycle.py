@@ -1,8 +1,6 @@
 """Tests for task lifecycle management."""
 
-import asyncio
 import pytest
-import pytest_asyncio
 
 from dvas.api.task_lifecycle import (
     Checkpoint,
@@ -10,7 +8,7 @@ from dvas.api.task_lifecycle import (
     RetryPolicy,
     TaskLifecycleManager,
 )
-from dvas.api.task_store import InMemoryTaskStore, Task, TaskStatus, TaskType
+from dvas.api.task_store import InMemoryTaskStore, TaskStatus, TaskType
 
 
 class TestTaskLifecycleManager:

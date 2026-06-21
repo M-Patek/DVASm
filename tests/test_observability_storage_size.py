@@ -24,8 +24,6 @@ class TestStorageSizeMonitor:
         assert usage["status"] == "healthy"
 
     def test_scan_storage_file(self, monitor):
-        import tempfile
-        import os
         fd, path = tempfile.mkstemp(suffix=".txt")
         try:
             os.write(fd, b"hello world")
@@ -37,9 +35,8 @@ class TestStorageSizeMonitor:
             os.unlink(path)
 
     def test_scan_storage_directory(self, monitor):
-        import tempfile
-        import os
         import pathlib
+
         d = pathlib.Path(tempfile.mkdtemp())
         try:
             (d / "file1.txt").write_text("content1")
@@ -49,6 +46,7 @@ class TestStorageSizeMonitor:
             assert metrics.file_count == 2
         finally:
             import shutil
+
             shutil.rmtree(d)
 
     def test_scan_nonexistent_path(self, monitor):

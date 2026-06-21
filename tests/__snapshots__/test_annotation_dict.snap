@@ -1,9 +1,14 @@
 {
+  "annotation_standard": "custom",
+  "dynamics": null,
   "id": "snapshot_test",
+  "lineage": null,
   "metadata": {
     "bitrate": null,
+    "camera_type": null,
     "codec": null,
     "duration": 10.0,
+    "environment": null,
     "fps": 30.0,
     "has_audio": false,
     "resolution": [
@@ -16,15 +21,21 @@
   "parent_id": null,
   "quality_metrics": {},
   "quality_score": null,
+  "schema_version": "2.0",
   "segments": [
     {
       "actions": [
         {
           "confidence": null,
+          "embodiment": null,
           "end_time": null,
           "hand": "right",
+          "instrument": null,
           "noun": "spoon",
+          "physical": null,
+          "source_state": null,
           "start_time": null,
+          "target_state": null,
           "verb": "pick"
         }
       ],
@@ -32,18 +43,26 @@
       "caption_dense": null,
       "end_time": 3.0,
       "key_frames": [],
+      "lighting": null,
       "objects": [],
       "qa_pairs": [],
-      "start_time": 0.0
+      "scene_type": null,
+      "start_time": 0.0,
+      "temporal_relations": []
     },
     {
       "actions": [
         {
           "confidence": null,
+          "embodiment": null,
           "end_time": null,
           "hand": "left",
+          "instrument": null,
           "noun": "soup",
+          "physical": null,
+          "source_state": null,
           "start_time": null,
+          "target_state": null,
           "verb": "stir"
         }
       ],
@@ -51,12 +70,16 @@
       "caption_dense": null,
       "end_time": 6.0,
       "key_frames": [],
+      "lighting": null,
       "objects": [],
       "qa_pairs": [],
-      "start_time": 3.0
+      "scene_type": null,
+      "start_time": 3.0,
+      "temporal_relations": []
     }
   ],
   "source": "teacher",
+  "state_predictions": null,
   "tags": [
     "cooking",
     "kitchen"

@@ -8,7 +8,7 @@ import pytest
 from unittest.mock import MagicMock
 
 from dvas.api.middleware import api_error, api_response
-from dvas.testing import Contract, ContractStore, contract_test
+from dvas.testing import Contract, ContractStore
 
 
 # ── Fixtures ────────────────────────────────────────────────────────────

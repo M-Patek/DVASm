@@ -1,7 +1,5 @@
 """Tests for prompt pack modules."""
 
-import pytest
-
 from dvas.prompts.packs.human_review_pack import HumanReviewPromptPack
 from dvas.prompts.packs.vla_pack import VLAPromptPack
 from dvas.prompts.packs.world_model_pack import WorldModelPromptPack

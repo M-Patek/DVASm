@@ -41,6 +41,7 @@ class TestIndexedStore:
         # On Windows, SQLite files may still be locked
         # Use retry logic or ignore deletion errors
         import time
+
         for _ in range(5):
             try:
                 db_path.unlink(missing_ok=True)
@@ -140,15 +141,11 @@ class TestIndexedStore:
         store.index_annotation(sample_annotation)
 
         # Query with quality filter - returns tuple (results, total_count)
-        results, total = store.query(
-            AnnotationQuery(min_quality=0.8, max_quality=0.9)
-        )
+        results, total = store.query(AnnotationQuery(min_quality=0.8, max_quality=0.9))
         assert len(results) == 1
 
         # Query outside range
-        results, total = store.query(
-            AnnotationQuery(min_quality=0.9)
-        )
+        results, total = store.query(AnnotationQuery(min_quality=0.9))
         assert len(results) == 0
 
     def test_get_statistics(self, temp_db, sample_annotation):

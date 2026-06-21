@@ -1,7 +1,7 @@
 """Tests for nightly benchmark report."""
 
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pytest
 
@@ -156,9 +156,7 @@ class TestNightlyBenchmarkReport:
 
     def test_get_alert_summary(self, temp_report):
         """Test alert summary generation."""
-        temp_report.add_summary(
-            NightlySummary("epic", "m1", "fail", alerts=["BLEU dropped"])
-        )
+        temp_report.add_summary(NightlySummary("epic", "m1", "fail", alerts=["BLEU dropped"]))
         summary = temp_report.get_alert_summary()
         assert summary is not None
         assert "Nightly Benchmark Alert" in summary

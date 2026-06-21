@@ -14,7 +14,7 @@ from dvas.data.schemas import (
     Segment,
     VideoMetadata,
 )
-from dvas.lineage import LineageStep, LineageTracker, SchemaCompatibility, SchemaVersion
+from dvas.lineage import LineageTracker, SchemaVersion
 
 
 # ── Fixtures ────────────────────────────────────────────────────────────

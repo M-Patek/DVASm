@@ -116,7 +116,7 @@ async def run_e2e_test(video_path: Path, output_dir: Path) -> None:
     # Step 3: Inspect segments
     print("\n[3/5] Inspecting segments...")
     for i, segment in enumerate(annotation.segments):
-        print(f"\n      Segment {i+1}:")
+        print(f"\n      Segment {i + 1}:")
         print(f"        Time: {segment.start_time:.1f}s - {segment.end_time:.1f}s")
         print(f"        Caption: {segment.caption[:80]}...")
         print(f"        Objects: {len(segment.objects)}")
@@ -145,7 +145,7 @@ async def run_e2e_test(video_path: Path, output_dir: Path) -> None:
     print(f"Teacher API calls: {teacher.call_count}")
     print(f"Total frames processed: {teacher.total_frames_processed}")
     print(f"Output directory: {output_dir}")
-    print(f"Files generated:")
+    print("Files generated:")
     for f in sorted(output_dir.glob("*")):
         size = f.stat().st_size
         print(f"  - {f.name} ({size:,} bytes)")

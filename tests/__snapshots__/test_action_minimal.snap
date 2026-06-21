@@ -1,8 +1,13 @@
 {
   "confidence": null,
+  "embodiment": null,
   "end_time": null,
   "hand": "unknown",
+  "instrument": null,
   "noun": "spoon",
+  "physical": null,
+  "source_state": null,
   "start_time": null,
+  "target_state": null,
   "verb": "pick"
 }

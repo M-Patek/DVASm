@@ -177,12 +177,16 @@ class TestMain:
         """Test main with dockerfile --cuda."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output = Path(tmpdir) / "Dockerfile"
-            result = main([
-                "dockerfile",
-                "--output", str(output),
-                "--cuda",
-                "--cuda-version", "12.1",
-            ])
+            result = main(
+                [
+                    "dockerfile",
+                    "--output",
+                    str(output),
+                    "--cuda",
+                    "--cuda-version",
+                    "12.1",
+                ]
+            )
             assert result == 0
             content = output.read_text()
             assert "nvidia/cuda" in content
@@ -191,11 +195,15 @@ class TestMain:
         """Test main with custom base image."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output = Path(tmpdir) / "Dockerfile"
-            result = main([
-                "dockerfile",
-                "--output", str(output),
-                "--base-image", "python:3.10-slim",
-            ])
+            result = main(
+                [
+                    "dockerfile",
+                    "--output",
+                    str(output),
+                    "--base-image",
+                    "python:3.10-slim",
+                ]
+            )
             assert result == 0
             content = output.read_text()
             assert "FROM python:3.10-slim" in content
@@ -204,12 +212,17 @@ class TestMain:
         """Test main with k8s-deploy command."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output = Path(tmpdir) / "deploy.json"
-            result = main([
-                "k8s-deploy",
-                "--output", str(output),
-                "--name", "test-app",
-                "--replicas", "2",
-            ])
+            result = main(
+                [
+                    "k8s-deploy",
+                    "--output",
+                    str(output),
+                    "--name",
+                    "test-app",
+                    "--replicas",
+                    "2",
+                ]
+            )
             assert result == 0
             data = json.loads(output.read_text())
             assert data["metadata"]["name"] == "test-app"

@@ -223,6 +223,7 @@ class TestUnifiedModel:
 
     def test_unified_model_requires_abstract_methods(self):
         """Test that subclasses must implement abstract methods."""
+
         class IncompleteModel(UnifiedModel):
             pass
 
@@ -231,6 +232,7 @@ class TestUnifiedModel:
 
     def test_supports_method(self):
         """Test the supports capability check."""
+
         class MockModel(UnifiedModel):
             @property
             def model_type(self):
@@ -257,6 +259,7 @@ class TestUnifiedModel:
 
     def test_estimate_cost_default(self):
         """Test default estimate_cost returns 0.0."""
+
         class MockModel(UnifiedModel):
             @property
             def model_type(self):

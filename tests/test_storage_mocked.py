@@ -51,9 +51,11 @@ class TestAnnotationStoreMocked:
         """Test saving annotation."""
         mock_file = mock_open()
 
-        with patch("builtins.open", mock_file), \
-             patch.object(Path, "exists", return_value=False), \
-             patch.object(Path, "mkdir"):
+        with (
+            patch("builtins.open", mock_file),
+            patch.object(Path, "exists", return_value=False),
+            patch.object(Path, "mkdir"),
+        ):
             store = AnnotationStore()
 
             with patch.object(store, "_get_storage_path") as mock_get_path:
@@ -69,8 +71,10 @@ class TestAnnotationStoreMocked:
         """Test loading existing annotation."""
         annotation_json = sample_annotation.model_dump_json()
 
-        with patch("builtins.open", mock_open(read_data=annotation_json)), \
-             patch.object(Path, "exists", return_value=True):
+        with (
+            patch("builtins.open", mock_open(read_data=annotation_json)),
+            patch.object(Path, "exists", return_value=True),
+        ):
             store = AnnotationStore()
 
             with patch.object(store, "_get_storage_path") as mock_get_path:
@@ -120,9 +124,11 @@ class TestAnnotationStoreMocked:
         mock_files = [Path("ann_1.json"), Path("ann_2.json")]
         mock_glob = MagicMock(return_value=mock_files)
 
-        with patch.object(Path, "glob", mock_glob), \
-             patch.object(Path, "exists", return_value=True), \
-             patch("builtins.open", mock_open(read_data=ann1.model_dump_json())):
+        with (
+            patch.object(Path, "glob", mock_glob),
+            patch.object(Path, "exists", return_value=True),
+            patch("builtins.open", mock_open(read_data=ann1.model_dump_json())),
+        ):
             store = AnnotationStore()
 
             # Mock loading each file
@@ -141,9 +147,11 @@ class TestAnnotationStoreMocked:
         """Test export to JSONL format."""
         mock_file = mock_open()
 
-        with patch("builtins.open", mock_file), \
-             patch.object(Path, "exists", return_value=True), \
-             patch.object(Path, "mkdir"):
+        with (
+            patch("builtins.open", mock_file),
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "mkdir"),
+        ):
             store = AnnotationStore()
 
             # Mock load_all to return our sample
@@ -167,8 +175,10 @@ class TestAnnotationStoreMocked:
         mock_path_b = MagicMock(spec=Path)
         mock_path_b.stat.return_value.st_size = 2048
 
-        with patch.object(Path, "exists", return_value=True), \
-             patch.object(Path, "glob", return_value=[mock_path_a, mock_path_b]):
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "glob", return_value=[mock_path_a, mock_path_b]),
+        ):
             store = AnnotationStore()
             stats = store.get_statistics()
 
@@ -198,8 +208,10 @@ class TestAnnotationStoreMocked:
             ),
         )
 
-        with patch.object(Path, "exists", return_value=True), \
-             patch.object(AnnotationStore, "load_all", return_value=[ann]):
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.object(AnnotationStore, "load_all", return_value=[ann]),
+        ):
             store = AnnotationStore(enable_index=True)
             results = store.search("knife", limit=10)
 
@@ -219,7 +231,9 @@ class TestAnnotationStoreIntegration:
                     "annotations": Path(tmpdir) / "annotations",
                     "gold": Path(tmpdir) / "gold",
                 }
-                store = AnnotationStore(enable_index=False)  # Disable index to avoid Windows file lock issues
+                store = AnnotationStore(
+                    enable_index=False
+                )  # Disable index to avoid Windows file lock issues
                 yield store, tmpdir
 
     def test_round_trip_save_load(self, temp_store):

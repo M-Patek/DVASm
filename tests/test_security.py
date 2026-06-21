@@ -146,20 +146,24 @@ class TestAuditLogger:
     def test_get_events_by_type(self):
         """Test filtering events by type."""
         audit = AuditLogger()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.READ,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="read",
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.READ,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="read",
+            )
+        )
 
         create_events = audit.get_events(event_type=AuditEventType.CREATE)
         assert len(create_events) == 1
@@ -168,20 +172,24 @@ class TestAuditLogger:
     def test_get_events_by_user(self):
         """Test filtering events by user."""
         audit = AuditLogger()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_002",
-            resource_type="annotation",
-            resource_id="ann_002",
-            action="created",
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_002",
+                resource_type="annotation",
+                resource_id="ann_002",
+                action="created",
+            )
+        )
 
         user_events = audit.get_events(user_id="user_001")
         assert len(user_events) == 1
@@ -208,13 +216,15 @@ class TestAuditLogger:
         audit._max_memory_events = 5
 
         for i in range(10):
-            audit.log_event(AuditEvent(
-                event_type=AuditEventType.CREATE,
-                user_id=f"user_{i}",
-                resource_type="annotation",
-                resource_id=f"ann_{i}",
-                action="created",
-            ))
+            audit.log_event(
+                AuditEvent(
+                    event_type=AuditEventType.CREATE,
+                    user_id=f"user_{i}",
+                    resource_type="annotation",
+                    resource_id=f"ann_{i}",
+                    action="created",
+                )
+            )
 
         assert len(audit._events) == 5
 
@@ -246,6 +256,7 @@ class TestCSRFProtection:
         csrf = CSRFProtection(secret_key="test_secret")
         # Generate a token with an old timestamp by monkeypatching time.time
         import time as time_module
+
         old_time = time_module.time() - 10  # 10 seconds ago
         with patch.object(time_module, "time", return_value=old_time):
             token = csrf.generate_token("session_001")

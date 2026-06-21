@@ -4,8 +4,6 @@ Tests for BanditScanner, SASTGate, SASTGateConfig, SASTFinding,
 SecurityScanner, Severity, and Confidence.
 """
 
-import pytest
-
 from dvas.security.sast import (
     BanditScanner,
     SASTGate,

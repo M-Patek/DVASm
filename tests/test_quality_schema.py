@@ -141,7 +141,8 @@ class TestQualityScores:
             annotation_id="ann_001",
             video_id="vid_001",
             factuality_score=DimensionScore(
-                dimension=QualityDimension.FACTUALITY, score=0.4  # Below 0.5
+                dimension=QualityDimension.FACTUALITY,
+                score=0.4,  # Below 0.5
             ),
             language_clarity_score=DimensionScore(
                 dimension=QualityDimension.LANGUAGE_CLARITY, score=0.9
@@ -177,9 +178,7 @@ class TestQualityScores:
         scores = QualityScores(
             annotation_id="ann_001",
             video_id="vid_001",
-            factuality_score=DimensionScore(
-                dimension=QualityDimension.FACTUALITY, score=0.8
-            ),
+            factuality_score=DimensionScore(dimension=QualityDimension.FACTUALITY, score=0.8),
         )
         score = scores.get_score(QualityDimension.FACTUALITY)
         assert score.score == 0.8
@@ -189,9 +188,7 @@ class TestQualityScores:
         scores = QualityScores(
             annotation_id="ann_001",
             video_id="vid_001",
-            factuality_score=DimensionScore(
-                dimension=QualityDimension.FACTUALITY, score=0.8
-            ),
+            factuality_score=DimensionScore(dimension=QualityDimension.FACTUALITY, score=0.8),
         )
         data = scores.to_dict()
         assert data["annotation_id"] == "ann_001"
@@ -275,7 +272,8 @@ class TestQualityThresholds:
             annotation_id="ann_001",
             video_id="vid_001",
             factuality_score=DimensionScore(
-                dimension=QualityDimension.FACTUALITY, score=0.3  # Below threshold
+                dimension=QualityDimension.FACTUALITY,
+                score=0.3,  # Below threshold
             ),
         )
         scores._compute_aggregates()

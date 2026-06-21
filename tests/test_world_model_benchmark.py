@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from dvas.data.schemas import Action, Annotation, Segment, VideoMetadata
+from dvas.data.schemas import Action, Segment
 from dvas.world_model.benchmark import (
     BenchmarkResult,
     BenchmarkSuiteResult,
@@ -17,7 +17,7 @@ from dvas.world_model.benchmark import (
     load_benchmark_results,
     run_benchmarks,
 )
-from dvas.world_model.state_repr import ObjectState, WorldState
+from dvas.world_model.state_repr import WorldState
 
 
 class TestBenchmarkResult:

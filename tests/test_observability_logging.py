@@ -1,7 +1,5 @@
 """Tests for structured logging."""
 
-import pytest
-
 from dvas.observability.logging import (
     BoundStructuredLogger,
     StructuredLogger,
@@ -69,7 +67,7 @@ class TestLoggingContext:
 
     def test_auto_correlation_id(self):
         set_correlation_id(None)
-        with logging_context() as ctx:
+        with logging_context():
             cid = get_correlation_id()
             assert cid is not None
             assert cid.startswith("auto-")

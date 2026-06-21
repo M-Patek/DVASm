@@ -4,8 +4,6 @@ Tests the affordance.py module including affordance types,
 spatial regions, and force requirements.
 """
 
-import pytest
-
 from dvas.data.robot_schemas.affordance import (
     AffordanceAnnotation,
     AffordanceType,

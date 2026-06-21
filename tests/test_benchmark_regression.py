@@ -1,12 +1,10 @@
 """Tests for regression benchmark."""
 
 import tempfile
-from datetime import datetime, timedelta
 
 import pytest
 
 from dvas.benchmarks.regression import RegressionAlert, RegressionBenchmark
-from dvas.benchmarks.base import BenchmarkResult
 
 
 class TestRegressionAlert:

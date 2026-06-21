@@ -1,8 +1,6 @@
 """Tests for EPIC-KITCHENS benchmark."""
 
-import json
 import tempfile
-from pathlib import Path
 
 import pytest
 
@@ -132,7 +130,7 @@ class TestEPIKitchensBenchmark:
         ]
 
         result = temp_benchmark.evaluate_action_retrieval(predictions, ground_truth)
-        assert result["top1_accuracy"] == pytest.approx(2/3, abs=0.01)
+        assert result["top1_accuracy"] == pytest.approx(2 / 3, abs=0.01)
 
     def test_run_benchmark(self, temp_benchmark):
         """Test full benchmark run."""

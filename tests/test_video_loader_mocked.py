@@ -28,9 +28,9 @@ class TestVideoReaderMocked:
 
             def mock_get(prop):
                 props = {
-                    5: 30.0,   # CAP_PROP_FPS
-                    3: 1920.0, # CAP_PROP_FRAME_WIDTH
-                    4: 1080.0, # CAP_PROP_FRAME_HEIGHT
+                    5: 30.0,  # CAP_PROP_FPS
+                    3: 1920.0,  # CAP_PROP_FRAME_WIDTH
+                    4: 1080.0,  # CAP_PROP_FRAME_HEIGHT
                     7: 300.0,  # CAP_PROP_FRAME_COUNT
                 }
                 return props.get(prop, 0.0)
@@ -43,8 +43,10 @@ class TestVideoReaderMocked:
         """Test VideoReader context manager."""
         mock_cap_class, mock_instance = mock_cv2
 
-        with patch.object(Path, "exists", return_value=True), \
-             patch.object(Path, "is_file", return_value=True):
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "is_file", return_value=True),
+        ):
             reader = VideoReader(Path("/fake/video.mp4"))
             with reader as r:
                 assert r._cap is not None
@@ -60,8 +62,10 @@ class TestVideoReaderMocked:
         """Test metadata extraction."""
         mock_cap_class, mock_instance = mock_cv2
 
-        with patch.object(Path, "exists", return_value=True), \
-             patch.object(Path, "is_file", return_value=True):
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "is_file", return_value=True),
+        ):
             with VideoReader(Path("/fake/video.mp4")) as reader:
                 meta = reader.metadata
                 assert meta.fps == 30.0
@@ -74,6 +78,7 @@ class TestVideoReaderMocked:
         mock_cap_class, mock_instance = mock_cv2
 
         frames_read = [0]
+
         def mock_read():
             if frames_read[0] < 5:
                 frames_read[0] += 1
@@ -82,8 +87,10 @@ class TestVideoReaderMocked:
 
         mock_instance.read.side_effect = mock_read
 
-        with patch.object(Path, "exists", return_value=True), \
-             patch.object(Path, "is_file", return_value=True):
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "is_file", return_value=True),
+        ):
             with VideoReader(Path("/fake/video.mp4")) as reader:
                 # VideoReader uses start_frame, end_frame, step - not num_frames
                 frames = list(reader.read_frames(start_frame=0, end_frame=3))
@@ -101,8 +108,10 @@ class TestVideoReaderMocked:
     def test_video_reader_invalid_extension(self):
         """Test rejection of unsupported formats."""
         # Format validation happens after file existence check
-        with patch.object(Path, "exists", return_value=True), \
-             patch.object(Path, "is_file", return_value=True):
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "is_file", return_value=True),
+        ):
             with pytest.raises(ValueError) as exc_info:
                 VideoReader(Path("/fake/video.wmv"))
             # Error message mentions unsupported format
@@ -112,9 +121,11 @@ class TestVideoReaderMocked:
     def test_video_reader_valid_extensions(self):
         """Test acceptance of valid extensions."""
         for ext in ["mp4", "mov", "avi", "mkv", "webm"]:
-            with patch.object(Path, "exists", return_value=True), \
-                 patch.object(Path, "is_file", return_value=True), \
-                 patch("dvas.data.video_reader.cv2.VideoCapture") as mock_cap:
+            with (
+                patch.object(Path, "exists", return_value=True),
+                patch.object(Path, "is_file", return_value=True),
+                patch("dvas.data.video_reader.cv2.VideoCapture") as mock_cap,
+            ):
                 mock_cap.return_value.isOpened.return_value = True
                 reader = VideoReader(Path(f"/fake/video.{ext}"))
                 assert reader is not None
@@ -178,7 +189,7 @@ class TestMotionEstimator:
         """Test motion estimator initialization."""
         estimator = OpticalFlowEstimator()
         assert estimator is not None
-        assert hasattr(estimator, 'estimate')
+        assert hasattr(estimator, "estimate")
 
 
 class TestVideoLoader:
@@ -212,7 +223,7 @@ class TestVideoLoader:
 
         with VideoLoader(Path("/fake/video.mp4")) as loader:
             # Metadata should be accessible
-            assert hasattr(loader, 'metadata')
+            assert hasattr(loader, "metadata")
 
     def test_video_loader_scene_detection(self, mock_video_reader):
         """Test scene detection through VideoLoader."""
@@ -241,7 +252,7 @@ class TestVideoLoader:
             # Verify loader works
             assert loader is not None
             # Async iteration would require full integration test
-            assert hasattr(loader, 'metadata')
+            assert hasattr(loader, "metadata")
 
 
 class TestEPICKitchensLoader:
@@ -249,16 +260,20 @@ class TestEPICKitchensLoader:
 
     def test_epic_loader_initialization(self):
         """Test EPICKitchensLoader initialization."""
-        with patch.object(Path, "exists", return_value=True), \
-             patch.object(Path, "is_dir", return_value=True):
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "is_dir", return_value=True),
+        ):
             loader = EPICKitchensLoader(Path("/fake/epic"))
             assert loader.root_path == Path("/fake/epic")
 
     def test_epic_loader_get_video_path(self):
         """Test video path resolution."""
-        with patch.object(Path, "exists", return_value=True), \
-             patch.object(Path, "is_dir", return_value=True), \
-             patch.object(Path, "glob", return_value=[Path("/fake/epic/P01/P01_01.mp4")]):
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "is_dir", return_value=True),
+            patch.object(Path, "glob", return_value=[Path("/fake/epic/P01/P01_01.mp4")]),
+        ):
             loader = EPICKitchensLoader(Path("/fake/epic"))
             path = loader.get_video_path("P01_01")
             assert path is not None
@@ -267,9 +282,11 @@ class TestEPICKitchensLoader:
         """Test handling of missing videos."""
         # When video not found, behavior depends on implementation
         # Some implementations return None, some raise exception
-        with patch.object(Path, "exists", return_value=True), \
-             patch.object(Path, "is_dir", return_value=True), \
-             patch.object(Path, "glob", return_value=[]):
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "is_dir", return_value=True),
+            patch.object(Path, "glob", return_value=[]),
+        ):
             loader = EPICKitchensLoader(Path("/fake/epic"))
             try:
                 path = loader.get_video_path("NONEXISTENT")

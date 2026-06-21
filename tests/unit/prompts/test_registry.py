@@ -1,7 +1,5 @@
 """Tests for prompt registry CRUD operations."""
 
-import pytest
-
 from dvas.prompts.registry import (
     PromptDomain,
     PromptMetadata,

@@ -1,7 +1,5 @@
 """Tests for task queue depth monitoring."""
 
-import time
-
 import pytest
 
 from dvas.observability.queue_depth import TaskQueueMonitor

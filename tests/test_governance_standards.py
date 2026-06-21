@@ -4,8 +4,6 @@ Tests for AnnotationStandardDef, StandardRegistry, StandardVersion,
 StandardField, and StandardFieldType.
 """
 
-import time
-
 import pytest
 
 from dvas.governance.standards import (
@@ -186,11 +184,13 @@ class TestStandardRegistry:
     def test_unregister_standard(self):
         """Test unregistering a standard."""
         registry = StandardRegistry()
-        registry.register(AnnotationStandardDef(
-            name="Temp",
-            version=StandardVersion(1, 0, 0),
-            description="Temp",
-        ))
+        registry.register(
+            AnnotationStandardDef(
+                name="Temp",
+                version=StandardVersion(1, 0, 0),
+                description="Temp",
+            )
+        )
         assert registry.unregister("Temp") is True
         assert "Temp" not in registry.list_standards()
 
@@ -263,7 +263,9 @@ class TestStandardRegistry:
             "end_time": 1.0,
         }
         result = registry.convert_between_standards(
-            "EPIC-KITCHENS", "Ego4D", data,
+            "EPIC-KITCHENS",
+            "Ego4D",
+            data,
         )
         assert result["_converted_from"] == "EPIC-KITCHENS"
         assert result["_converted_to"] == "Ego4D"
@@ -316,16 +318,20 @@ class TestStandardRegistryEdgeCases:
     def test_multiple_versions(self):
         """Test registering multiple versions."""
         registry = StandardRegistry()
-        registry.register(AnnotationStandardDef(
-            name="MultiVersion",
-            version=StandardVersion(1, 0, 0),
-            description="v1",
-        ))
-        registry.register(AnnotationStandardDef(
-            name="MultiVersion",
-            version=StandardVersion(2, 0, 0),
-            description="v2",
-        ))
+        registry.register(
+            AnnotationStandardDef(
+                name="MultiVersion",
+                version=StandardVersion(1, 0, 0),
+                description="v1",
+            )
+        )
+        registry.register(
+            AnnotationStandardDef(
+                name="MultiVersion",
+                version=StandardVersion(2, 0, 0),
+                description="v2",
+            )
+        )
         versions = registry.get_versions("MultiVersion")
         assert len(versions) == 2
         assert "2.0.0" in versions
@@ -334,26 +340,32 @@ class TestStandardRegistryEdgeCases:
     def test_unregister_version(self):
         """Test unregistering specific version."""
         registry = StandardRegistry()
-        registry.register(AnnotationStandardDef(
-            name="Versioned",
-            version=StandardVersion(1, 0, 0),
-            description="v1",
-        ))
+        registry.register(
+            AnnotationStandardDef(
+                name="Versioned",
+                version=StandardVersion(1, 0, 0),
+                description="v1",
+            )
+        )
         assert registry.unregister("Versioned", "1.0.0") is True
         assert "Versioned" not in registry.list_standards()
 
     def test_get_latest_version(self):
         """Test getting latest version."""
         registry = StandardRegistry()
-        registry.register(AnnotationStandardDef(
-            name="Latest",
-            version=StandardVersion(1, 0, 0),
-            description="v1",
-        ))
-        registry.register(AnnotationStandardDef(
-            name="Latest",
-            version=StandardVersion(2, 0, 0),
-            description="v2",
-        ))
+        registry.register(
+            AnnotationStandardDef(
+                name="Latest",
+                version=StandardVersion(1, 0, 0),
+                description="v1",
+            )
+        )
+        registry.register(
+            AnnotationStandardDef(
+                name="Latest",
+                version=StandardVersion(2, 0, 0),
+                description="v2",
+            )
+        )
         latest = registry.get("Latest")
         assert str(latest.version) == "2.0.0"

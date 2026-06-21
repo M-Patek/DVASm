@@ -2,7 +2,6 @@
 
 from datetime import datetime, timezone
 
-import pytest
 
 from dvas.review.review_queue import (
     QueueItem,
@@ -169,9 +168,7 @@ class TestReviewQueue:
         queue.add_item("item2", "ann2", "vid2", QueuePriority.LOW)
         queue.add_item("item3", "ann3", "vid3", QueuePriority.HIGH)
 
-        assigned = queue.batch_assign(
-            "reviewer1", count=5, priority_filter=[QueuePriority.HIGH]
-        )
+        assigned = queue.batch_assign("reviewer1", count=5, priority_filter=[QueuePriority.HIGH])
         assert len(assigned) == 2
         assert all(a.priority == QueuePriority.HIGH for a in assigned)
 

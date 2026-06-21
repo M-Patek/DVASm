@@ -217,6 +217,7 @@ class TestSecretRef:
         assert d["kind"] == "Secret"
         assert d["type"] == "Opaque"
         import base64
+
         assert d["data"]["API_KEY"] == base64.b64encode(b"secret123").decode()
 
 
@@ -341,7 +342,7 @@ class TestKubernetesManager:
     def test_rollout_status(self, manager):
         mock_result = MagicMock()
         mock_result.returncode = 0
-        mock_result.stdout = "deployment \"dvas\" successfully rolled out\n"
+        mock_result.stdout = 'deployment "dvas" successfully rolled out\n'
         mock_result.stderr = ""
 
         with patch.object(manager, "_run_cmd", return_value=mock_result):
@@ -424,7 +425,9 @@ class TestKubernetesManager:
     def test_get_deployment_status(self, manager):
         mock_result = MagicMock()
         mock_result.returncode = 0
-        mock_result.stdout = '{"metadata":{"name":"dvas"},"spec":{"replicas":3},"status":{"readyReplicas":3}}'
+        mock_result.stdout = (
+            '{"metadata":{"name":"dvas"},"spec":{"replicas":3},"status":{"readyReplicas":3}}'
+        )
         mock_result.stderr = ""
 
         with patch.object(manager, "_run_cmd", return_value=mock_result):
@@ -445,6 +448,7 @@ class TestKubernetesManager:
 
     def test_export_manifest(self, manager):
         import tempfile
+
         spec = DeploymentSpec(
             name="dvas",
             containers=[ContainerSpec(name="api", image="dvas:latest")],

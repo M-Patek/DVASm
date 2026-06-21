@@ -43,7 +43,9 @@ def test_prometheus_config_to_yaml_basic() -> None:
 
 def test_prometheus_config_to_yaml_with_targets() -> None:
     """to_yaml() includes configured targets."""
-    config = PrometheusConfig(targets=[{"job_name": "app", "static_configs": [{"targets": ["localhost:9090"]}]}])
+    config = PrometheusConfig(
+        targets=[{"job_name": "app", "static_configs": [{"targets": ["localhost:9090"]}]}]
+    )
     yaml = config.to_yaml()
     assert "job_name: 'app'" in yaml
 
@@ -134,7 +136,9 @@ def test_alertmanager_add_email_receiver() -> None:
 def test_alertmanager_add_slack_receiver() -> None:
     """add_slack_receiver() appends a Slack receiver and returns self."""
     config = AlertmanagerConfig()
-    result = config.add_slack_receiver("team-slack", "https://hooks.slack.com/test", channel="#alerts")
+    result = config.add_slack_receiver(
+        "team-slack", "https://hooks.slack.com/test", channel="#alerts"
+    )
     assert result is config
     receivers = config.to_dict()["receivers"]
     assert len(receivers) == 1
@@ -145,7 +149,9 @@ def test_alertmanager_add_slack_receiver() -> None:
 def test_alertmanager_chained_receivers() -> None:
     """Receivers can be added in a chain."""
     config = AlertmanagerConfig()
-    config.add_email_receiver("email", "a@b.com").add_slack_receiver("slack", "https://hooks.example.com")
+    config.add_email_receiver("email", "a@b.com").add_slack_receiver(
+        "slack", "https://hooks.example.com"
+    )
     assert len(config.to_dict()["receivers"]) == 2
 
 

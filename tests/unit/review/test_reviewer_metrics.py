@@ -4,7 +4,6 @@ import pytest
 
 from dvas.review.reviewer_metrics import (
     ReviewerMetrics,
-    ReviewerPerformance,
     ReviewSession,
 )
 
@@ -65,12 +64,12 @@ class TestReviewerMetrics:
                 session_id=f"s{i}",
                 reviewer_id="rev1",
                 annotation_id=f"ann{i}",
-                start_time=f"2024-01-0{i+1}T10:00:00",
+                start_time=f"2024-01-0{i + 1}T10:00:00",
             )
             metrics.record_session(session)
             metrics.complete_session(
                 f"s{i}",
-                end_time=f"2024-01-0{i+1}T10:15:00",
+                end_time=f"2024-01-0{i + 1}T10:15:00",
                 agreement=(i < 4),  # 4 agreements, 1 disagreement
                 accuracy=0.8 + i * 0.02,
             )
@@ -105,12 +104,12 @@ class TestReviewerMetrics:
                 session_id=f"r1_s{i}",
                 reviewer_id="rev1",
                 annotation_id=f"ann{i}",
-                start_time=f"2024-01-0{i+1}T10:00:00",
+                start_time=f"2024-01-0{i + 1}T10:00:00",
             )
             metrics.record_session(session)
             metrics.complete_session(
                 f"r1_s{i}",
-                end_time=f"2024-01-0{i+1}T10:10:00",
+                end_time=f"2024-01-0{i + 1}T10:10:00",
                 agreement=True,
                 accuracy=0.95,
             )
@@ -121,12 +120,12 @@ class TestReviewerMetrics:
                 session_id=f"r2_s{i}",
                 reviewer_id="rev2",
                 annotation_id=f"ann{i}",
-                start_time=f"2024-01-0{i+1}T10:00:00",
+                start_time=f"2024-01-0{i + 1}T10:00:00",
             )
             metrics.record_session(session)
             metrics.complete_session(
                 f"r2_s{i}",
-                end_time=f"2024-01-0{i+1}T10:10:00",
+                end_time=f"2024-01-0{i + 1}T10:10:00",
                 agreement=True,
                 accuracy=0.7,
             )
@@ -173,12 +172,12 @@ class TestReviewerMetrics:
                     session_id=f"s_{rid}_{i}",
                     reviewer_id=rid,
                     annotation_id=f"ann{i}",
-                    start_time=f"2024-01-0{i+1}T10:00:00",
+                    start_time=f"2024-01-0{i + 1}T10:00:00",
                 )
                 metrics.record_session(session)
                 metrics.complete_session(
                     f"s_{rid}_{i}",
-                    end_time=f"2024-01-0{i+1}T10:15:00",
+                    end_time=f"2024-01-0{i + 1}T10:15:00",
                     agreement=(i < 2),
                     accuracy=0.8,
                 )
@@ -200,12 +199,12 @@ class TestReviewerMetrics:
                 session_id=f"s{i}",
                 reviewer_id="rev1",
                 annotation_id=f"ann{i}",
-                start_time=f"2024-01-0{i+1}T10:00:00",
+                start_time=f"2024-01-0{i + 1}T10:00:00",
             )
             metrics.record_session(session)
             metrics.complete_session(
                 f"s{i}",
-                end_time=f"2024-01-0{i+1}T10:10:00",
+                end_time=f"2024-01-0{i + 1}T10:10:00",
                 agreement=(i % 2 == 0),  # alternating agreement
                 accuracy=0.8,
             )
@@ -226,12 +225,12 @@ class TestReviewerMetrics:
                     session_id=f"s_{rid}_{i}",
                     reviewer_id=rid,
                     annotation_id=f"ann{i}",
-                    start_time=f"2024-01-0{i+1}T10:00:00",
+                    start_time=f"2024-01-0{i + 1}T10:00:00",
                 )
                 metrics.record_session(session)
                 metrics.complete_session(
                     f"s_{rid}_{i}",
-                    end_time=f"2024-01-0{i+1}T10:10:00",
+                    end_time=f"2024-01-0{i + 1}T10:10:00",
                     agreement=True,
                     accuracy=0.9 if rid == "rev1" else 0.7,
                 )

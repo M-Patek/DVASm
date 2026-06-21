@@ -1,9 +1,7 @@
 """Tests for annotation diff computation."""
 
-import pytest
-
 from dvas.data.schemas import Action, Annotation, Hand, Object, Segment, VideoMetadata
-from dvas.review.diff_viewer import AnnotationDiff, DiffType
+from dvas.review.diff_viewer import AnnotationDiff
 
 
 class TestAnnotationDiff:

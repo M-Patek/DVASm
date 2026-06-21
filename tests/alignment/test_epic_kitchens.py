@@ -4,10 +4,6 @@ Verifies that DVAS annotations can be correctly exported to and
 are compatible with EPIC-KITCHENS format specifications.
 """
 
-import json
-import tempfile
-from pathlib import Path
-
 import pytest
 
 from dvas.data.schemas import (

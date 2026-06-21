@@ -1,6 +1,5 @@
 """Tests for task store implementations."""
 
-import asyncio
 import pytest
 import pytest_asyncio
 from datetime import datetime, timezone
@@ -288,6 +287,7 @@ class TestPostgresTaskStore:
 
     def test_row_to_task(self, store):
         """Test row to task conversion."""
+
         class MockRow:
             def __init__(self, data):
                 self._data = data
@@ -295,21 +295,23 @@ class TestPostgresTaskStore:
             def __getitem__(self, key):
                 return self._data.get(key)
 
-        row = MockRow({
-            "id": "task_123",
-            "status": "PENDING",
-            "type": "annotation",
-            "payload": '{"video_id": "vid_1"}',
-            "result": None,
-            "error": None,
-            "progress": 0.0,
-            "created_at": datetime.now(timezone.utc),
-            "updated_at": datetime.now(timezone.utc),
-            "tenant_id": "tenant_1",
-            "priority": 5,
-            "retry_count": 0,
-            "max_retries": 3,
-        })
+        row = MockRow(
+            {
+                "id": "task_123",
+                "status": "PENDING",
+                "type": "annotation",
+                "payload": '{"video_id": "vid_1"}',
+                "result": None,
+                "error": None,
+                "progress": 0.0,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc),
+                "tenant_id": "tenant_1",
+                "priority": 5,
+                "retry_count": 0,
+                "max_retries": 3,
+            }
+        )
 
         task = store._row_to_task(row)
         assert task.id == "task_123"

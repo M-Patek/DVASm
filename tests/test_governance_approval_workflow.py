@@ -6,7 +6,6 @@ Reviewer, and WorkflowStatus.
 
 import time
 
-import pytest
 
 from dvas.governance.approval_workflow import (
     ApprovalRecord,

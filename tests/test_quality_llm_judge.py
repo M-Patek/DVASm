@@ -1,7 +1,6 @@
 """Tests for LLM judge pipeline."""
 
 import pytest
-from datetime import datetime
 
 from dvas.data.schemas import (
     Action,

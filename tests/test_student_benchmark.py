@@ -1,9 +1,9 @@
 """Tests for student regression benchmark."""
 
-import json
 import tempfile
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -281,24 +281,22 @@ class TestQuickBenchmark:
         """Test quick benchmark function."""
         # Create mock model
         mock_model = MagicMock()
-        mock_model.generate = AsyncMock(return_value=GenerationResult(
-            text="prediction",
-            model_type=ModelType.STUDENT_LOCAL,
-            status=GenerationStatus.SUCCESS,
-        ))
+        mock_model.generate = AsyncMock(
+            return_value=GenerationResult(
+                text="prediction",
+                model_type=ModelType.STUDENT_LOCAL,
+                status=GenerationStatus.SUCCESS,
+            )
+        )
 
-        test_videos = [Path("/fake/video1.mp4"), Path("/fake/video2.mp4")]
-        references = ["reference 1", "reference 2"]
+        [Path("/fake/video1.mp4"), Path("/fake/video2.mp4")]
 
         # Note: quick_benchmark is not async but calls async internally
         # This test would need to be run with proper async setup
         # For now, just test the function signature exists
         import inspect
+
         sig = inspect.signature(quick_benchmark)
         assert "model" in sig.parameters
         assert "test_videos" in sig.parameters
         assert "references" in sig.parameters
-
-
-# Import needed for test
-from unittest.mock import AsyncMock, MagicMock

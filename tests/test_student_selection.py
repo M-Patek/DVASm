@@ -153,13 +153,15 @@ class TestDiversitySampling:
         strategy = DiversitySampling()
 
         # Create embeddings with known structure
-        embeddings = np.array([
-            [1, 0, 0],  # Close to nothing else
-            [0.9, 0.1, 0],  # Close to first
-            [0, 1, 0],  # Different cluster
-            [0, 0.9, 0.1],  # Close to third
-            [0, 0, 1],  # Different cluster
-        ])
+        embeddings = np.array(
+            [
+                [1, 0, 0],  # Close to nothing else
+                [0.9, 0.1, 0],  # Close to first
+                [0, 1, 0],  # Different cluster
+                [0, 0.9, 0.1],  # Close to third
+                [0, 0, 1],  # Different cluster
+            ]
+        )
 
         selected = strategy._greedy_facility_location(embeddings, n_select=3)
 
@@ -219,19 +221,49 @@ class TestQueryByCommittee:
         # Committee predictions - high disagreement on first item
         predictions = [
             [  # item_0 - high disagreement (3 different answers)
-                GenerationResult(text="answer A", model_type=ModelType.TEACHER_GPT55, status=GenerationStatus.SUCCESS),
-                GenerationResult(text="answer B", model_type=ModelType.TEACHER_CLAUDE, status=GenerationStatus.SUCCESS),
-                GenerationResult(text="answer C", model_type=ModelType.TEACHER_TOGETHER, status=GenerationStatus.SUCCESS),
+                GenerationResult(
+                    text="answer A",
+                    model_type=ModelType.TEACHER_GPT55,
+                    status=GenerationStatus.SUCCESS,
+                ),
+                GenerationResult(
+                    text="answer B",
+                    model_type=ModelType.TEACHER_CLAUDE,
+                    status=GenerationStatus.SUCCESS,
+                ),
+                GenerationResult(
+                    text="answer C",
+                    model_type=ModelType.TEACHER_TOGETHER,
+                    status=GenerationStatus.SUCCESS,
+                ),
             ],
             [  # item_1 - agreement
-                GenerationResult(text="same", model_type=ModelType.TEACHER_GPT55, status=GenerationStatus.SUCCESS),
-                GenerationResult(text="same", model_type=ModelType.TEACHER_CLAUDE, status=GenerationStatus.SUCCESS),
-                GenerationResult(text="same", model_type=ModelType.TEACHER_TOGETHER, status=GenerationStatus.SUCCESS),
+                GenerationResult(
+                    text="same", model_type=ModelType.TEACHER_GPT55, status=GenerationStatus.SUCCESS
+                ),
+                GenerationResult(
+                    text="same",
+                    model_type=ModelType.TEACHER_CLAUDE,
+                    status=GenerationStatus.SUCCESS,
+                ),
+                GenerationResult(
+                    text="same",
+                    model_type=ModelType.TEACHER_TOGETHER,
+                    status=GenerationStatus.SUCCESS,
+                ),
             ],
             [  # item_2 - partial agreement
-                GenerationResult(text="yes", model_type=ModelType.TEACHER_GPT55, status=GenerationStatus.SUCCESS),
-                GenerationResult(text="yes", model_type=ModelType.TEACHER_CLAUDE, status=GenerationStatus.SUCCESS),
-                GenerationResult(text="no", model_type=ModelType.TEACHER_TOGETHER, status=GenerationStatus.SUCCESS),
+                GenerationResult(
+                    text="yes", model_type=ModelType.TEACHER_GPT55, status=GenerationStatus.SUCCESS
+                ),
+                GenerationResult(
+                    text="yes", model_type=ModelType.TEACHER_CLAUDE, status=GenerationStatus.SUCCESS
+                ),
+                GenerationResult(
+                    text="no",
+                    model_type=ModelType.TEACHER_TOGETHER,
+                    status=GenerationStatus.SUCCESS,
+                ),
             ],
         ]
 
@@ -249,20 +281,22 @@ class TestQueryByCommittee:
         strategy = QueryByCommittee(disagreement_metric="average_kl")
 
         candidates = [{"id": "item_1"}]
-        predictions = [[
-            GenerationResult(
-                text="test",
-                model_type=ModelType.TEACHER_GPT55,
-                status=GenerationStatus.SUCCESS,
-                confidence=0.9,
-            ),
-            GenerationResult(
-                text="test",
-                model_type=ModelType.TEACHER_CLAUDE,
-                status=GenerationStatus.SUCCESS,
-                confidence=0.5,
-            ),
-        ]]
+        predictions = [
+            [
+                GenerationResult(
+                    text="test",
+                    model_type=ModelType.TEACHER_GPT55,
+                    status=GenerationStatus.SUCCESS,
+                    confidence=0.9,
+                ),
+                GenerationResult(
+                    text="test",
+                    model_type=ModelType.TEACHER_CLAUDE,
+                    status=GenerationStatus.SUCCESS,
+                    confidence=0.5,
+                ),
+            ]
+        ]
 
         selected = strategy.select(candidates, predictions, n_select=1)
 

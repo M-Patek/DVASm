@@ -20,13 +20,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
 from dvas.data.video_loader import EPICKitchensLoader
 from dvas.models.teacher import TeacherModel
 from dvas.pipeline.core import AnnotationPipeline
 from dvas.utils.logging import setup_logging, get_logger
+
+# Load environment variables from .env file
+load_dotenv()
 
 logger = get_logger(__name__)
 
@@ -74,6 +74,7 @@ async def annotate_videos(
     video_paths = []
     if split_file.exists():
         import pandas as pd
+
         df = pd.read_csv(split_file)
         video_ids = df["video_id"].unique().tolist()[:num_videos]
 
@@ -179,13 +180,15 @@ def main():
     # Use custom model if specified
     model_name = args.custom_model if args.model == "custom" else args.model
 
-    asyncio.run(annotate_videos(
-        split=args.split,
-        num_videos=args.num,
-        model_name=model_name,
-        output_dir=args.output,
-        epic_root=args.epic_root,
-    ))
+    asyncio.run(
+        annotate_videos(
+            split=args.split,
+            num_videos=args.num,
+            model_name=model_name,
+            output_dir=args.output,
+            epic_root=args.epic_root,
+        )
+    )
 
 
 if __name__ == "__main__":

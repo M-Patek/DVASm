@@ -5,7 +5,6 @@ contact events, policy hints, and causal chains.
 """
 
 import pytest
-from datetime import datetime
 
 from dvas.data.robot_schemas.robot_action import (
     ActionCondition,

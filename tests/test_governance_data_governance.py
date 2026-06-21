@@ -6,7 +6,6 @@ RetentionPolicy, RetentionType, and LineageRecord.
 
 import time
 
-import pytest
 
 from dvas.governance.data_governance import (
     DataAccessLevel,
@@ -238,11 +237,13 @@ class TestDataGovernance:
     def test_remove_retention_policy(self):
         """Test removing retention policy."""
         governance = DataGovernance()
-        governance.add_retention_policy(RetentionPolicy(
-            data_type="annotation",
-            retention_type=RetentionType.TIME_BASED,
-            duration_days=365,
-        ))
+        governance.add_retention_policy(
+            RetentionPolicy(
+                data_type="annotation",
+                retention_type=RetentionType.TIME_BASED,
+                duration_days=365,
+            )
+        )
         assert governance.remove_retention_policy("annotation") is True
         assert governance.get_retention_policy("annotation") is None
 
@@ -254,41 +255,49 @@ class TestDataGovernance:
     def test_is_expired_time_based(self):
         """Test time-based expiration."""
         governance = DataGovernance()
-        governance.add_retention_policy(RetentionPolicy(
-            data_type="annotation",
-            retention_type=RetentionType.TIME_BASED,
-            duration_days=1,
-        ))
+        governance.add_retention_policy(
+            RetentionPolicy(
+                data_type="annotation",
+                retention_type=RetentionType.TIME_BASED,
+                duration_days=1,
+            )
+        )
         old_time = time.time() - 2 * 86400  # 2 days ago
         assert governance.is_expired("annotation", old_time) is True
 
     def test_is_expired_not_expired(self):
         """Test non-expired data."""
         governance = DataGovernance()
-        governance.add_retention_policy(RetentionPolicy(
-            data_type="annotation",
-            retention_type=RetentionType.TIME_BASED,
-            duration_days=365,
-        ))
+        governance.add_retention_policy(
+            RetentionPolicy(
+                data_type="annotation",
+                retention_type=RetentionType.TIME_BASED,
+                duration_days=365,
+            )
+        )
         assert governance.is_expired("annotation", time.time()) is False
 
     def test_is_expired_indefinite(self):
         """Test indefinite retention."""
         governance = DataGovernance()
-        governance.add_retention_policy(RetentionPolicy(
-            data_type="annotation",
-            retention_type=RetentionType.INDEFINITE,
-        ))
+        governance.add_retention_policy(
+            RetentionPolicy(
+                data_type="annotation",
+                retention_type=RetentionType.INDEFINITE,
+            )
+        )
         assert governance.is_expired("annotation", time.time()) is False
 
     def test_is_expired_event_based(self):
         """Test event-based retention."""
         governance = DataGovernance()
-        governance.add_retention_policy(RetentionPolicy(
-            data_type="annotation",
-            retention_type=RetentionType.EVENT_BASED,
-            trigger_event="user_deleted",
-        ))
+        governance.add_retention_policy(
+            RetentionPolicy(
+                data_type="annotation",
+                retention_type=RetentionType.EVENT_BASED,
+                trigger_event="user_deleted",
+            )
+        )
         assert governance.is_expired("annotation", time.time(), "user_deleted") is True
         assert governance.is_expired("annotation", time.time(), "other_event") is False
 
@@ -300,42 +309,54 @@ class TestDataGovernance:
     def test_add_quality_rule(self):
         """Test adding quality rule."""
         governance = DataGovernance()
-        governance.add_quality_rule("annotation", {
-            "field": "confidence",
-            "condition": "gte",
-            "value": 0.8,
-        })
+        governance.add_quality_rule(
+            "annotation",
+            {
+                "field": "confidence",
+                "condition": "gte",
+                "value": 0.8,
+            },
+        )
 
     def test_validate_quality_pass(self):
         """Test quality validation passing."""
         governance = DataGovernance()
-        governance.add_quality_rule("annotation", {
-            "field": "confidence",
-            "condition": "gte",
-            "value": 0.8,
-        })
+        governance.add_quality_rule(
+            "annotation",
+            {
+                "field": "confidence",
+                "condition": "gte",
+                "value": 0.8,
+            },
+        )
         errors = governance.validate_quality("annotation", {"confidence": 0.9})
         assert len(errors) == 0
 
     def test_validate_quality_fail(self):
         """Test quality validation failing."""
         governance = DataGovernance()
-        governance.add_quality_rule("annotation", {
-            "field": "confidence",
-            "condition": "gte",
-            "value": 0.8,
-        })
+        governance.add_quality_rule(
+            "annotation",
+            {
+                "field": "confidence",
+                "condition": "gte",
+                "value": 0.8,
+            },
+        )
         errors = governance.validate_quality("annotation", {"confidence": 0.5})
         assert len(errors) == 1
 
     def test_validate_quality_missing_field(self):
         """Test quality validation with missing field."""
         governance = DataGovernance()
-        governance.add_quality_rule("annotation", {
-            "field": "confidence",
-            "condition": "gte",
-            "value": 0.8,
-        })
+        governance.add_quality_rule(
+            "annotation",
+            {
+                "field": "confidence",
+                "condition": "gte",
+                "value": 0.8,
+            },
+        )
         errors = governance.validate_quality("annotation", {})
         assert len(errors) == 1
         assert "Missing required field" in errors[0]
@@ -415,11 +436,13 @@ class TestDataGovernance:
     def test_get_stats(self):
         """Test getting governance statistics."""
         governance = DataGovernance()
-        governance.add_retention_policy(RetentionPolicy(
-            data_type="annotation",
-            retention_type=RetentionType.TIME_BASED,
-            duration_days=365,
-        ))
+        governance.add_retention_policy(
+            RetentionPolicy(
+                data_type="annotation",
+                retention_type=RetentionType.TIME_BASED,
+                duration_days=365,
+            )
+        )
         governance.grant_access("user_001", "data_001", DataAccessLevel.RESTRICTED)
         stats = governance.get_stats()
         assert stats["retention_policies"] == 1

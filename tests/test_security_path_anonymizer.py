@@ -4,9 +4,7 @@ Tests for VideoPathAnonymizer, PathAnonymizationRule, and utility functions.
 """
 
 import re
-from pathlib import Path
 
-import pytest
 
 from dvas.security.path_anonymizer import (
     PathAnonymizationRule,

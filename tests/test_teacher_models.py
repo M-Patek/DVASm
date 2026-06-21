@@ -234,6 +234,7 @@ class TestTeacherModelBaseFeatures:
     def test_teacher_is_unified_model(self):
         """Test TeacherModel extends UnifiedModel."""
         from dvas.models.base import UnifiedModel
+
         assert issubclass(TeacherModel, UnifiedModel)
 
     def test_teacher_has_model_name(self):

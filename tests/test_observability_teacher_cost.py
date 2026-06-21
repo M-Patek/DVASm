@@ -1,7 +1,5 @@
 """Tests for teacher cost monitoring."""
 
-import time
-
 import pytest
 
 from dvas.observability.teacher_cost import CostBudget, TeacherCostMonitor

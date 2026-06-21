@@ -384,18 +384,22 @@ class TestPolicyEngine:
     def test_evaluate_all(self):
         """Test evaluating all policies."""
         engine = PolicyEngine()
-        engine.register_policy(Policy(
-            id="p1",
-            name="P1",
-            scope=PolicyScope.ANNOTATION,
-            rules=[Rule("r1", "score", RuleOperator.GTE, 0.8)],
-        ))
-        engine.register_policy(Policy(
-            id="p2",
-            name="P2",
-            scope=PolicyScope.ANNOTATION,
-            rules=[Rule("r2", "count", RuleOperator.GTE, 5)],
-        ))
+        engine.register_policy(
+            Policy(
+                id="p1",
+                name="P1",
+                scope=PolicyScope.ANNOTATION,
+                rules=[Rule("r1", "score", RuleOperator.GTE, 0.8)],
+            )
+        )
+        engine.register_policy(
+            Policy(
+                id="p2",
+                name="P2",
+                scope=PolicyScope.ANNOTATION,
+                rules=[Rule("r2", "count", RuleOperator.GTE, 5)],
+            )
+        )
         results = engine.evaluate_all({"score": 0.9, "count": 10})
         assert len(results) == 2
         assert results["p1"].passed is True
@@ -404,18 +408,22 @@ class TestPolicyEngine:
     def test_evaluate_by_scope(self):
         """Test evaluating policies by scope."""
         engine = PolicyEngine()
-        engine.register_policy(Policy(
-            id="p1",
-            name="P1",
-            scope=PolicyScope.ANNOTATION,
-            rules=[Rule("r1", "score", RuleOperator.GTE, 0.8)],
-        ))
-        engine.register_policy(Policy(
-            id="p2",
-            name="P2",
-            scope=PolicyScope.GLOBAL,
-            rules=[Rule("r2", "count", RuleOperator.GTE, 5)],
-        ))
+        engine.register_policy(
+            Policy(
+                id="p1",
+                name="P1",
+                scope=PolicyScope.ANNOTATION,
+                rules=[Rule("r1", "score", RuleOperator.GTE, 0.8)],
+            )
+        )
+        engine.register_policy(
+            Policy(
+                id="p2",
+                name="P2",
+                scope=PolicyScope.GLOBAL,
+                rules=[Rule("r2", "count", RuleOperator.GTE, 5)],
+            )
+        )
         results = engine.evaluate_by_scope(PolicyScope.ANNOTATION, {"score": 0.9})
         assert len(results) == 1
         assert "p1" in results
@@ -437,12 +445,14 @@ class TestPolicyEngine:
     def test_compliance_report(self):
         """Test compliance report."""
         engine = PolicyEngine()
-        engine.register_policy(Policy(
-            id="p1",
-            name="P1",
-            scope=PolicyScope.ANNOTATION,
-            rules=[Rule("r1", "score", RuleOperator.GTE, 0.8)],
-        ))
+        engine.register_policy(
+            Policy(
+                id="p1",
+                name="P1",
+                scope=PolicyScope.ANNOTATION,
+                rules=[Rule("r1", "score", RuleOperator.GTE, 0.8)],
+            )
+        )
         engine.evaluate("p1", {"score": 0.9})
         report = engine.get_compliance_report()
         assert report["total_evaluations"] == 1
@@ -451,12 +461,14 @@ class TestPolicyEngine:
     def test_policy_history(self):
         """Test policy evaluation history."""
         engine = PolicyEngine()
-        engine.register_policy(Policy(
-            id="p1",
-            name="P1",
-            scope=PolicyScope.ANNOTATION,
-            rules=[Rule("r1", "score", RuleOperator.GTE, 0.8)],
-        ))
+        engine.register_policy(
+            Policy(
+                id="p1",
+                name="P1",
+                scope=PolicyScope.ANNOTATION,
+                rules=[Rule("r1", "score", RuleOperator.GTE, 0.8)],
+            )
+        )
         engine.evaluate("p1", {"score": 0.9})
         engine.evaluate("p1", {"score": 0.5})
         history = engine.get_policy_history("p1")
@@ -465,12 +477,14 @@ class TestPolicyEngine:
     def test_clear_history(self):
         """Test clearing history."""
         engine = PolicyEngine()
-        engine.register_policy(Policy(
-            id="p1",
-            name="P1",
-            scope=PolicyScope.ANNOTATION,
-            rules=[Rule("r1", "score", RuleOperator.GTE, 0.8)],
-        ))
+        engine.register_policy(
+            Policy(
+                id="p1",
+                name="P1",
+                scope=PolicyScope.ANNOTATION,
+                rules=[Rule("r1", "score", RuleOperator.GTE, 0.8)],
+            )
+        )
         engine.evaluate("p1", {"score": 0.9})
         engine.clear_history()
         history = engine.get_policy_history("p1")
@@ -479,12 +493,20 @@ class TestPolicyEngine:
     def test_list_policies_filter_scope(self):
         """Test listing policies with scope filter."""
         engine = PolicyEngine()
-        engine.register_policy(Policy(
-            id="p1", name="P1", scope=PolicyScope.ANNOTATION,
-        ))
-        engine.register_policy(Policy(
-            id="p2", name="P2", scope=PolicyScope.GLOBAL,
-        ))
+        engine.register_policy(
+            Policy(
+                id="p1",
+                name="P1",
+                scope=PolicyScope.ANNOTATION,
+            )
+        )
+        engine.register_policy(
+            Policy(
+                id="p2",
+                name="P2",
+                scope=PolicyScope.GLOBAL,
+            )
+        )
         annotation_policies = engine.list_policies(PolicyScope.ANNOTATION)
         assert len(annotation_policies) == 1
         assert annotation_policies[0].id == "p1"

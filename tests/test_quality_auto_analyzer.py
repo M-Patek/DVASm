@@ -1,7 +1,6 @@
 """Tests for automatic quality analyzer."""
 
 import pytest
-from datetime import datetime
 
 from dvas.data.schemas import (
     Action,
@@ -11,12 +10,6 @@ from dvas.data.schemas import (
     VideoMetadata,
 )
 from dvas.quality.auto_analyzer import AutomaticQualityAnalyzer
-from dvas.quality.schema import (
-    DimensionScore,
-    QualityDimension,
-    QualityScores,
-    QualityThresholds,
-)
 
 
 @pytest.fixture

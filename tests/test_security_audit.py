@@ -4,7 +4,6 @@ Tests for AuditLog, AuditEvent, AuditEventType, AuditSeverity, and AuditDecorato
 """
 
 import time
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -149,20 +148,24 @@ class TestAuditLog:
     def test_get_events_by_type(self):
         """Test getting events by type."""
         audit = AuditLog()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.READ,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="read",
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.READ,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="read",
+            )
+        )
 
         create_events = audit.get_events(event_type=AuditEventType.CREATE)
         assert len(create_events) == 1
@@ -171,20 +174,24 @@ class TestAuditLog:
     def test_get_events_by_user(self):
         """Test getting events by user."""
         audit = AuditLog()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_002",
-            resource_type="annotation",
-            resource_id="ann_002",
-            action="created",
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_002",
+                resource_type="annotation",
+                resource_id="ann_002",
+                action="created",
+            )
+        )
 
         user_events = audit.get_events(user_id="user_001")
         assert len(user_events) == 1
@@ -193,20 +200,24 @@ class TestAuditLog:
     def test_get_events_by_resource(self):
         """Test getting events by resource."""
         audit = AuditLog()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_002",
-            action="created",
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_002",
+                action="created",
+            )
+        )
 
         resource_events = audit.get_events(resource_id="ann_001")
         assert len(resource_events) == 1
@@ -216,22 +227,26 @@ class TestAuditLog:
         """Test getting events by time range."""
         audit = AuditLog()
         now = time.time()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-            timestamp=now - 100,
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_002",
-            action="created",
-            timestamp=now - 50,
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+                timestamp=now - 100,
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_002",
+                action="created",
+                timestamp=now - 50,
+            )
+        )
 
         events = audit.get_events(start_time=now - 60, end_time=now)
         assert len(events) == 1
@@ -240,22 +255,26 @@ class TestAuditLog:
     def test_get_events_by_severity(self):
         """Test getting events by severity."""
         audit = AuditLog()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-            severity=AuditSeverity.INFO,
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_002",
-            action="created",
-            severity=AuditSeverity.WARNING,
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+                severity=AuditSeverity.INFO,
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_002",
+                action="created",
+                severity=AuditSeverity.WARNING,
+            )
+        )
 
         warning_events = audit.get_events(severity=AuditSeverity.WARNING)
         assert len(warning_events) == 1
@@ -264,22 +283,26 @@ class TestAuditLog:
     def test_get_events_by_success(self):
         """Test getting events by success status."""
         audit = AuditLog()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-            success=True,
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_002",
-            action="failed",
-            success=False,
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+                success=True,
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_002",
+                action="failed",
+                success=False,
+            )
+        )
 
         failed_events = audit.get_events(success=False)
         assert len(failed_events) == 1
@@ -288,20 +311,24 @@ class TestAuditLog:
     def test_get_user_activity(self):
         """Test getting user activity."""
         audit = AuditLog()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.READ,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="read",
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.READ,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="read",
+            )
+        )
 
         activity = audit.get_user_activity("user_001")
         assert len(activity) == 2
@@ -309,20 +336,24 @@ class TestAuditLog:
     def test_get_resource_history(self):
         """Test getting resource history."""
         audit = AuditLog()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.UPDATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="updated",
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.UPDATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="updated",
+            )
+        )
 
         history = audit.get_resource_history("ann_001")
         assert len(history) == 2
@@ -330,23 +361,27 @@ class TestAuditLog:
     def test_get_failed_events(self):
         """Test getting failed events."""
         audit = AuditLog()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-            success=True,
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_002",
-            action="failed",
-            success=False,
-            severity=AuditSeverity.ERROR,
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+                success=True,
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_002",
+                action="failed",
+                success=False,
+                severity=AuditSeverity.ERROR,
+            )
+        )
 
         failed = audit.get_failed_events()
         assert len(failed) == 1
@@ -355,15 +390,17 @@ class TestAuditLog:
     def test_get_failed_events_with_severity(self):
         """Test getting failed events with severity filter."""
         audit = AuditLog()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="failed",
-            success=False,
-            severity=AuditSeverity.WARNING,
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="failed",
+                success=False,
+                severity=AuditSeverity.WARNING,
+            )
+        )
 
         # Filter for ERROR and above - should return empty
         failed = audit.get_failed_events(severity=AuditSeverity.ERROR)
@@ -372,30 +409,36 @@ class TestAuditLog:
     def test_get_security_summary(self):
         """Test getting security summary."""
         audit = AuditLog()
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-            success=True,
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.READ,
-            user_id="user_002",
-            resource_type="annotation",
-            resource_id="ann_002",
-            action="read",
-            success=True,
-        ))
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_003",
-            action="failed",
-            success=False,
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+                success=True,
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.READ,
+                user_id="user_002",
+                resource_type="annotation",
+                resource_id="ann_002",
+                action="read",
+                success=True,
+            )
+        )
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_003",
+                action="failed",
+                success=False,
+            )
+        )
 
         summary = audit.get_security_summary()
         assert summary["total_events"] == 3
@@ -406,13 +449,15 @@ class TestAuditLog:
         """Test that memory events are limited."""
         audit = AuditLog(max_memory_events=5)
         for i in range(10):
-            audit.log_event(AuditEvent(
-                event_type=AuditEventType.CREATE,
-                user_id=f"user_{i}",
-                resource_type="annotation",
-                resource_id=f"ann_{i}",
-                action="created",
-            ))
+            audit.log_event(
+                AuditEvent(
+                    event_type=AuditEventType.CREATE,
+                    user_id=f"user_{i}",
+                    resource_type="annotation",
+                    resource_id=f"ann_{i}",
+                    action="created",
+                )
+            )
 
         assert len(audit._events) == 5
 
@@ -420,13 +465,15 @@ class TestAuditLog:
         """Test manual flush."""
         log_dir = tmp_path / "audit"
         audit = AuditLog(log_dir=log_dir, flush_interval=100)
-        audit.log_event(AuditEvent(
-            event_type=AuditEventType.CREATE,
-            user_id="user_001",
-            resource_type="annotation",
-            resource_id="ann_001",
-            action="created",
-        ))
+        audit.log_event(
+            AuditEvent(
+                event_type=AuditEventType.CREATE,
+                user_id="user_001",
+                resource_type="annotation",
+                resource_id="ann_001",
+                action="created",
+            )
+        )
         audit.flush()
         # Should not raise
 
@@ -434,13 +481,15 @@ class TestAuditLog:
         """Test using as context manager."""
         log_dir = tmp_path / "audit"
         with AuditLog(log_dir=log_dir) as audit:
-            audit.log_event(AuditEvent(
-                event_type=AuditEventType.CREATE,
-                user_id="user_001",
-                resource_type="annotation",
-                resource_id="ann_001",
-                action="created",
-            ))
+            audit.log_event(
+                AuditEvent(
+                    event_type=AuditEventType.CREATE,
+                    user_id="user_001",
+                    resource_type="annotation",
+                    resource_id="ann_001",
+                    action="created",
+                )
+            )
         # Should flush on exit
 
 
@@ -496,13 +545,15 @@ class TestAuditLogEdgeCases:
         """Test event limit."""
         audit = AuditLog()
         for i in range(20):
-            audit.log_event(AuditEvent(
-                event_type=AuditEventType.CREATE,
-                user_id="user_001",
-                resource_type="annotation",
-                resource_id=f"ann_{i}",
-                action="created",
-            ))
+            audit.log_event(
+                AuditEvent(
+                    event_type=AuditEventType.CREATE,
+                    user_id="user_001",
+                    resource_type="annotation",
+                    resource_id=f"ann_{i}",
+                    action="created",
+                )
+            )
 
         events = audit.get_events(user_id="user_001", limit=5)
         assert len(events) == 5

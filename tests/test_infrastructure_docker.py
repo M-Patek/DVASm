@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -13,7 +12,6 @@ from dvas.infrastructure.docker_manager import (
     ContainerStatus,
     DockerfileBuilder,
     DockerManager,
-    ImageBuildResult,
     ResourceLimits,
 )
 
@@ -130,6 +128,7 @@ class TestDockerfileBuilder:
 
     def test_write_dockerfile(self):
         import tempfile
+
         with tempfile.TemporaryDirectory() as tmpdir:
             builder = DockerfileBuilder()
             builder.set_cmd(["python", "-m", "http.server"])
@@ -267,6 +266,7 @@ class TestDockerManager:
 
     def test_generate_dockerfile(self):
         import tempfile
+
         with tempfile.TemporaryDirectory() as tmpdir:
             manager = DockerManager()
             output = Path(tmpdir) / "Dockerfile"
@@ -278,6 +278,7 @@ class TestDockerManager:
 
     def test_generate_dockerfile_cuda(self):
         import tempfile
+
         with tempfile.TemporaryDirectory() as tmpdir:
             manager = DockerManager()
             output = Path(tmpdir) / "Dockerfile"

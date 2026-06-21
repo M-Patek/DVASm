@@ -96,6 +96,7 @@ class TestDevModeWatcher:
 
         # Modify file
         import time
+
         time.sleep(0.1)
         test_file.write_text("changed")
 
@@ -184,8 +185,11 @@ class TestMigrationManager:
 
         # Verify table was created
         import sqlite3
+
         conn = sqlite3.connect(str(db_path))
-        cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='test_table'")
+        cursor = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='test_table'"
+        )
         assert cursor.fetchone() is not None
         conn.close()
 
@@ -355,6 +359,7 @@ class TestMigrationIntegration:
 
         # Verify
         import sqlite3
+
         conn = sqlite3.connect(str(db_path))
         cursor = conn.execute("SELECT name FROM users WHERE id = 1")
         row = cursor.fetchone()
@@ -386,6 +391,7 @@ class TestMigrationIntegration:
 
         # Verify table structure
         import sqlite3
+
         conn = sqlite3.connect(str(db_path))
         cursor = conn.execute("PRAGMA table_info(t1)")
         columns = [row[1] for row in cursor.fetchall()]

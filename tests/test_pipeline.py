@@ -15,10 +15,12 @@ class TestAnnotationPipeline:
 
         mock_teacher = MagicMock()
         mock_teacher.model_name = "gpt-5.5"
-        mock_teacher.annotate = AsyncMock(return_value={
-            "text": "Test annotation",
-            "model": "gpt-5.5",
-        })
+        mock_teacher.annotate = AsyncMock(
+            return_value={
+                "text": "Test annotation",
+                "model": "gpt-5.5",
+            }
+        )
 
         pipeline = AnnotationPipeline(teacher_model=mock_teacher, num_frames=8)
         assert pipeline.num_frames == 8
@@ -125,10 +127,12 @@ class TestBatchProcessing:
 
         mock_teacher = MagicMock()
         mock_teacher.model_name = "gpt-5.5"
-        mock_teacher.annotate = AsyncMock(return_value={
-            "text": "Test annotation",
-            "model": "gpt-5.5",
-        })
+        mock_teacher.annotate = AsyncMock(
+            return_value={
+                "text": "Test annotation",
+                "model": "gpt-5.5",
+            }
+        )
 
         _pipeline = AnnotationPipeline(teacher_model=mock_teacher)
 

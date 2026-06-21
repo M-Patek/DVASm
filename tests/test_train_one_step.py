@@ -91,6 +91,7 @@ def main():
     except Exception as e:
         logger.error(f"\nTraining failed: {e}")
         import traceback
+
         logger.error(traceback.format_exc())
         return 1
 

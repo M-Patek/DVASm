@@ -1,7 +1,9 @@
 {
   "bitrate": 5000000,
+  "camera_type": null,
   "codec": "h264",
   "duration": 120.0,
+  "environment": null,
   "fps": 30.0,
   "has_audio": true,
   "resolution": [

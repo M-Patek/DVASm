@@ -28,7 +28,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import os
 import subprocess
 import urllib.request
 from pathlib import Path
@@ -40,7 +39,9 @@ logger = get_logger(__name__)
 
 # EPIC-KITCHENS-100 下载链接模板
 # 格式：P{participant:02d}/P{participant:02d}_{video:02d}.MP4
-EPIC_100_URL_TEMPLATE = "https://data.bris.ac.uk/datasets/tar/1mv94ej3w96gj9dfhglwg4v0y/{participant}/{video}"
+EPIC_100_URL_TEMPLATE = (
+    "https://data.bris.ac.uk/datasets/tar/1mv94ej3w96gj9dfhglwg4v0y/{participant}/{video}"
+)
 
 # 标注文件下载链接
 ANNOTATIONS_URLS = {
@@ -92,18 +93,18 @@ def parse_video_list(csv_path: Path, split: str) -> list[tuple[str, str, str]]:
     videos = []
     seen = set()
 
-    with open(csv_path, 'r') as f:
+    with open(csv_path, "r") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            video_id = row['video_id']
+            video_id = row["video_id"]
             if video_id not in seen:
                 seen.add(video_id)
                 # 解析 participant 和 video number
                 # video_id format: P01_01
-                parts = video_id.split('_')
+                parts = video_id.split("_")
                 if len(parts) == 2:
                     participant = parts[0]  # P01
-                    video_num = parts[1]    # 01
+                    video_num = parts[1]  # 01
                     videos.append((video_id, participant, video_num))
 
     return videos
@@ -163,13 +164,19 @@ def download_epic_videos(
         logger.info(f"Downloading {video_id}...")
 
         try:
-            if use_aria2 and subprocess.run(["which", "aria2c"], capture_output=True).returncode == 0:
+            if (
+                use_aria2
+                and subprocess.run(["which", "aria2c"], capture_output=True).returncode == 0
+            ):
                 # 使用 aria2c 加速（如果可用）
                 cmd = [
                     "aria2c",
-                    "-x", "4",  # 4 connections
-                    "-s", "4",  # 4 splits
-                    "-o", str(output_path),
+                    "-x",
+                    "4",  # 4 connections
+                    "-s",
+                    "4",  # 4 splits
+                    "-o",
+                    str(output_path),
                     video_url,
                 ]
                 result = subprocess.run(cmd, capture_output=True, timeout=600)
@@ -187,9 +194,7 @@ def download_epic_videos(
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Download EPIC-KITCHENS dataset"
-    )
+    parser = argparse.ArgumentParser(description="Download EPIC-KITCHENS dataset")
     parser.add_argument(
         "--output-dir",
         type=Path,

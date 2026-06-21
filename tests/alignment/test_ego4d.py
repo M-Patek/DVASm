@@ -204,7 +204,10 @@ class TestEgo4DFormatter:
         assert narr["start_time"] == 5.0
         assert narr["end_time"] == 10.0
         assert narr["narration_text"] == "Open the refrigerator"
-        assert narr["narration_dense"] == "The person opens the refrigerator door with their right hand"
+        assert (
+            narr["narration_dense"]
+            == "The person opens the refrigerator door with their right hand"
+        )
 
     def test_action_conversion(self, sample_annotation):
         """Test action conversion to Ego4D format."""
@@ -328,14 +331,14 @@ class TestEgo4DFormatter:
         """Test exporting to JSONL format."""
         formatter = Ego4DFormatter()
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.jsonl', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
             temp_path = Path(f.name)
 
         try:
             count = formatter.export_to_file(sample_annotations, temp_path, format="jsonl")
             assert count == 3
 
-            with open(temp_path, 'r', encoding='utf-8') as f:
+            with open(temp_path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
                 assert len(lines) == 3
 
@@ -350,14 +353,14 @@ class TestEgo4DFormatter:
         """Test exporting to JSON format."""
         formatter = Ego4DFormatter()
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             temp_path = Path(f.name)
 
         try:
             count = formatter.export_to_file(sample_annotations, temp_path, format="json")
             assert count == 3
 
-            with open(temp_path, 'r', encoding='utf-8') as f:
+            with open(temp_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 assert "videos" in data
                 assert len(data["videos"]) == 3

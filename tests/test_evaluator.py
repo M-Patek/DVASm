@@ -118,6 +118,7 @@ class TestLLMJudge:
     @pytest.mark.asyncio
     async def test_evaluate_segment(self, llm_judge, mock_teacher):
         """Test quality evaluation."""
+
         # Create async mock with response format that parser expects
         async def mock_annotate(*args, **kwargs):
             return GenerationResult(
@@ -147,6 +148,7 @@ Suggestions: Add more detail.""",
     @pytest.mark.asyncio
     async def test_evaluate_batch(self, llm_judge, mock_teacher):
         """Test batch evaluation."""
+
         # Create async mock
         async def mock_annotate(*args, **kwargs):
             return GenerationResult(
@@ -177,9 +179,9 @@ class TestConsistencyChecker:
         # Mock ROUGE to avoid dependency issues
         checker.metrics.rouge_scorer = MagicMock()
         checker.metrics.rouge_scorer.score.return_value = {
-            'rouge1': MagicMock(fmeasure=0.5),
-            'rouge2': MagicMock(fmeasure=0.3),
-            'rougeL': MagicMock(fmeasure=0.4),
+            "rouge1": MagicMock(fmeasure=0.5),
+            "rouge2": MagicMock(fmeasure=0.3),
+            "rougeL": MagicMock(fmeasure=0.4),
         }
         return checker
 
