@@ -60,6 +60,13 @@ class RegressionResult:
     details: str = ""
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
+    def __post_init__(self) -> None:
+        """Compute difference if not explicitly set."""
+        if self.difference == 0.0 and (self.score != 0.0 or self.baseline_score != 0.0):
+            self.difference = self.score - self.baseline_score
+        if self.percent_change == 0.0 and self.baseline_score > 0:
+            self.percent_change = (self.difference / self.baseline_score) * 100
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "test_name": self.test_name,

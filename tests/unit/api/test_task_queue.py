@@ -305,9 +305,9 @@ class TestCreateTaskQueue:
 
     def test_create_unsupported_fallback(self):
         """Test fallback for unsupported backends."""
-        # RQ and ARQ fall back to in-memory
-        queue = create_task_queue(QueueBackend.RQ)
+        # Fallback behavior: unknown backend values fall back to in-memory
+        queue = create_task_queue(QueueBackend("rq"))
         assert isinstance(queue, InMemoryTaskQueue)
 
-        queue = create_task_queue(QueueBackend.ARQ)
+        queue = create_task_queue(QueueBackend("arq"))
         assert isinstance(queue, InMemoryTaskQueue)

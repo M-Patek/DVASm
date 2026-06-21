@@ -104,6 +104,14 @@ async def get_review_queue(
 @router.post("/queue")
 async def add_to_review_queue(annotation_id: str, priority: int = 5) -> Dict[str, Any]:
     """Add an annotation to the review queue."""
+    # Check if annotation exists (placeholder - would query storage in production)
+    # For now, we accept any annotation_id but validate it's not empty
+    if not annotation_id or annotation_id.strip() == "":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="annotation_id is required",
+        )
+
     if annotation_id in _review_items:
         return {
             "message": "Annotation already in review queue",

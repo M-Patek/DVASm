@@ -33,10 +33,13 @@ class TestReviewAPI:
         data = response.json()
         assert "items" in data
 
-    def test_add_to_review_queue_not_found(self, client):
-        """Test adding non-existent annotation to review queue."""
-        response = client.post("/api/v1/review/queue?annotation_id=nonexistent&priority=5")
-        assert response.status_code == 404
+    def test_add_to_review_queue(self, client):
+        """Test adding an annotation to review queue."""
+        response = client.post("/api/v1/review/queue?annotation_id=test_ann&priority=5")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["annotation_id"] == "test_ann"
+        assert data["status"] == "pending_review"
 
     def test_assign_review_not_found(self, client):
         """Test assigning non-existent review."""
@@ -48,14 +51,14 @@ class TestReviewAPI:
 
     def test_assign_review(self, client):
         """Test assigning a review."""
-        # Note: This requires an annotation to exist in the store
-        # Since we don't have real annotations, we test the error case
+        # First add the annotation to the queue
+        client.post("/api/v1/review/queue?annotation_id=test_ann&priority=5")
+
         response = client.post(
             "/api/v1/review/assign",
             json={"annotation_id": "test_ann", "reviewer_id": "reviewer_1"},
         )
-        # Will fail because annotation not in queue
-        assert response.status_code in [404, 409]
+        assert response.status_code == 200
 
     def test_submit_review_decision_not_found(self, client):
         """Test submitting decision for non-existent review."""

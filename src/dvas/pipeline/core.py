@@ -99,6 +99,10 @@ class AnnotationPipeline:
         """
         logger.info("annotation_starting", video_id=video_id, path=str(video_path))
 
+        # Load checkpoint if exists
+        if self.checkpoint:
+            self.checkpoint.load()
+
         # Check checkpoint - verify storage exists
         if self.checkpoint and self.checkpoint.is_processed(video_id):
             logger.info("video_already_processed", video_id=video_id)

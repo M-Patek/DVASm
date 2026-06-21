@@ -521,7 +521,7 @@ class TestGoldenPathCostTracking:
 
         # Verify teacher was called and latency was in result
         mock_teacher.generate.assert_called_once()
-        call_result = await mock_teacher.generate.return_value
+        call_result = mock_teacher.generate.return_value
         assert call_result.latency_ms == 750.0
 
     @pytest.mark.asyncio

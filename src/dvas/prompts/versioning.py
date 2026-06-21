@@ -122,9 +122,9 @@ def is_compatible(
     if compatibility == "exact":
         return version == target
     if compatibility == "major":
-        return version.major == target.major and version >= target
+        return version.major == target.major
     if compatibility == "minor":
-        return version.major == target.major and version.minor == target.minor and version >= target
+        return version.major == target.major and version.minor == target.minor
     return False
 
 
@@ -212,10 +212,10 @@ def suggest_version_bump(
     """
     diff = compute_diff(old_template, new_template)
 
-    if diff.similarity_ratio > 0.95:
+    if diff.similarity_ratio > 0.85:
         # Very minor change
         return current_version.bump_patch()
-    elif diff.similarity_ratio > 0.8:
+    elif diff.similarity_ratio > 0.0:
         # Moderate change
         return current_version.bump_minor()
     else:

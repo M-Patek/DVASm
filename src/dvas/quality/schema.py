@@ -135,7 +135,9 @@ class QualityScores:
 
     def __post_init__(self):
         """Compute aggregate scores after initialization."""
-        self._compute_aggregates()
+        # Only auto-compute if overall_score wasn't explicitly set
+        if self.overall_score == 0.0 and self.weighted_score == 0.0:
+            self._compute_aggregates()
 
     def _compute_aggregates(self) -> None:
         """Compute overall and weighted aggregate scores."""

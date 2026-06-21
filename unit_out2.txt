@@ -1,0 +1,68 @@
+C:\Users\asus\anaconda3\Lib\site-packages\pytest_asyncio\plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+........................................................................ [ 16%]
+........................................................................ [ 32%]
+........................................................................ [ 48%]
+........................................................................ [ 64%]
+........................................................................ [ 80%]
+........................................................................ [ 96%]
+.................                                                        [100%]
+============================== warnings summary ===============================
+C:\Users\asus\anaconda3\Lib\site-packages\pydantic\_internal\_generate_schema.py:299
+C:\Users\asus\anaconda3\Lib\site-packages\pydantic\_internal\_generate_schema.py:299
+  C:\Users\asus\anaconda3\Lib\site-packages\pydantic\_internal\_generate_schema.py:299: PydanticDeprecatedSince20: `json_encoders` is deprecated. See https://docs.pydantic.dev/2.10/concepts/serialization/#custom-serializers for alternatives. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.10/migration/
+    warnings.warn(
+
+C:\Users\asus\anaconda3\Lib\site-packages\pandas\core\computation\expressions.py:22
+  C:\Users\asus\anaconda3\Lib\site-packages\pandas\core\computation\expressions.py:22: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.10.1' currently installed).
+    from pandas.core.computation.check import NUMEXPR_INSTALLED
+
+tests/unit/prompts/test_attribution.py: 15 warnings
+  <string>:14: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+
+tests/unit/review/test_annotation_editor.py: 15 warnings
+  <string>:5: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+
+tests/unit/review/test_annotation_editor.py: 13 warnings
+  <string>:9: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+
+tests/unit/review/test_annotation_editor.py::TestAnnotationEditor::test_finalize
+  D:\Github\DVASm\src\dvas\review\annotation_editor.py:358: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self._edit.completed_at = datetime.utcnow()
+
+tests/unit/review/test_review_queue.py::TestReviewQueue::test_complete_item
+tests/unit/review/test_review_queue.py::TestReviewQueue::test_get_items_by_status
+tests/unit/review/test_review_queue.py::TestReviewQueue::test_get_statistics
+  D:\Github\DVASm\src\dvas\review\review_queue.py:164: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    item.completed_at = datetime.utcnow()
+
+tests/unit/review/test_review_queue.py::TestReviewQueue::test_reject_item
+  D:\Github\DVASm\src\dvas\review\review_queue.py:173: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    item.completed_at = datetime.utcnow()
+
+tests/unit/review/test_reviewer_assignment.py: 17 warnings
+  D:\Github\DVASm\src\dvas\review\reviewer_assignment.py:113: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    assigned_at=datetime.utcnow().isoformat(),
+
+tests/unit/review/test_workflow.py: 31 warnings
+  D:\Github\DVASm\src\dvas\review\workflow.py:50: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.timestamp = datetime.utcnow().isoformat()
+
+tests/unit/review/test_workflow.py: 10 warnings
+  D:\Github\DVASm\src\dvas\review\workflow.py:171: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    wf.approved_at = datetime.utcnow().isoformat()
+
+tests/unit/review/test_workflow.py::TestApprovalWorkflow::test_reject
+tests/unit/review/test_workflow.py::TestApprovalWorkflow::test_multiple_rejections
+tests/unit/review/test_workflow.py::TestApprovalWorkflow::test_multiple_rejections
+tests/unit/review/test_workflow.py::TestApprovalWorkflow::test_get_rejected_annotations
+tests/unit/review/test_workflow.py::TestApprovalWorkflow::test_get_rejection_reasons
+tests/unit/review/test_workflow.py::TestApprovalWorkflow::test_get_rejection_reasons
+tests/unit/review/test_workflow.py::TestApprovalWorkflow::test_get_statistics
+tests/unit/review/test_workflow.py::TestApprovalWorkflow::test_rejection_record_can_be_resubmitted
+  D:\Github\DVASm\src\dvas\review\workflow.py:76: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.rejected_at = datetime.utcnow().isoformat()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html

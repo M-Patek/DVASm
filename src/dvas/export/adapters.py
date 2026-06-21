@@ -24,6 +24,25 @@ class LLaVAAdapter(ExportAdapter):
         """Export to LLaVA format."""
         return [ann.to_llava_format() for ann in annotations]
 
+    def convert_segment(self, segment, video_path: str) -> Dict[str, Any]:
+        """Convert a single segment to LLaVA format.
+
+        Args:
+            segment: Segment to convert.
+            video_path: Path to the video file.
+
+        Returns:
+            LLaVA format record dictionary.
+        """
+        return {
+            "id": f"seg_{segment.start_time}_{segment.end_time}",
+            "video": video_path,
+            "conversations": [
+                {"from": "human", "value": "<video>\nDescribe this video."},
+                {"from": "gpt", "value": segment.caption},
+            ],
+        }
+
 
 class OpenAIAdapter(ExportAdapter):
     """Export to OpenAI fine-tuning format."""

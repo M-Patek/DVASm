@@ -24,6 +24,8 @@ class QueueBackend(Enum):
 
     IN_MEMORY = "in_memory"
     CELERY = "celery"
+    RQ = "rq"
+    ARQ = "arq"
 
 
 @dataclass

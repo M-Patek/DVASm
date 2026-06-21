@@ -177,11 +177,11 @@ class TestSuggestVersionBump:
 
     def test_minor_bump(self):
         """Test suggesting minor bump for moderate change."""
-        old = "A" * 100
-        new_template = "B" * 100
+        old = "A" * 50 + "common" + "B" * 50
+        new_template = "X" * 50 + "common" + "Y" * 50
         current = PromptVersion(1, 0, 0)
         suggested = suggest_version_bump(old, new_template, current)
-        # Should be minor or major bump
+        # Should be minor bump (some similarity but significant change)
         assert suggested.major == 1
         assert suggested.patch == 0
 

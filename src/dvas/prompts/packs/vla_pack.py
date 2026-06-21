@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from dvas.prompts.registry import PromptDomain, PromptTemplate
+from dvas.prompts.registry import PromptDomain, PromptMetadata, PromptTemplate
 from dvas.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -131,7 +131,7 @@ Caption: """,
 
         return PromptTemplate(
             id=f"vla_{template_name}",
-            metadata=PromptTemplate.__dataclass_fields__["metadata"].type(
+            metadata=PromptMetadata(
                 name=template_name,
                 version="1.0.0",
                 domain=self.domain,

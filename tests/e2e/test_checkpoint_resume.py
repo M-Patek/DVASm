@@ -62,7 +62,7 @@ def create_mock_teacher():
 
     import asyncio
 
-    async def generate(*args, **kwargs):
+    async def generate_impl(*args, **kwargs):
         return GenerationResult(
             text=json.dumps({
                 "scene_description": f"Scene at {kwargs.get('task', 'unknown')}",
@@ -74,7 +74,7 @@ def create_mock_teacher():
             latency_ms=500.0,
         )
 
-    teacher.generate = generate
+    teacher.generate = MagicMock(side_effect=generate_impl)
     return teacher
 
 
@@ -126,13 +126,11 @@ class TestCheckpointResumeBasic:
             )
             successful, failed = await pipeline.process_batch(video_items)
 
-        # All 3 should succeed (vid_1 from checkpoint, vid_2 and vid_3 from processing)
-        assert len(successful) == 3
+        # vid_1 is skipped by checkpoint filter, vid_2 and vid_3 are processed
+        assert len(successful) == 2
         assert len(failed) == 0
-
         # Teacher should only be called for vid_2 and vid_3 (2 videos * 2 scenes = 4 calls)
-        # Note: vid_1 is marked processed but has no annotation in store, so it might still be processed
-        # This depends on implementation details
+        assert mock_teacher.generate.call_count == 4
 
     @pytest.mark.asyncio
     async def test_checkpoint_updated_after_each_video(self, temp_dir):

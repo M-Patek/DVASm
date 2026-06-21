@@ -58,8 +58,8 @@ def alternative_action() -> Action:
 @pytest.mark.asyncio
 async def test_generate_state_prediction(annotator: WorldModelAnnotator, sample_segment: Segment) -> None:
     prediction = await annotator.generate_state_prediction(sample_segment)
-    assert prediction.predicted_next_frame_desc is None
-    assert prediction.expected_state_change is None
+    assert prediction.predicted_next_frame_desc is not None
+    assert prediction.expected_state_change is not None
     assert prediction.preconditions == []
     assert prediction.effects == []
 
@@ -72,7 +72,7 @@ async def test_generate_state_prediction_with_action(
 ) -> None:
     prediction = await annotator.generate_state_prediction(sample_segment, sample_action)
     assert prediction is not None
-    assert prediction.predicted_next_frame_desc is None
+    assert prediction.predicted_next_frame_desc is not None
 
 
 # ── Dynamics tests ────────────────────────────────────────────────────
@@ -103,7 +103,7 @@ async def test_generate_counterfactual(
     cf = dynamics.counterfactuals[0]
     assert cf["if"] == "place cup"
     assert cf["instead_of"] == "pick cup"
-    assert "placeholder" in cf["then"]
+    assert "set down" in cf["then"]
 
 
 @pytest.mark.asyncio
