@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import torch
 import torch.distributed as dist
@@ -35,8 +35,6 @@ try:
         ShardingStrategy,
     )
     from torch.distributed.fsdp.wrap import (
-        _or,
-        lambda_auto_wrap_policy,
         size_based_auto_wrap_policy,
     )
 
@@ -352,7 +350,6 @@ def wrap_model_with_fsdp(
     if fsdp_config.activation_checkpointing:
         try:
             from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
-                checkpoint_wrapper,
                 apply_activation_checkpointing,
             )
 
@@ -367,7 +364,7 @@ def wrap_model_with_fsdp(
 
             apply_activation_checkpointing(model, check_fn=check_fn)
             logger.info("Activation checkpointing enabled for FSDP")
-        except ImportException:
+        except ImportError:
             logger.warning("Activation checkpointing not available for this PyTorch version")
 
     return model

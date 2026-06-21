@@ -25,13 +25,11 @@ Usage::
 from __future__ import annotations
 
 import hashlib
-import json
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -681,7 +679,7 @@ class ShadowDeployment:
         Returns:
             Similarity score (0-1)
         """
-        if type(a) != type(b):
+        if not isinstance(a, type(b)):
             return 0.0
 
         if isinstance(a, str):

@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 # Mock heavy dependencies before importing student modules
 sys.modules["datasets"] = MagicMock()

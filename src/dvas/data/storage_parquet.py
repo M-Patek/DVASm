@@ -20,14 +20,11 @@ Usage::
 from __future__ import annotations
 
 import json
-import tempfile
 import uuid
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-import numpy as np
 
 from dvas.data.schemas import Annotation
 from dvas.utils.logging import get_logger
@@ -569,7 +566,6 @@ class PGVectorStore:
             embedding: Embedding vector
             metadata: Optional metadata dict
         """
-        import psycopg2.extras
 
         cursor = self._conn.cursor()
         embedding_str = "[" + ",".join(str(x) for x in embedding) + "]"

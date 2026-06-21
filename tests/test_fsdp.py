@@ -1,7 +1,6 @@
 """Tests for FSDP distributed training utilities."""
 
 import sys
-import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -13,7 +12,6 @@ from dvas.models.student.fsdp_utils import (
     DistributedConfig,
     FSDPConfig,
     cleanup_distributed,
-    get_auto_wrap_policy,
     get_backward_prefetch,
     get_mixed_precision_policy,
     get_sharding_strategy,

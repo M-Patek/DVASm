@@ -35,9 +35,9 @@ import json
 import time
 import uuid
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import asyncio
 import httpx
 
 from dvas.utils.logging import get_logger
@@ -444,11 +444,10 @@ class OpenAIBatchAPI:
         await self.close()
 
 
-# Import asyncio here to avoid circular import issues
-import asyncio
+# -- Async helpers (imported at module level to avoid circular imports)
 
 
-def create_batch_request(
+async def _create_batch_request(
     text: str,
     custom_id: Optional[str] = None,
     model: str = "gpt-4o",

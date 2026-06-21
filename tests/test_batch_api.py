@@ -3,20 +3,16 @@
 import asyncio
 import json
 import sys
-import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import httpx
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from dvas.models.teacher.batch_api import (
-    MAX_BATCH_FILE_SIZE,
     MAX_BATCH_REQUESTS,
     BatchRequest,
-    BatchResult,
     BatchStatus,
     OpenAIBatchAPI,
     create_batch_request,

@@ -7,7 +7,7 @@ logic for optimal training performance.
 from __future__ import annotations
 
 import torch
-from torch.cuda.amp import GradScaler, autocast
+from torch.cuda.amp import GradScaler
 
 from dvas.models.student.config import SFTConfig
 from dvas.utils.logging import get_logger

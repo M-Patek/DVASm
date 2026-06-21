@@ -24,7 +24,7 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterator, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -210,7 +210,7 @@ class CoarseFineSampler:
             Selected keyframes
         """
         # Build frame index lookup
-        frame_by_idx = {f.idx: f for f in frames}
+        _ = {f.idx: f for f in frames}  # noqa: F841
 
         # Score frames within regions using full metric
         scored_frames = []

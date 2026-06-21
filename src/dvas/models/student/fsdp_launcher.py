@@ -31,19 +31,15 @@ from __future__ import annotations
 
 import argparse
 import os
-import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
-import torch
-import torch.distributed as dist
 
 from dvas.models.student.config import SFTConfig
 from dvas.models.student.fsdp_utils import (
     DistributedConfig,
     FSDPConfig,
     cleanup_distributed,
-    load_fsdp_checkpoint,
     save_fsdp_checkpoint,
     setup_distributed,
     wrap_model_with_fsdp,
@@ -53,7 +49,6 @@ from dvas.models.student.sft_trainer import (
     _log_checkpoint_to_wandb,
     load_model_and_processor,
     setup_lora,
-    train_sft,
 )
 from dvas.utils.logging import get_logger
 

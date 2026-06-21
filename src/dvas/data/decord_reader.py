@@ -23,7 +23,7 @@ Usage::
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterator, List, Optional, Union
+from typing import Any, Iterator, List, Optional, Union
 
 import numpy as np
 
@@ -95,7 +95,7 @@ class DecordVideoReader:
 
         self.video_path = Path(video_path)
         self.ctx_str = ctx if isinstance(ctx, str) else f"cpu:{ctx}"
-        self._vr: Optional[decord.VideoReader] = None
+        self._vr: Optional[Any] = None
         self._metadata: Optional[VideoMetadata] = None
 
         if not self.video_path.exists():
@@ -143,7 +143,7 @@ class DecordVideoReader:
 
             assert self._vr is not None
             # decord provides: width, height, duration, avg_fps, frame_cnt
-            vr_meta = self._vr.get_avg_fps()
+            _ = self._vr.get_avg_fps()  # noqa: F841
             total_frames = len(self._vr)
 
             # Get first frame to determine dimensions
@@ -327,7 +327,7 @@ def create_video_reader(
     video_path: Union[str, Path],
     use_decord: bool = True,
     ctx: Union[str, int] = "cpu",
-) -> Union[DecordVideoReader, "VideoReader"]:
+) -> Union["DecordVideoReader", Any]:
     """Factory function to create the best available video reader.
 
     Automatically selects DecordVideoReader if decord is installed,

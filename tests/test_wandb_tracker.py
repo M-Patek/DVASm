@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from dvas.models.student.config import SFTConfig
 from dvas.models.student.wandb_tracker import WandBTracker, init_wandb_for_transformers

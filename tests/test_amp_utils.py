@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 # Mock datasets before importing student modules to avoid pyarrow segfault
 sys.modules["datasets"] = MagicMock()

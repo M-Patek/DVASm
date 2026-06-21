@@ -1,12 +1,9 @@
 """Tests for canary and shadow deployment."""
 
 import sys
-import tempfile
 import time
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
-import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -14,7 +11,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from dvas.routing.canary import (
     BlueGreenDeployment,
     CanaryRouter,
-    ComparisonResult,
     DeploymentMode,
     RollbackConfig,
     RollbackReason,

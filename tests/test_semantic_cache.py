@@ -1,13 +1,9 @@
 """Tests for semantic cache with perceptual hashing."""
 
 import sys
-import tempfile
-from datetime import datetime, timezone
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import numpy as np
-import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
@@ -36,7 +32,6 @@ class TestCacheEntry:
         assert entry.ttl == 3600
 
     def test_is_expired(self):
-        import time
 
         # Entry with 0 TTL should be expired
         entry = CacheEntry(key="test", value="x", ttl=0)

@@ -1,7 +1,6 @@
 """SFT (Supervised Fine-Tuning) training for Qwen2-VL."""
 
 from pathlib import Path
-from typing import Any, Dict, Optional
 
 import torch
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
@@ -230,7 +229,6 @@ def train_sft(config: SFTConfig) -> Path:
     # Check for checkpoint to resume from
     from dvas.models.student.checkpoint_resume import (
         get_resume_kwargs,
-        resume_from_checkpoint,
     )
 
     resume_kwargs = get_resume_kwargs(config, output_dir)
