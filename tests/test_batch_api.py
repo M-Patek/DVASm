@@ -26,7 +26,7 @@ class TestBatchRequest:
         req = BatchRequest(
             custom_id="req-1",
             messages=[{"role": "user", "content": "Hello"}],
-            model="gpt-4o",
+            model="gpt-5.5",
             max_tokens=100,
             temperature=0.5,
         )
@@ -35,7 +35,7 @@ class TestBatchRequest:
         assert api_format["custom_id"] == "req-1"
         assert api_format["method"] == "POST"
         assert api_format["url"] == "/v1/chat/completions"
-        assert api_format["body"]["model"] == "gpt-4o"
+        assert api_format["body"]["model"] == "gpt-5.5"
         assert api_format["body"]["messages"] == [{"role": "user", "content": "Hello"}]
         assert api_format["body"]["max_tokens"] == 100
         assert api_format["body"]["temperature"] == 0.5
@@ -293,7 +293,7 @@ class TestCreateBatchRequest:
     def test_create_simple(self):
         req = create_batch_request("Hello, world!")
         assert req.messages == [{"role": "user", "content": "Hello, world!"}]
-        assert req.model == "gpt-4o"
+        assert req.model == "gpt-5.5"
         assert req.custom_id is not None
 
     def test_create_with_system_prompt(self):

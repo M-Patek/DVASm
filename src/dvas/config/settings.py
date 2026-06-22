@@ -47,6 +47,13 @@ class Settings(BaseSettings):
     VIDEO_MAX_DURATION_SECONDS: float = 60.0
     FRAME_RESIZE: Optional[tuple] = (448, 448)
 
+    # 视频解码器配置 (Phase 1.1优化: 默认启用Decord GPU解码)
+    VIDEO_PREFER_GPU: bool = True  # 优先使用GPU解码
+    VIDEO_GPU_DEVICE_ID: int = 0  # GPU设备ID
+    VIDEO_DECODER_BACKEND: str = "decord"  # "decord" 或 "opencv"
+    VIDEO_ENABLE_PREFETCH: bool = True  # 启用帧预取
+    VIDEO_PREFETCH_QUEUE_SIZE: int = 32  # 预取队列大小
+
     # Data Storage
     ANNOTATION_FORMAT: str = "json"
     EXPORT_FORMATS: List[str] = Field(default=["llava", "openai"])

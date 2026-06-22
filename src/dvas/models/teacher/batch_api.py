@@ -57,7 +57,7 @@ class BatchRequest:
     Attributes:
         custom_id: Unique identifier for this request
         messages: List of message dicts for the chat completion
-        model: Model name (defaults to gpt-4o)
+        model: Model name (defaults to gpt-5.5)
         max_tokens: Maximum tokens to generate
         temperature: Sampling temperature
         extra_body: Additional parameters
@@ -65,7 +65,7 @@ class BatchRequest:
 
     custom_id: str
     messages: List[Dict[str, Any]]
-    model: str = "gpt-4o"
+    model: str = "gpt-5.5"
     max_tokens: int = 4096
     temperature: float = 0.7
     extra_body: Dict[str, Any] = field(default_factory=dict)
@@ -169,6 +169,11 @@ class OpenAIBatchAPI:
             self._client = httpx.AsyncClient(
                 headers={"Authorization": f"Bearer {self.api_key}"},
                 timeout=httpx.Timeout(120.0, connect=10.0),
+                limits=httpx.Limits(
+                    max_connections=100,
+                    max_keepalive_connections=50,
+                ),
+                http2=True,  # 启用HTTP/2多路复用
             )
         return self._client
 
@@ -450,7 +455,7 @@ class OpenAIBatchAPI:
 async def create_batch_request(
     text: str,
     custom_id: Optional[str] = None,
-    model: str = "gpt-4o",
+    model: str = "gpt-5.5",
     system_prompt: Optional[str] = None,
 ) -> BatchRequest:
     """Create a BatchRequest from a text prompt.

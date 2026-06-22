@@ -133,8 +133,17 @@ class TeacherModel(UnifiedModel):
     def _http_client(self) -> httpx.AsyncClient:
         if self.__http_client is None:
             self.__http_client = httpx.AsyncClient(
-                limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
-                timeout=httpx.Timeout(120.0, connect=10.0),
+                limits=httpx.Limits(
+                    max_connections=100,
+                    max_keepalive_connections=50,
+                    keepalive_expiry=30.0,
+                ),
+                http2=True,  # 启用HTTP/2多路复用
+                timeout=httpx.Timeout(connect=10.0, read=120.0, pool=5.0),
+                headers={
+                    "Connection": "keep-alive",
+                    "Keep-Alive": "timeout=30, max=100",
+                },
             )
         return self.__http_client
 

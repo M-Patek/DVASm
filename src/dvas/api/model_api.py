@@ -91,11 +91,11 @@ _registered_models: Dict[str, Dict[str, Any]] = {}
 
 DEFAULT_MODELS = [
     {
-        "id": "model_gpt4o",
-        "name": "GPT-4o",
+        "id": "model_gpt55",
+        "name": "GPT-5.5",
         "provider": "openai",
-        "model_id": "gpt-4o",
-        "description": "OpenAI GPT-4o multimodal model",
+        "model_id": "gpt-5.5",
+        "description": "OpenAI GPT-5.5 multimodal model",
         "capabilities": ["vision", "text_generation", "function_calling"],
         "versions": [
             {"version": "2024-08-06", "release_date": "2024-08-06", "is_latest": True},

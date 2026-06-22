@@ -144,9 +144,13 @@ class KeyFrameSampler(FrameSampler):
         self,
         num_frames: int = 8,
         config: Optional[SamplerConfig] = None,
+        use_hierarchical: bool = True,  # 启用分层采样优化
+        motion_threshold: float = 30.0,  # 场景变化阈值
     ):
         super().__init__(config)
         self.num_frames = num_frames
+        self.use_hierarchical = use_hierarchical
+        self.motion_threshold = motion_threshold
 
     def sample(
         self,
@@ -154,7 +158,136 @@ class KeyFrameSampler(FrameSampler):
         start_time: Optional[float] = None,
         end_time: Optional[float] = None,
     ) -> Iterator[Frame]:
-        """Sample key frames using motion-based importance."""
+        """Sample key frames using motion-based importance with hierarchical optimization."""
+        if self.use_hierarchical:
+            yield from self._sample_hierarchical(reader, start_time, end_time)
+        else:
+            yield from self._sample_simple(reader, start_time, end_time)
+
+    def _sample_hierarchical(
+        self,
+        reader: VideoReader,
+        start_time: Optional[float] = None,
+        end_time: Optional[float] = None,
+    ) -> Iterator[Frame]:
+        """分层采样: 先粗粒度检测，再细粒度精选 (O(n/10)复杂度)."""
+        import cv2
+        from concurrent.futures import ThreadPoolExecutor
+
+        meta = reader.metadata
+        fps = meta.fps
+        start_frame = int((start_time or 0) * fps)
+        end_frame = int((end_time or meta.duration) * fps)
+        end_frame = min(end_frame, meta.total_frames)
+
+        total_frames = end_frame - start_frame
+
+        # 快速路径: 视频很短，直接全量扫描
+        if total_frames <= self.num_frames * 2:
+            yield from self._sample_simple(reader, start_time, end_time)
+            return
+
+        # Phase 1: 粗粒度扫描 (Coarse sampling)
+        coarse_factor = 10  # 每10帧采样1帧
+        coarse_step = max(1, total_frames // (self.num_frames * coarse_factor))
+        coarse_indices = list(range(start_frame, end_frame, coarse_step))
+
+        # 使用get_batch批量读取提高效率
+        coarse_frames = []
+        if hasattr(reader, 'get_batch'):
+            coarse_frames = reader.get_batch(coarse_indices)
+        else:
+            for idx in coarse_indices:
+                frame = reader.get_frame(idx)
+                if frame:
+                    coarse_frames.append(frame)
+
+        if not coarse_frames:
+            return
+
+        # 计算粗粒度运动分数，检测关键帧区域
+        scene_changes = [0]  # 第一帧始终是关键时刻
+        prev_gray = None
+
+        for i, frame in enumerate(coarse_frames):
+            gray = cv2.cvtColor(frame.data, cv2.COLOR_BGR2GRAY)
+
+            if prev_gray is not None:
+                # 快速差异计算
+                diff = cv2.absdiff(gray, prev_gray)
+                mean_diff = float(diff.mean())
+
+                if mean_diff > self.motion_threshold:
+                    scene_changes.append(i)
+
+            prev_gray = gray
+
+        # Phase 2: 细粒度精选 (Fine sampling)
+        # 在场景变化附近进行细粒度采样
+        fine_regions = []
+        for change_idx in scene_changes[:self.num_frames]:
+            # 扩展区域边界
+            region_start = max(0, change_idx - 2)
+            region_end = min(len(coarse_frames), change_idx + 3)
+            fine_regions.append((region_start, region_end))
+
+        # 并行处理细粒度区域
+        def process_region(region):
+            start, end = region
+            frames = coarse_frames[start:end]
+            if not frames:
+                return []
+
+            # 选择区域内运动最大的帧
+            max_motion = 0.0
+            best_frame = frames[0]
+
+            prev = cv2.cvtColor(frames[0].data, cv2.COLOR_BGR2GRAY)
+            for frame in frames[1:]:
+                gray = cv2.cvtColor(frame.data, cv2.COLOR_BGR2GRAY)
+                diff = cv2.absdiff(gray, prev)
+                motion = float(diff.mean())
+
+                if motion > max_motion:
+                    max_motion = motion
+                    best_frame = frame
+
+                prev = gray
+
+            return [(max_motion, best_frame)]
+
+        # 使用线程池并行处理区域
+        results = []
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            futures = [executor.submit(process_region, r) for r in fine_regions]
+            for f in futures:
+                results.extend(f.result())
+
+        if not results:
+            # 如果找不到关键帧，使用均匀采样
+            yield from UniformSampler(
+                SamplerConfig(num_frames=self.num_frames, resize=self.config.resize)
+            ).sample(reader, start_time, end_time)
+            return
+
+        # 按运动分数排序，选择top-K
+        results.sort(key=lambda x: x[0], reverse=True)
+        selected = results[:self.num_frames]
+
+        # 保持时间顺序输出
+        selected_frames = [f for _, f in selected]
+        selected_frames.sort(key=lambda f: f.idx)
+
+        for frame in selected_frames:
+            yield self._resize_frame(frame)
+
+    def _sample_simple(
+        self,
+        reader: VideoReader,
+        start_time: Optional[float] = None,
+        end_time: Optional[float] = None,
+    ) -> Iterator[Frame]:
+        """简单的关键帧采样 (原始实现)."""
         import cv2
 
         meta = reader.metadata
@@ -163,8 +296,6 @@ class KeyFrameSampler(FrameSampler):
         end_frame = int((end_time or meta.duration) * fps)
         end_frame = min(end_frame, meta.total_frames)
 
-        # Use a min-heap to track top-N frames by motion score
-        # This avoids storing all frames in memory
         import heapq
 
         heap: List[Tuple[float, int, Optional[np.ndarray]]] = []
@@ -175,14 +306,11 @@ class KeyFrameSampler(FrameSampler):
             gray = cv2.cvtColor(frame.data, cv2.COLOR_BGR2GRAY)
 
             if prev_gray is not None:
-                # Simple frame difference as motion proxy
                 diff = cv2.absdiff(gray, prev_gray)
                 motion = float(diff.mean())
             else:
                 motion = 0.0
 
-            # Store in min-heap, keeping only top num_frames
-            # Use negative motion for max-heap behavior
             if len(heap) < self.num_frames:
                 heapq.heappush(heap, (motion, frame_idx, frame.data))
             elif motion > heap[0][0]:
@@ -194,7 +322,6 @@ class KeyFrameSampler(FrameSampler):
         if not heap:
             return
 
-        # Sort by original frame index to preserve temporal order
         heap.sort(key=lambda x: x[1])
 
         for motion, idx, data in heap:

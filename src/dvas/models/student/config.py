@@ -1,8 +1,9 @@
 """Training configuration for student model (Qwen2-VL)."""
 
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 
 @dataclass
@@ -29,7 +30,7 @@ class ModelConfig:
     model_name_or_path: str = "Qwen/Qwen2-VL-7B-Instruct"
     trust_remote_code: bool = True
     torch_dtype: str = "bfloat16"
-    attn_implementation: str = "flash_attention_2"
+    attn_implementation: Literal["eager", "flash_attention_2", "sdpa"] = "flash_attention_2"
 
     # LoRA settings
     use_lora: bool = True
@@ -53,6 +54,19 @@ class ModelConfig:
     bnb_4bit_compute_dtype: str = "bfloat16"
     bnb_4bit_quant_type: str = "nf4"
     bnb_4bit_use_double_quant: bool = True
+
+    def validate(self) -> "ModelConfig":
+        """验证配置并检查Flash Attention可用性."""
+        if self.attn_implementation == "flash_attention_2":
+            try:
+                import flash_attn  # noqa: F401
+            except ImportError:
+                warnings.warn(
+                    "flash-attention not installed. Falling back to sdpa. "
+                    "Install with: pip install flash-attn --no-build-isolation"
+                )
+                self.attn_implementation = "sdpa"
+        return self
 
 
 @dataclass
@@ -109,10 +123,12 @@ class HardwareConfig:
     device_map: str = "auto"
     num_gpus: int = 1
 
-    # vLLM settings for inference
-    use_vllm: bool = False
+    # vLLM settings for inference (Phase 4优化: 默认启用vLLM)
+    use_vllm: bool = True  # 默认启用vLLM
     vllm_tensor_parallel_size: int = 1
     vllm_gpu_memory_utilization: float = 0.9
+    vllm_max_model_len: int = 8192
+    vllm_max_num_seqs: int = 256  # 连续批处理最大序列数
 
 
 @dataclass

@@ -71,6 +71,42 @@ def _get_decord_ctx(ctx: Union[str, int]):
     return dec.cpu(0)
 
 
+def get_optimal_video_context(prefer_gpu: bool = True) -> str:
+    """自动检测最佳解码上下文。
+
+    按照以下优先级选择解码设备:
+    1. PyTorch CUDA (如果可用)
+    2. Decord原生GPU支持
+    3. CPU解码 (fallback)
+
+    Args:
+        prefer_gpu: 是否优先使用GPU解码
+
+    Returns:
+        最优解码上下文字符串 ("cuda:N" 或 "cpu")
+    """
+    if not _DECORD_AVAILABLE or not prefer_gpu:
+        return "cpu"
+
+    # 优先检测PyTorch CUDA
+    try:
+        import torch
+        if torch.cuda.is_available():
+            device_id = torch.cuda.current_device()
+            return f"cuda:{device_id}"
+    except ImportError:
+        pass
+
+    # 直接检测decord GPU支持
+    try:
+        dec.gpu(0)
+        return "cuda:0"
+    except Exception:
+        pass
+
+    return "cpu"
+
+
 class DecordVideoReader:
     """Hardware-accelerated video reader using decord.
 

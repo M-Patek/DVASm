@@ -35,20 +35,50 @@ def load_frames_from_video(
 
 
 class StudentInferenceEngine(UnifiedModel):
-    """Inference engine for the fine-tuned student model."""
+    """Inference engine for the fine-tuned student model.
+
+    支持两种后端:
+    - vLLM (默认): 使用连续批处理和PagedAttention，吞吐量高
+    - HF Transformers: 兼容性好，无需额外依赖
+    """
 
     def __init__(
         self,
         model_path: Union[str, Path],
-        use_vllm: bool = False,
+        use_vllm: bool = True,  # 改为默认启用vLLM
         device: str = "auto",
+        tensor_parallel_size: int = 1,
+        gpu_memory_utilization: float = 0.9,
+        max_model_len: int = 8192,
+        quantization: Optional[str] = None,
+        **vllm_kwargs: Any,
     ):
+        """初始化推理引擎.
+
+        Args:
+            model_path: 模型路径或HuggingFace模型ID
+            use_vllm: 是否使用vLLM后端(默认True)
+            device: 设备("auto", "cuda", "cpu")
+            tensor_parallel_size: 张量并行大小(多GPU)
+            gpu_memory_utilization: GPU显存利用率(0-1)
+            max_model_len: 最大序列长度
+            quantization: 量化方式("awq", "gptq", 或None)
+            **vllm_kwargs: 额外的vLLM参数
+        """
         self.model_path = Path(model_path)
         self.use_vllm = use_vllm
         self.device = device
+        self.vllm_config = {
+            "tensor_parallel_size": tensor_parallel_size,
+            "gpu_memory_utilization": gpu_memory_utilization,
+            "max_model_len": max_model_len,
+            "quantization": quantization,
+            **vllm_kwargs,
+        }
 
         self.model = None
         self.processor = None
+        self._sampling_params = None
         self._load_model()
 
     @property
@@ -93,16 +123,39 @@ class StudentInferenceEngine(UnifiedModel):
         try:
             from vllm import LLM
 
-            self.model = LLM(
-                model=str(self.model_path),
-                trust_remote_code=True,
-                tensor_parallel_size=1,
-            )
+            # 配置vLLM优化参数
+            vllm_kwargs = {
+                "model": str(self.model_path),
+                "trust_remote_code": True,
+                # 连续批处理优化
+                "max_num_seqs": 256,  # 最大并发序列数
+                "max_num_batched_tokens": self.vllm_config.get("max_model_len", 4096),
+                # GPU内存优化
+                "tensor_parallel_size": self.vllm_config.get("tensor_parallel_size", 1),
+                "gpu_memory_utilization": self.vllm_config.get(
+                    "gpu_memory_utilization", 0.9
+                ),
+                "max_model_len": self.vllm_config.get("max_model_len", 8192),
+            }
+
+            # 添加量化配置
+            if self.vllm_config.get("quantization"):
+                vllm_kwargs["quantization"] = self.vllm_config["quantization"]
+
+            # 合并额外参数
+            vllm_kwargs.update(self.vllm_config)
+
+            self.model = LLM(**vllm_kwargs)
 
             # vLLM uses its own tokenizer
             self.processor = self.model.get_tokenizer()
 
-            logger.info("Model loaded with vLLM")
+            logger.info(
+                "Model loaded with vLLM",
+                tensor_parallel=self.vllm_config.get("tensor_parallel_size", 1),
+                gpu_util=self.vllm_config.get("gpu_memory_utilization", 0.9),
+                max_seqs=256,
+            )
 
         except ImportError:
             logger.warning("vLLM not available, falling back to HF")
@@ -203,8 +256,28 @@ class StudentInferenceEngine(UnifiedModel):
                 error_message=str(e),
             )
 
-    async def generate_batch(self, items: List[Dict[str, Any]], **kwargs) -> List[GenerationResult]:
-        """Batch generation."""
+    async def generate_batch(
+        self, items: List[Dict[str, Any]], batch_size: int = 32, **kwargs
+    ) -> List[GenerationResult]:
+        """批量推理，支持连续批处理(vLLM).
+
+        Args:
+            items: 推理任务列表
+            batch_size: vLLM批处理大小(默认32)
+            **kwargs: 额外参数
+
+        Returns:
+            GenerationResult列表
+        """
+        if self.use_vllm and len(items) > 1:
+            return await self._generate_batch_vllm(items, batch_size, **kwargs)
+        else:
+            return await self._generate_batch_sequential(items, **kwargs)
+
+    async def _generate_batch_sequential(
+        self, items: List[Dict[str, Any]], **kwargs
+    ) -> List[GenerationResult]:
+        """顺序批量推理(HF Transformers)."""
         results = []
         for item in items:
             result = await self.generate(
@@ -215,6 +288,103 @@ class StudentInferenceEngine(UnifiedModel):
                 **kwargs,
             )
             results.append(result)
+        return results
+
+    async def _generate_batch_vllm(
+        self, items: List[Dict[str, Any]], batch_size: int = 32, **kwargs
+    ) -> List[GenerationResult]:
+        """vLLM连续批处理推理.
+
+        vLLM的连续批处理允许在单个批次处理过程中
+        动态添加新请求，最大化GPU利用率。
+        """
+        results: List[GenerationResult] = []
+
+        # 批量加载所有视频的帧
+        all_frames = []
+        all_prompts = []
+
+        for item in items:
+            frames = item.get("frames")
+            video_path = item.get("video_path")
+            prompt = item.get("prompt", "Describe the video.")
+
+            if frames is None and video_path is not None:
+                frames = load_frames_from_video(Path(video_path))
+
+            if frames:
+                all_frames.append(frames)
+                all_prompts.append(prompt)
+
+        if not all_frames:
+            return [
+                GenerationResult.failure(
+                    error_message="No frames loaded for any item",
+                    model_type=self.model_type,
+                    model_version=self.model_version,
+                )
+            ] * len(items)
+
+        # 使用vLLM进行批处理生成
+        try:
+            from vllm import SamplingParams
+
+            max_new_tokens = kwargs.get("max_new_tokens", 512)
+            temperature = kwargs.get("temperature", 0.2)
+
+            sampling_params = SamplingParams(
+                temperature=temperature,
+                max_tokens=max_new_tokens,
+                top_p=0.95,
+            )
+
+            # 准备输入
+            vllm_inputs = []
+            for prompt, frames in zip(all_prompts, all_frames):
+                # 构建多模态输入 (根据vLLM版本可能有所不同)
+                vllm_input = {
+                    "prompt": prompt,
+                    "multi_modal_data": {"image": frames},
+                }
+                vllm_inputs.append(vllm_input)
+
+            # 分批处理，每批batch_size个
+            start_time = time.perf_counter()
+            all_outputs = []
+
+            for i in range(0, len(vllm_inputs), batch_size):
+                batch = vllm_inputs[i : i + batch_size]
+                outputs = self.model.generate(batch, sampling_params)
+                all_outputs.extend(outputs)
+
+            total_latency_ms = (time.perf_counter() - start_time) * 1000
+            avg_latency_ms = total_latency_ms / len(items)
+
+            # 构建结果
+            for i, output in enumerate(all_outputs):
+                results.append(
+                    GenerationResult(
+                        text=output.outputs[0].text,
+                        model_type=self.model_type,
+                        model_version=self.model_version,
+                        status=GenerationStatus.SUCCESS,
+                        latency_ms=avg_latency_ms,  # 连续批处理中近似平均延迟
+                        cost_usd=0.0,
+                        metadata={
+                            "device": self.device,
+                            "backend": "vllm",
+                            "batch_size": len(vllm_inputs),
+                            "prompt_tokens": len(output.prompt_token_ids),
+                            "output_tokens": len(output.outputs[0].token_ids),
+                        },
+                    )
+                )
+
+        except Exception as e:
+            logger.error("vLLM batch generation failed", error=str(e))
+            # 回退到顺序处理
+            return await self._generate_batch_sequential(items, **kwargs)
+
         return results
 
     def _generate_hf(

@@ -91,11 +91,22 @@ def _add_to_metadata_cache(path: Path, metadata: VideoMetadata) -> None:
     _metadata_cache_order.append(path)
 
 
+# Decord availability check (lazy import to avoid hard dependency)
+try:
+    from dvas.data.decord_reader import DecordVideoReader, get_optimal_video_context
+
+    _DECORD_AVAILABLE = True
+except ImportError:
+    _DECORD_AVAILABLE = False
+    DecordVideoReader = None  # type: ignore
+    get_optimal_video_context = None  # type: ignore
+
+
 class VideoLoader:
     """Thin coordinator over focused video processing components.
 
     Delegates all work to specialized components:
-    - VideoReader: raw frame access
+    - VideoReader: raw frame access (默认使用Decord GPU加速，自动回退到OpenCV)
     - FrameSampler: frame sampling strategies
     - SceneDetector: scene boundary detection
     - MotionEstimator: motion intensity estimation
@@ -109,9 +120,48 @@ class VideoLoader:
         sampler: Optional[FrameSampler] = None,
         scene_detector: Optional[SceneDetector] = None,
         motion_estimator: Optional[MotionEstimator] = None,
+        use_decord: bool = True,
+        ctx: Optional[str] = None,
+        enable_prefetch: Optional[bool] = None,  # None表示使用配置默认值
     ):
         self.video_path = Path(video_path)
-        self._reader = VideoReader(video_path)
+
+        # 自动选择最佳video reader (默认使用Decord GPU)
+        if use_decord and _DECORD_AVAILABLE:
+            try:
+                ctx = ctx or get_optimal_video_context(
+                    prefer_gpu=settings.VIDEO_PREFER_GPU
+                )
+                self._reader = DecordVideoReader(video_path, ctx=ctx)
+                logger.debug(
+                    "Using DecordVideoReader",
+                    path=str(video_path),
+                    ctx=ctx,
+                )
+            except Exception as e:
+                logger.warning(
+                    "Decord initialization failed, falling back to VideoReader",
+                    error=str(e),
+                    path=str(video_path),
+                )
+                self._reader = VideoReader(video_path)
+        else:
+            self._reader = VideoReader(video_path)
+
+        # 如果启用预取，包装reader
+        should_prefetch = enable_prefetch if enable_prefetch is not None else settings.VIDEO_ENABLE_PREFETCH
+        if should_prefetch:
+            from dvas.data.prefetch_reader import PrefetchVideoReader
+
+            self._reader = PrefetchVideoReader(
+                self._reader,
+                prefetch_size=settings.VIDEO_PREFETCH_QUEUE_SIZE,
+            )
+            logger.debug(
+                "Prefetch enabled",
+                queue_size=settings.VIDEO_PREFETCH_QUEUE_SIZE,
+            )
+
         self._sampler = sampler or UniformSampler(
             SamplerConfig(target_fps=target_fps, resize=resize)
         )
