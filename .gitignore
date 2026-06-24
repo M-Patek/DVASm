@@ -37,6 +37,18 @@ env/
 .coverage
 htmlcov/
 
+# Security/quality reports
+bandit-report.json
+*report.json
+coverage*.json
+
+# Outputs
+outputs/
+!outputs/.gitkeep
+
+# Root CHANGELOG (keep docs/changelog/CHANGELOG.md)
+/CHANGELOG.md
+
 # Documentation build
 docs/_build/
 .tmp/
