@@ -23,7 +23,7 @@ from __future__ import annotations
 import asyncio
 import time
 from enum import Enum, auto
-from typing import Any, Callable, Optional, TypeVar
+from typing import Callable, Optional, TypeVar
 
 from dvas.utils.logging import get_logger
 
@@ -153,7 +153,7 @@ class CircuitBreaker:
             result = await func(*args, **kwargs)
             await self._on_success()
             return result
-        except Exception as e:
+        except Exception:
             await self._on_failure()
             raise
 

@@ -19,10 +19,9 @@ Usage::
 
 from __future__ import annotations
 
-import logging
 import queue
 import threading
-from typing import Iterator, List, Optional, Union
+from typing import Iterator, List, Optional
 
 from dvas.data.video_reader import Frame, VideoReader
 from dvas.utils.logging import get_logger
