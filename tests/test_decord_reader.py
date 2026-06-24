@@ -4,22 +4,24 @@ These tests mock decord to avoid requiring the actual library.
 """
 
 import sys
-import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
 
+# Set up decord mock BEFORE any dvas imports
 # Check if decord is available
 try:
     import decord
+
     _DECORD_AVAILABLE = True
+    decord_mock = MagicMock()
+    decord_mock.cpu = MagicMock(return_value="cpu_ctx")
+    decord_mock.gpu = MagicMock(return_value="gpu_ctx")
 except ImportError:
     _DECORD_AVAILABLE = False
-
-# Mock decord before importing our module (only if not already mocked)
-if not _DECORD_AVAILABLE:
+    # Create mock for decord module
     decord_mock = MagicMock()
     decord_mock.cpu = MagicMock(return_value="cpu_ctx")
     decord_mock.gpu = MagicMock(return_value="gpu_ctx")
@@ -41,19 +43,10 @@ if not _DECORD_AVAILABLE:
 
     decord_mock.VideoReader = MagicMock(return_value=decord_video_reader_mock)
 
+    # Install mock before any dvas import
     sys.modules["decord"] = decord_mock
-else:
-    # Use real decord but patch for consistent testing
-    decord_mock = MagicMock()
-    decord_mock.cpu = MagicMock(return_value="cpu_ctx")
-    decord_mock.gpu = MagicMock(return_value="gpu_ctx")
 
-# Skip all tests if decord cannot be mocked properly
-pytestmark = pytest.mark.skipif(
-    not _DECORD_AVAILABLE and "decord" not in sys.modules,
-    reason="decord not available and mock failed"
-)
-
+# Now safe to import dvas modules
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from dvas.data.decord_reader import DecordVideoReader, _get_decord_ctx, create_video_reader
@@ -87,176 +80,150 @@ class TestDecordContext:
 class TestDecordVideoReaderInit:
     """Test DecordVideoReader initialization."""
 
-    def test_init_with_cpu(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
+    def test_init_with_cpu(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
 
-            reader = DecordVideoReader(str(video_file), ctx="cpu")
-            assert reader.ctx_str == "cpu"
-            assert reader.video_path == video_file
+        reader = DecordVideoReader(str(video_file), ctx="cpu")
+        assert reader.ctx_str == "cpu"
+        assert reader.video_path == video_file
 
-    def test_init_with_cuda(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
+    def test_init_with_cuda(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
 
-            reader = DecordVideoReader(str(video_file), ctx="cuda:0")
-            assert reader.ctx_str == "cuda:0"
+        reader = DecordVideoReader(str(video_file), ctx="cuda:0")
+        assert reader.ctx_str == "cuda:0"
 
     def test_file_not_found(self):
         with pytest.raises(FileNotFoundError):
             DecordVideoReader("/nonexistent/video.mp4")
 
-    def test_unsupported_format(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.wmv"
-            video_file.write_text("fake video")
+    def test_unsupported_format(self, tmp_path):
+        video_file = tmp_path / "test.wmv"
+        video_file.write_text("fake video")
 
-            with pytest.raises(ValueError, match="Unsupported video format"):
-                DecordVideoReader(str(video_file))
+        with pytest.raises(ValueError, match="Unsupported video format"):
+            DecordVideoReader(str(video_file))
 
 
 class TestDecordVideoReaderMetadata:
     """Test metadata extraction."""
 
-    def test_metadata(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
+    def test_metadata(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
 
-            with DecordVideoReader(str(video_file)) as reader:
-                meta = reader.metadata
-                assert isinstance(meta, VideoMetadata)
-                assert meta.fps == 30.0
-                assert meta.total_frames == 300
-                assert meta.resolution == [1920, 1080]
+        with DecordVideoReader(str(video_file)) as reader:
+            meta = reader.metadata
+            assert isinstance(meta, VideoMetadata)
+            assert meta.fps == 30.0
+            assert meta.total_frames == 300
+            assert meta.resolution == [1920, 1080]
 
 
 class TestDecordVideoReaderFrames:
     """Test frame reading."""
 
-    def test_get_batch(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
+    def test_get_batch(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
 
-            with DecordVideoReader(str(video_file)) as reader:
-                frames = reader.get_batch([0, 10, 20, 30])
+        with DecordVideoReader(str(video_file)) as reader:
+            frames = reader.get_batch([0, 10, 20, 30])
 
-            assert len(frames) == 4
-            assert frames[0].idx == 0
-            assert frames[1].idx == 10
-            assert frames[0].data.shape == (1080, 1920, 3)
+        assert len(frames) == 4
+        assert frames[0].idx == 0
+        assert frames[1].idx == 10
+        assert frames[0].data.shape == (1080, 1920, 3)
 
-    def test_get_frame(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
+    def test_get_frame(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
 
-            with DecordVideoReader(str(video_file)) as reader:
-                frame = reader.get_frame(0)
+        with DecordVideoReader(str(video_file)) as reader:
+            frame = reader.get_frame(0)
 
-            assert frame is not None
-            assert frame.idx == 0
-            assert frame.data.shape == (1080, 1920, 3)
+        assert frame is not None
+        assert frame.idx == 0
+        assert frame.data.shape == (1080, 1920, 3)
 
-    def test_get_frame_out_of_range(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
+    def test_get_frame_out_of_range(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
 
-            with DecordVideoReader(str(video_file)) as reader:
-                frame = reader.get_frame(1000)  # Beyond 300 frames
+        with DecordVideoReader(str(video_file)) as reader:
+            frame = reader.get_frame(1000)  # Beyond 300 frames
 
-            assert frame is None
+        assert frame is None
 
-    def test_read_frames(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
+    def test_read_frames(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
 
-            with DecordVideoReader(str(video_file)) as reader:
-                frames = list(reader.read_frames(start_frame=0, end_frame=10, step=2))
+        with DecordVideoReader(str(video_file)) as reader:
+            frames = list(reader.read_frames(start_frame=0, end_frame=10, step=2))
 
-            assert len(frames) == 4  # 0, 2, 4, 6 (10 is exclusive)
-            assert frames[0].idx == 0
-            assert frames[1].idx == 2
-            assert frames[2].idx == 4
-            assert frames[3].idx == 6
+        assert len(frames) == 4  # 0, 2, 4, 6 (10 is exclusive)
+        assert frames[0].idx == 0
+        assert frames[1].idx == 2
+        assert frames[2].idx == 4
+        assert frames[3].idx == 6
 
-    def test_read_frames_empty_range(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
+    def test_read_frames_empty_range(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
 
-            with DecordVideoReader(str(video_file)) as reader:
-                frames = list(reader.read_frames(start_frame=100, end_frame=100))
+        with DecordVideoReader(str(video_file)) as reader:
+            frames = list(reader.read_frames(start_frame=100, end_frame=100))
 
-            assert len(frames) == 0
+        assert len(frames) == 0
 
 
 class TestDecordVideoReaderKeyframes:
     """Test keyframe extraction."""
 
-    def test_get_keyframes(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
+    def test_get_keyframes(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
 
-            with DecordVideoReader(str(video_file)) as reader:
-                keyframes = reader.get_keyframes(max_frames=10)
+        with DecordVideoReader(str(video_file)) as reader:
+            keyframes = reader.get_keyframes(max_frames=10)
 
-            assert len(keyframes) <= 10
-            assert keyframes[0] == 0  # First frame always included
+        assert len(keyframes) <= 10
+        assert keyframes[0] == 0  # First frame always included
 
 
 class TestCreateVideoReader:
     """Test factory function."""
 
-    def test_returns_decord_when_available(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
+    def test_returns_decord_when_available(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
 
+        reader = create_video_reader(str(video_file), use_decord=True)
+        assert isinstance(reader, DecordVideoReader)
+
+    def test_returns_standard_when_decord_disabled(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
+
+        reader = create_video_reader(str(video_file), use_decord=False)
+        from dvas.data.video_reader import VideoReader
+
+        assert isinstance(reader, VideoReader)
+
+    def test_fallback_on_error(self, tmp_path):
+        video_file = tmp_path / "test.mp4"
+        video_file.write_text("fake video")
+
+        # Force decord to fail by patching DecordVideoReader init
+        with patch.object(
+            sys.modules["dvas.data.decord_reader"],
+            "DecordVideoReader",
+            side_effect=RuntimeError("GPU not available"),
+        ):
             reader = create_video_reader(str(video_file), use_decord=True)
-            assert isinstance(reader, DecordVideoReader)
-
-    def test_returns_standard_when_decord_disabled(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
-
-            reader = create_video_reader(str(video_file), use_decord=False)
             from dvas.data.video_reader import VideoReader
 
             assert isinstance(reader, VideoReader)
-
-    def test_fallback_on_error(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_path = Path(tmp_dir)
-            video_file = tmp_path / "test.mp4"
-            video_file.write_text("fake video")
-
-            # Force decord to fail by patching DecordVideoReader init
-            with patch.object(
-                sys.modules["dvas.data.decord_reader"],
-                "DecordVideoReader",
-                side_effect=RuntimeError("GPU not available"),
-            ):
-                reader = create_video_reader(str(video_file), use_decord=True)
-                from dvas.data.video_reader import VideoReader
-
-                assert isinstance(reader, VideoReader)
