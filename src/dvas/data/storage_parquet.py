@@ -253,7 +253,9 @@ class ParquetAnnotationStore:
 
         # Register Parquet files as view
         file_list = ", ".join(f"'{f}'" for f in parquet_files)
-        conn.execute(f"CREATE OR REPLACE VIEW annotations AS SELECT * FROM read_parquet([{file_list}])")
+        conn.execute(
+            f"CREATE OR REPLACE VIEW annotations AS SELECT * FROM read_parquet([{file_list}])"
+        )
 
         result = conn.execute(
             "SELECT json_data FROM annotations WHERE id = ?",
@@ -327,7 +329,9 @@ class ParquetAnnotationStore:
             return [], 0
 
         file_list = ", ".join(f"'{f}'" for f in parquet_files)
-        conn.execute(f"CREATE OR REPLACE VIEW annotations AS SELECT * FROM read_parquet([{file_list}])")
+        conn.execute(
+            f"CREATE OR REPLACE VIEW annotations AS SELECT * FROM read_parquet([{file_list}])"
+        )
 
         # Build WHERE clause
         conditions = []
@@ -423,7 +427,9 @@ class ParquetAnnotationStore:
                 stats["by_source"][source]["size_mb"] += file_size
 
             except Exception as e:
-                logger.warning("failed_to_read_parquet_metadata", file=str(parquet_file), error=str(e))
+                logger.warning(
+                    "failed_to_read_parquet_metadata", file=str(parquet_file), error=str(e)
+                )
 
         return stats
 
@@ -570,14 +576,17 @@ class PGVectorStore:
         cursor = self._conn.cursor()
         embedding_str = "[" + ",".join(str(x) for x in embedding) + "]"
 
-        cursor.execute(f"""
+        cursor.execute(
+            f"""
             INSERT INTO {self.table_name} (id, annotation_id, embedding, metadata)
             VALUES (%s, %s, %s::vector, %s)
             ON CONFLICT (id) DO UPDATE SET
                 embedding = EXCLUDED.embedding,
                 metadata = EXCLUDED.metadata,
                 created_at = CURRENT_TIMESTAMP
-        """, (str(uuid.uuid4()), annotation_id, embedding_str, json.dumps(metadata or {})))
+        """,
+            (str(uuid.uuid4()), annotation_id, embedding_str, json.dumps(metadata or {})),
+        )
 
         cursor.close()
 
@@ -608,21 +617,26 @@ class PGVectorStore:
         }
         op = metric_ops.get(metric, "<=>")
 
-        cursor.execute(f"""
+        cursor.execute(
+            f"""
             SELECT annotation_id, embedding, embedding {op} %s::vector as distance
             FROM {self.table_name}
             ORDER BY embedding {op} %s::vector
             LIMIT %s
-        """, (embedding_str, embedding_str, top_k))
+        """,
+            (embedding_str, embedding_str, top_k),
+        )
 
         results = []
         for row in cursor.fetchall():
-            results.append(SemanticSearchResult(
-                annotation_id=row[0],
-                video_id="",
-                score=1.0 - row[2] if metric == "cosine" else row[2],
-                embedding=row[1],
-            ))
+            results.append(
+                SemanticSearchResult(
+                    annotation_id=row[0],
+                    video_id="",
+                    score=1.0 - row[2] if metric == "cosine" else row[2],
+                    embedding=row[1],
+                )
+            )
 
         cursor.close()
         return results

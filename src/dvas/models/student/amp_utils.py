@@ -34,8 +34,7 @@ def get_amp_dtype(config: SFTConfig) -> torch.dtype:
             return torch.bfloat16
         else:
             logger.warning(
-                "bf16 requested but not supported on this device, "
-                "falling back to float32"
+                "bf16 requested but not supported on this device, falling back to float32"
             )
             return torch.float32
     elif config.training.fp16:
@@ -112,8 +111,7 @@ def get_training_dtype(config: SFTConfig) -> torch.dtype:
     if dtype == torch.bfloat16:
         if torch.cuda.is_available() and not torch.cuda.is_bf16_supported():
             logger.warning(
-                "bfloat16 not supported on this GPU (requires Ampere+), "
-                "falling back to float32"
+                "bfloat16 not supported on this GPU (requires Ampere+), falling back to float32"
             )
             return torch.float32
 

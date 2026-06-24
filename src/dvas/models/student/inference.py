@@ -132,9 +132,7 @@ class StudentInferenceEngine(UnifiedModel):
                 "max_num_batched_tokens": self.vllm_config.get("max_model_len", 4096),
                 # GPU内存优化
                 "tensor_parallel_size": self.vllm_config.get("tensor_parallel_size", 1),
-                "gpu_memory_utilization": self.vllm_config.get(
-                    "gpu_memory_utilization", 0.9
-                ),
+                "gpu_memory_utilization": self.vllm_config.get("gpu_memory_utilization", 0.9),
                 "max_model_len": self.vllm_config.get("max_model_len", 8192),
             }
 

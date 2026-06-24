@@ -107,9 +107,7 @@ class CoarseFineSampler:
         diff = np.mean(np.abs(small1.astype(float) - small2.astype(float)))
         return float(diff)
 
-    def _coarse_sampling(
-        self, frames: List[Frame]
-    ) -> Tuple[List[Frame], List[float]]:
+    def _coarse_sampling(self, frames: List[Frame]) -> Tuple[List[Frame], List[float]]:
         """Coarse sampling: sample every N frames and compute differences.
 
         Args:
@@ -132,9 +130,7 @@ class CoarseFineSampler:
 
         return coarse_frames, diffs
 
-    def _detect_regions(
-        self, coarse_frames: List[Frame], diffs: List[float]
-    ) -> List[Region]:
+    def _detect_regions(self, coarse_frames: List[Frame], diffs: List[float]) -> List[Region]:
         """Detect high-importance regions from coarse differences.
 
         Args:

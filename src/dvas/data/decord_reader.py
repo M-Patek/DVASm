@@ -91,6 +91,7 @@ def get_optimal_video_context(prefer_gpu: bool = True) -> str:
     # 优先检测PyTorch CUDA
     try:
         import torch
+
         if torch.cuda.is_available():
             device_id = torch.cuda.current_device()
             return f"cuda:{device_id}"
@@ -125,8 +126,7 @@ class DecordVideoReader:
     ):
         if not _DECORD_AVAILABLE:
             raise ImportError(
-                "decord is required for DecordVideoReader. "
-                "Install with: pip install decord"
+                "decord is required for DecordVideoReader. Install with: pip install decord"
             )
 
         self.video_path = Path(video_path)
@@ -333,7 +333,9 @@ class DecordVideoReader:
             return list(range(total_frames))
 
         # Sample frames uniformly for scene detection
-        sample_indices = np.linspace(0, total_frames - 1, min(max_frames * 2, total_frames), dtype=int)
+        sample_indices = np.linspace(
+            0, total_frames - 1, min(max_frames * 2, total_frames), dtype=int
+        )
         frames = self.get_batch(sample_indices.tolist())
 
         # Compute frame differences
@@ -341,7 +343,11 @@ class DecordVideoReader:
         prev_gray = None
 
         for i, frame in enumerate(frames):
-            gray = np.mean(frame.data, axis=2).astype(np.uint8) if len(frame.data.shape) == 3 else frame.data
+            gray = (
+                np.mean(frame.data, axis=2).astype(np.uint8)
+                if len(frame.data.shape) == 3
+                else frame.data
+            )
 
             if prev_gray is not None:
                 diff = np.mean(np.abs(gray.astype(float) - prev_gray.astype(float)))

@@ -364,9 +364,7 @@ class DriftMonitor:
             features=list(self.reference_features.keys()),
         )
 
-    def _extract_feature_arrays(
-        self, annotations: List[Annotation]
-    ) -> Dict[str, np.ndarray]:
+    def _extract_feature_arrays(self, annotations: List[Annotation]) -> Dict[str, np.ndarray]:
         """Extract feature arrays from annotations.
 
         Args:
@@ -502,17 +500,14 @@ class DriftMonitor:
 
                 if p_value < self.config.ks_threshold:
                     report.alerts.append(
-                        f"Prediction drift: Quality score distribution changed "
-                        f"(p={p_value:.4f})"
+                        f"Prediction drift: Quality score distribution changed (p={p_value:.4f})"
                     )
 
             psi = compute_psi(ref_scores, cur_scores)
             report.psi_results["quality_score"] = {"psi": psi}
 
             if psi > self.config.psi_threshold:
-                report.alerts.append(
-                    f"Prediction PSI alert: Quality score PSI={psi:.4f}"
-                )
+                report.alerts.append(f"Prediction PSI alert: Quality score PSI={psi:.4f}")
 
             report.prediction_drift["quality_score"] = {
                 "reference_mean": float(np.mean(ref_scores)),
@@ -536,9 +531,7 @@ class DriftMonitor:
             }
 
             if novel_ratio > 0.3:  # 30% new words
-                report.alerts.append(
-                    f"Vocabulary drift: {novel_ratio:.1%} novel words detected"
-                )
+                report.alerts.append(f"Vocabulary drift: {novel_ratio:.1%} novel words detected")
 
     def _generate_recommendations(self, report: DriftReport) -> List[str]:
         """Generate recommendations based on drift report.
@@ -557,7 +550,8 @@ class DriftMonitor:
 
         # Feature drift recommendations
         feature_drifts = [
-            k for k, v in report.ks_results.items()
+            k
+            for k, v in report.ks_results.items()
             if k in self.config.feature_columns and v.get("drift", False)
         ]
 
@@ -584,9 +578,7 @@ class DriftMonitor:
                 )
 
         # General recommendations
-        recommendations.append(
-            "Review recent data pipeline changes and model performance metrics."
-        )
+        recommendations.append("Review recent data pipeline changes and model performance metrics.")
 
         return recommendations
 

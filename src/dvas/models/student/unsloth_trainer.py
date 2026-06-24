@@ -78,8 +78,7 @@ class UnslothSFTTrainer:
         """验证Unsloth是否可用."""
         if not _UNSLOTH_AVAILABLE:
             raise ImportError(
-                "Unsloth not available. Install with: "
-                "pip install 'unsloth[vision]>=2024.1.0'"
+                "Unsloth not available. Install with: pip install 'unsloth[vision]>=2024.1.0'"
             )
 
     def load_model(
@@ -97,11 +96,7 @@ class UnslothSFTTrainer:
             (model, tokenizer) 元组
         """
         model_name = model_name or self.config.model.model_name_or_path
-        load_in_4bit = (
-            load_in_4bit
-            if load_in_4bit is not None
-            else self.config.model.load_in_4bit
-        )
+        load_in_4bit = load_in_4bit if load_in_4bit is not None else self.config.model.load_in_4bit
 
         logger.info(
             "Loading model with Unsloth acceleration",
@@ -163,7 +158,9 @@ class UnslothSFTTrainer:
             per_device_train_batch_size=self.config.data.batch_size,
             gradient_accumulation_steps=self.config.training.gradient_accumulation_steps,
             num_train_epochs=self.config.training.num_train_epochs,
-            max_steps=self.config.training.max_steps if self.config.training.max_steps > 0 else None,
+            max_steps=self.config.training.max_steps
+            if self.config.training.max_steps > 0
+            else None,
             learning_rate=self.config.training.learning_rate,
             warmup_ratio=self.config.training.warmup_ratio,
             lr_scheduler_type=self.config.training.lr_scheduler_type,

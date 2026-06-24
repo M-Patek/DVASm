@@ -321,7 +321,9 @@ def wrap_model_with_fsdp(
     fsdp_kwargs: Dict[str, Any] = {
         "sharding_strategy": sharding,
         "auto_wrap_policy": wrap_policy,
-        "device_id": torch.cuda.current_device() if torch.cuda.is_available() else torch.device("cpu"),
+        "device_id": torch.cuda.current_device()
+        if torch.cuda.is_available()
+        else torch.device("cpu"),
         "limit_all_gathers": fsdp_config.limit_all_gathers,
         "sync_module_states": fsdp_config.sync_module_states,
         "use_orig_params": fsdp_config.use_orig_params,

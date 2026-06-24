@@ -114,9 +114,7 @@ class ValidationGate:
 
             value = metrics[metric_name]
             if value < threshold:
-                failures.append(
-                    f"{metric_name}: {value:.4f} < threshold {threshold:.4f}"
-                )
+                failures.append(f"{metric_name}: {value:.4f} < threshold {threshold:.4f}")
 
         return ValidationGateResult(
             passed=len(failures) == 0,
@@ -298,7 +296,9 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="Run validation gates for model deployment")
     parser.add_argument("model_path", type=str, help="Path to model checkpoint")
-    parser.add_argument("--benchmark", type=str, default="student_regression", help="Benchmark name")
+    parser.add_argument(
+        "--benchmark", type=str, default="student_regression", help="Benchmark name"
+    )
     parser.add_argument("--benchmark-dir", type=str, help="Benchmark directory")
     parser.add_argument("--threshold-bleu", type=float, help="BLEU threshold")
     parser.add_argument("--threshold-rouge", type=float, help="ROUGE-L threshold")

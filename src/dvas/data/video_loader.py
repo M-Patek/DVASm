@@ -129,9 +129,7 @@ class VideoLoader:
         # 自动选择最佳video reader (默认使用Decord GPU)
         if use_decord and _DECORD_AVAILABLE:
             try:
-                ctx = ctx or get_optimal_video_context(
-                    prefer_gpu=settings.VIDEO_PREFER_GPU
-                )
+                ctx = ctx or get_optimal_video_context(prefer_gpu=settings.VIDEO_PREFER_GPU)
                 self._reader = DecordVideoReader(video_path, ctx=ctx)
                 logger.debug(
                     "Using DecordVideoReader",
@@ -149,7 +147,9 @@ class VideoLoader:
             self._reader = VideoReader(video_path)
 
         # 如果启用预取，包装reader
-        should_prefetch = enable_prefetch if enable_prefetch is not None else settings.VIDEO_ENABLE_PREFETCH
+        should_prefetch = (
+            enable_prefetch if enable_prefetch is not None else settings.VIDEO_ENABLE_PREFETCH
+        )
         if should_prefetch:
             from dvas.data.prefetch_reader import PrefetchVideoReader
 

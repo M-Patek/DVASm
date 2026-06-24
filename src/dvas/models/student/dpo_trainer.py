@@ -192,7 +192,9 @@ def train_dpo(config: DPOConfig) -> Path:
 
     resume_kwargs = get_resume_kwargs(config, output_dir)
     if resume_kwargs:
-        logger.info("Resuming from checkpoint", checkpoint=resume_kwargs.get("resume_from_checkpoint"))
+        logger.info(
+            "Resuming from checkpoint", checkpoint=resume_kwargs.get("resume_from_checkpoint")
+        )
 
     # Train
     logger.info("Starting DPO training")

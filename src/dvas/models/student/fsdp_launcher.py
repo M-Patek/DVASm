@@ -93,7 +93,9 @@ def _setup_for_distributed_training(config: SFTConfig) -> tuple[SFTConfig, Distr
         "Distributed training configured",
         world_size=world_size,
         per_device_batch_size=config.data.batch_size,
-        effective_batch_size=config.data.batch_size * world_size * config.training.gradient_accumulation_steps,
+        effective_batch_size=config.data.batch_size
+        * world_size
+        * config.training.gradient_accumulation_steps,
     )
 
     # Adjust device map for FSDP (FSDP manages device placement)

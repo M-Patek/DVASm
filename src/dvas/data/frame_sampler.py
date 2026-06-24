@@ -194,7 +194,7 @@ class KeyFrameSampler(FrameSampler):
 
         # 使用get_batch批量读取提高效率
         coarse_frames = []
-        if hasattr(reader, 'get_batch'):
+        if hasattr(reader, "get_batch"):
             coarse_frames = reader.get_batch(coarse_indices)
         else:
             for idx in coarse_indices:
@@ -225,7 +225,7 @@ class KeyFrameSampler(FrameSampler):
         # Phase 2: 细粒度精选 (Fine sampling)
         # 在场景变化附近进行细粒度采样
         fine_regions = []
-        for change_idx in scene_changes[:self.num_frames]:
+        for change_idx in scene_changes[: self.num_frames]:
             # 扩展区域边界
             region_start = max(0, change_idx - 2)
             region_end = min(len(coarse_frames), change_idx + 3)
@@ -272,7 +272,7 @@ class KeyFrameSampler(FrameSampler):
 
         # 按运动分数排序，选择top-K
         results.sort(key=lambda x: x[0], reverse=True)
-        selected = results[:self.num_frames]
+        selected = results[: self.num_frames]
 
         # 保持时间顺序输出
         selected_frames = [f for _, f in selected]

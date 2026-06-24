@@ -183,22 +183,22 @@ class DeploymentMetrics:
 class CanaryRouter:
     """Canary deployment router with traffic splitting.
 
-    Routes requests between model versions based on configurable
-traffic weights. Supports automatic rollback on quality degradation.
+        Routes requests between model versions based on configurable
+    traffic weights. Supports automatic rollback on quality degradation.
 
-    Usage::
+        Usage::
 
-        router = CanaryRouter()
-        router.register_model("v1.0", model_v1)
-        router.register_model("v1.1", model_v2)
-        router.set_traffic_split({"v1.0": 0.9, "v1.1": 0.1})
+            router = CanaryRouter()
+            router.register_model("v1.0", model_v1)
+            router.register_model("v1.1", model_v2)
+            router.set_traffic_split({"v1.0": 0.9, "v1.1": 0.1})
 
-        version_id = router.route(request_id="req-123")
-        model = router.get_model(version_id)
-        result = model.predict(request)
+            version_id = router.route(request_id="req-123")
+            model = router.get_model(version_id)
+            result = model.predict(request)
 
-        # Record metrics for rollback monitoring
-        router.record_metrics(version_id, latency_ms=500, quality=0.85)
+            # Record metrics for rollback monitoring
+            router.record_metrics(version_id, latency_ms=500, quality=0.85)
     """
 
     def __init__(
@@ -613,7 +613,7 @@ class ShadowDeployment:
 
             # Trim history
             if len(self._comparisons) > self._max_comparisons:
-                self._comparisons = self._comparisons[-self._max_comparisons:]
+                self._comparisons = self._comparisons[-self._max_comparisons :]
 
         return primary_result
 
@@ -768,20 +768,20 @@ class ShadowDeployment:
 class BlueGreenDeployment:
     """Blue-green deployment for zero-downtime releases.
 
-    Maintains two identical production environments (blue and green),
-switching traffic instantly between them.
+        Maintains two identical production environments (blue and green),
+    switching traffic instantly between them.
 
-    Usage::
+        Usage::
 
-        deploy = BlueGreenDeployment()
-        deploy.deploy_blue(model_v1)
-        deploy.deploy_green(model_v2)
+            deploy = BlueGreenDeployment()
+            deploy.deploy_blue(model_v1)
+            deploy.deploy_green(model_v2)
 
-        # Switch traffic to green
-        deploy.switch_to("green")
+            # Switch traffic to green
+            deploy.switch_to("green")
 
-        # Rollback if needed
-        deploy.switch_to("blue")
+            # Rollback if needed
+            deploy.switch_to("blue")
     """
 
     def __init__(self):

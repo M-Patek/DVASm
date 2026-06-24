@@ -274,9 +274,9 @@ class FeatureStore:
 
         # Remove from memory
         keys_to_remove = [
-            k for k in self._index
-            if k.startswith(f"{annotation_id}:")
-            and (feature_type is None or feature_type in k)
+            k
+            for k in self._index
+            if k.startswith(f"{annotation_id}:") and (feature_type is None or feature_type in k)
         ]
         for key in keys_to_remove:
             del self._index[key]
@@ -314,11 +314,13 @@ class FeatureStore:
             subdir = self.root_path / annotation_id[:2]
             if subdir.exists():
                 for file in subdir.glob(f"{annotation_id}_*.npy"):
-                    features.append({
-                        "annotation_id": annotation_id,
-                        "path": str(file),
-                        "feature_type": file.stem.split("_")[-1],
-                    })
+                    features.append(
+                        {
+                            "annotation_id": annotation_id,
+                            "path": str(file),
+                            "feature_type": file.stem.split("_")[-1],
+                        }
+                    )
         else:
             # List all features
             for subdir in self.root_path.iterdir():
@@ -326,11 +328,13 @@ class FeatureStore:
                     for file in subdir.glob("*_*.npy"):
                         parts = file.stem.rsplit("_", 1)
                         if len(parts) == 2:
-                            features.append({
-                                "annotation_id": parts[0],
-                                "path": str(file),
-                                "feature_type": parts[1],
-                            })
+                            features.append(
+                                {
+                                    "annotation_id": parts[0],
+                                    "path": str(file),
+                                    "feature_type": parts[1],
+                                }
+                            )
 
         return features
 
@@ -528,12 +532,15 @@ class FeatureExtractor:
         durations_arr = np.array(durations)
 
         return {
-            "temporal_stats": np.array([
-                np.mean(timestamps_arr),
-                np.std(timestamps_arr),
-                np.mean(durations_arr),
-                np.std(durations_arr),
-            ], dtype=np.float32),
+            "temporal_stats": np.array(
+                [
+                    np.mean(timestamps_arr),
+                    np.std(timestamps_arr),
+                    np.mean(durations_arr),
+                    np.std(durations_arr),
+                ],
+                dtype=np.float32,
+            ),
             "temporal_histogram": np.histogram(timestamps_arr, bins=10)[0].astype(np.float32),
         }
 

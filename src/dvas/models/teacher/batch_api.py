@@ -327,9 +327,7 @@ class OpenAIBatchAPI:
 
             elapsed = time.time() - start_time
             if elapsed > max_time:
-                raise TimeoutError(
-                    f"Batch {batch_id} did not complete within {max_time}s"
-                )
+                raise TimeoutError(f"Batch {batch_id} did not complete within {max_time}s")
 
             logger.debug(
                 "Batch still in progress",
