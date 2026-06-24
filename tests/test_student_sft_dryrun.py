@@ -50,7 +50,24 @@ for _mod_name in _INSTALLED_HEAVY:
     # Make trl.SFTTrainer / DPOTrainer look like classes
     _m.SFTTrainer = MagicMock()
     _m.DPOTrainer = MagicMock()
+    # Make datasets.Dataset look like a class
+    _m.Dataset = MagicMock()
     sys.modules[_mod_name] = _m
+
+
+# Setup torch submodules for AMP imports
+if "torch" in _INSTALLED_HEAVY:
+    _torch_cuda = MagicMock()
+    _torch_cuda.amp = MagicMock()
+    _torch_cuda.amp.GradScaler = MagicMock()
+    sys.modules["torch.cuda"] = _torch_cuda
+    sys.modules["torch.cuda.amp"] = _torch_cuda.amp
+    sys.modules["torch.amp"] = MagicMock()
+    # Setup torch.distributed for fsdp_utils
+    sys.modules["torch.distributed"] = MagicMock()
+
+if "transformers" in _INSTALLED_HEAVY:
+    sys.modules["transformers.trl"] = MagicMock()
 
 
 # Other test modules (e.g. test_student_inference.py) replace the real
@@ -137,7 +154,7 @@ class TestSFTConfig:
         from dvas.models.student.config import SFTConfig, TrainingConfig
 
         sft = SFTConfig()
-        assert sft.report_to == "none"
+        assert sft.report_to == "wandb"  # default is wandb
 
         train_cfg = TrainingConfig()
         # TrainingConfig itself does not carry report_to.
