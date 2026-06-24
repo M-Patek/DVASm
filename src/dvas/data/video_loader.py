@@ -39,8 +39,9 @@ from dvas.data.scene_detector import (
 from dvas.core.concurrency import AsyncIteratorBridge, run_in_thread
 from dvas.data.schemas import VideoMetadata
 from dvas.data.video_reader import Frame, VideoReader
+from dvas.utils.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Module-level cache for video metadata with size limit
 # Using simple OrderedDict-like approach for LRU eviction
