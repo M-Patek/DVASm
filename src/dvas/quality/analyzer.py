@@ -54,6 +54,9 @@ class AnomalyDetector:
 
     def detect_outliers(self, annotations: List[Annotation]) -> List[Tuple[str, str]]:
         """Detect outlier annotations with reasons."""
+        if not annotations:
+            return []
+
         outliers = []
 
         # Feature extraction
