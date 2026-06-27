@@ -11,40 +11,30 @@ import numpy as np
 import pytest
 
 # Set up decord mock BEFORE any dvas imports
-# Check if decord is available
-try:
-    import decord
+# Always mock decord for tests to ensure consistent behavior
+decord_mock = MagicMock()
+decord_mock.cpu = MagicMock(return_value="cpu_ctx")
+decord_mock.gpu = MagicMock(return_value="gpu_ctx")
 
-    _DECORD_AVAILABLE = True
-    decord_mock = MagicMock()
-    decord_mock.cpu = MagicMock(return_value="cpu_ctx")
-    decord_mock.gpu = MagicMock(return_value="gpu_ctx")
-except ImportError:
-    _DECORD_AVAILABLE = False
-    # Create mock for decord module
-    decord_mock = MagicMock()
-    decord_mock.cpu = MagicMock(return_value="cpu_ctx")
-    decord_mock.gpu = MagicMock(return_value="gpu_ctx")
+# Mock VideoReader class
+decord_video_reader_mock = MagicMock()
+decord_video_reader_mock.get_avg_fps.return_value = 30.0
+decord_video_reader_mock.__len__ = MagicMock(return_value=300)
 
-    # Mock VideoReader class
-    decord_video_reader_mock = MagicMock()
-    decord_video_reader_mock.get_avg_fps.return_value = 30.0
-    decord_video_reader_mock.__len__ = MagicMock(return_value=300)
+# Mock frame data
+mock_frame = MagicMock()
+mock_frame.asnumpy.return_value = np.zeros((1080, 1920, 3), dtype=np.uint8)
+decord_video_reader_mock.__getitem__ = MagicMock(return_value=mock_frame)
 
-    # Mock frame data
-    mock_frame = MagicMock()
-    mock_frame.asnumpy.return_value = np.zeros((1080, 1920, 3), dtype=np.uint8)
-    decord_video_reader_mock.__getitem__ = MagicMock(return_value=mock_frame)
+# Mock batch result
+mock_batch = MagicMock()
+mock_batch.asnumpy.return_value = np.zeros((4, 1080, 1920, 3), dtype=np.uint8)
+decord_video_reader_mock.get_batch.return_value = mock_batch
 
-    # Mock batch result
-    mock_batch = MagicMock()
-    mock_batch.asnumpy.return_value = np.zeros((4, 1080, 1920, 3), dtype=np.uint8)
-    decord_video_reader_mock.get_batch.return_value = mock_batch
+decord_mock.VideoReader = MagicMock(return_value=decord_video_reader_mock)
 
-    decord_mock.VideoReader = MagicMock(return_value=decord_video_reader_mock)
-
-    # Install mock before any dvas import
-    sys.modules["decord"] = decord_mock
+# Install mock BEFORE any dvas import - this is critical
+sys.modules["decord"] = decord_mock
 
 # Now safe to import dvas modules
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
