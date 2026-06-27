@@ -195,8 +195,8 @@ class TestGetMixedPrecisionPolicy:
 
             with patch("dvas.models.student.fsdp_utils.MixedPrecision", mock_mp):
                 config = FSDPConfig(mixed_precision=True)
-                with patch("torch.cuda.is_available", return_value=True):
-                    with patch("torch.cuda.is_bf16_supported", return_value=True):
+                with patch("dvas.models.student.fsdp_utils.torch.cuda.is_available", return_value=True):
+                    with patch("dvas.models.student.fsdp_utils.torch.cuda.is_bf16_supported", return_value=True):
                         policy = get_mixed_precision_policy(config)
                         assert policy == "bfloat16_policy"
 
@@ -207,8 +207,8 @@ class TestGetMixedPrecisionPolicy:
 
             with patch("dvas.models.student.fsdp_utils.MixedPrecision", mock_mp):
                 config = FSDPConfig(mixed_precision=True)
-                with patch("torch.cuda.is_available", return_value=True):
-                    with patch("torch.cuda.is_bf16_supported", return_value=False):
+                with patch("dvas.models.student.fsdp_utils.torch.cuda.is_available", return_value=True):
+                    with patch("dvas.models.student.fsdp_utils.torch.cuda.is_bf16_supported", return_value=False):
                         policy = get_mixed_precision_policy(config)
                         assert policy == "float16_policy"
 
