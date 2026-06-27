@@ -55,6 +55,7 @@ jobs:
         # Note: decord is not installed; tests use mock
 
     - name: Run tests
+      shell: bash
       run: |
         pytest tests/ -v --tb=short -m "not slow and not gpu" \
           --ignore=tests/test_student_sft_dryrun.py \
@@ -62,6 +63,7 @@ jobs:
           --ignore=tests/test_decord_reader.py
 
     - name: Run integration tests
+      shell: bash
       run: |
         pytest tests/ -v --tb=short -m "integration" || true
 
