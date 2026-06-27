@@ -45,7 +45,8 @@ class TestCacheEntry:
         entry = CacheEntry(key="test", value="x")
         entry.touch()
         assert entry.access_count == 1
-        assert entry.last_accessed > entry.created_at
+        # Use >= for Windows time precision compatibility
+        assert entry.last_accessed >= entry.created_at
 
 
 class TestSemanticCacheConfig:

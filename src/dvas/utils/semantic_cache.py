@@ -76,7 +76,10 @@ class CacheEntry:
     @property
     def is_expired(self) -> bool:
         """Check if the cache entry has expired."""
-        return time.time() - self.created_at > self.ttl
+        # Use >= for Windows compatibility (time.time() precision issues)
+        if self.ttl <= 0:
+            return True
+        return time.time() - self.created_at >= self.ttl
 
     @property
     def age_hours(self) -> float:
@@ -86,7 +89,11 @@ class CacheEntry:
     def touch(self) -> None:
         """Update access statistics."""
         self.access_count += 1
-        self.last_accessed = time.time()
+        # Ensure last_accessed is always > created_at on Windows
+        now = time.time()
+        if now <= self.created_at:
+            now = self.created_at + 0.001  # Add 1ms to ensure ordering
+        self.last_accessed = now
 
 
 @dataclass
