@@ -46,13 +46,17 @@ coverage*.json
 outputs/
 !outputs/.gitkeep
 
-# Root CHANGELOG (keep docs/changelog/CHANGELOG.md)
-/CHANGELOG.md
+# AI agent files (local dev only)
+AGENTS.md
+CLAUDE.md
+llms.txt
 
-# Documentation build
-docs/_build/
-.tmp/
-tmp/
-.claude/worktrees/
-*.out
-unit_out*.txt
+# Machine tracking (local dev only)
+docs/_machine/
+
+# Internal docs (not for public repo)
+docs/subsystems/
+docs/architecture/
+docs/operations/
+docs/INDEX.md
+
